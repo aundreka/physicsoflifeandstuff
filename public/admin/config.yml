@@ -143,3 +143,76 @@ collections:
           - { label: "Image", name: "image", widget: "image", required: false }
           - { label: "Caption", name: "caption", widget: "string", required: false }
           - { label: "Credit", name: "credit", widget: "string", required: false}
+
+      - label: "Content Blocks"
+        name: "content"
+        widget: "list"
+        required: false
+        default: []
+        types:
+          - label: "Paragraph"
+            name: "paragraph"
+            widget: "object"
+            fields:
+              - { label: "Text", name: "text", widget: "text" }
+          - label: "Subhead"
+            name: "subhead"
+            widget: "object"
+            fields:
+              - { label: "Text", name: "text", widget: "string" }
+          - label: "Quote"
+            name: "quote"
+            widget: "object"
+            fields:
+              - { label: "Text", name: "text", widget: "text" }
+              - { label: "Cite", name: "cite", widget: "string", required: false }
+          - label: "Image"
+            name: "image"
+            widget: "object"
+            fields:
+              - { label: "Image", name: "src", widget: "image" }
+              - { label: "Alt text", name: "alt", widget: "string", required: false }
+              - { label: "Caption", name: "caption", widget: "string", required: false }
+              - { label: "Credit", name: "credit", widget: "string", required: false }
+          - label: "Gallery"
+            name: "gallery"
+            widget: "object"
+            fields:
+              - { label: "Title", name: "title", widget: "string", required: false }
+              - label: "Images"
+                name: "images"
+                widget: "list"
+                fields:
+                  - { label: "Image", name: "src", widget: "image" }
+                  - { label: "Alt text", name: "alt", widget: "string", required: false }
+          - label: "PDF"
+            name: "pdf"
+            widget: "object"
+            fields:
+              - { label: "Title", name: "title", widget: "string", required: false }
+              - { label: "PDF URL", name: "src", widget: "string" }
+          - label: "Embed"
+            name: "embed"
+            widget: "object"
+            fields:
+              - { label: "Title", name: "title", widget: "string", required: false }
+              - { label: "URL", name: "url", widget: "string" }
+          - label: "List"
+            name: "list"
+            widget: "object"
+            fields:
+              - label: "Items"
+                name: "items"
+                widget: "list"
+                field: { label: "Item", name: "item", widget: "string" }
+          - label: "Links"
+            name: "links"
+            widget: "object"
+            fields:
+              - { label: "Title", name: "title", widget: "string", required: false }
+              - label: "Links"
+                name: "items"
+                widget: "list"
+                fields:
+                  - { label: "Label", name: "label", widget: "string" }
+                  - { label: "URL", name: "url", widget: "string" }

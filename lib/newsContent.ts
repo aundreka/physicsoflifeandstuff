@@ -63,7 +63,11 @@ export function getAllNews(): NewsListItem[] {
 export function getNewsBySlug(slug: string): NewsArticle | null {
   const fp = path.join(NEWS_DIR, `${slug}.json`);
   if (!fs.existsSync(fp)) return null;
-  return readJson(fp) as NewsArticle;
+  const raw = readJson(fp) as NewsArticle & { content?: NewsBlock[] };
+  return {
+    ...raw,
+    content: Array.isArray(raw.content) ? raw.content : [],
+  };
 }
 
 export function formatDate(iso: string): string {
@@ -74,7 +78,7 @@ export function formatDate(iso: string): string {
 }
 
 export function estimateReadingTime(article: NewsArticle): string {
-  const words = article.content
+  const words = (article.content ?? [])
     .filter((b) => b.type === "paragraph" || b.type === "quote")
     .map((b: any) => b.text || "")
     .join(" ")
