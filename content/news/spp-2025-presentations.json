@@ -1,0 +1,19 @@
+{
+  "slug": "SPP-2025-Presentations",
+  "title": "SPP 2025 Presentations",
+  "dek": "Lorem ipsum eme eme ",
+  "author": {
+    "name": "Gabriel Adrian Manas",
+    "role": "Member "
+  },
+  "publishedAt": "2002-03-01",
+  "updatedAt": "2026-03-01",
+  "tags": [
+    "SPP"
+  ],
+  "hero": {
+    "image": "/images/uploads/screenshot-2026-01-22-at-3.36.43 pm.png",
+    "caption": "test1",
+    "credit": "gabriel adrian manas"
+  }
+}
