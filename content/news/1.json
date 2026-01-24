@@ -1,0 +1,102 @@
+{
+  "slug": "1",
+  "title": "UST Medical Physics group announces collaboration on advanced dose modeling",
+  "dek": "A joint effort will develop computational tools for dose calculation, stopping power ratios, and clinically-relevant validation workflows.",
+  "author": {
+    "name": "Physics of Life and Stuff Research Group",
+    "role": "Medical Physics"
+  },
+  "publishedAt": "2026-01-20",
+  "updatedAt": "2026-01-22",
+  "tags": ["Announcement", "Collaboration", "Medical Physics"],
+
+  "hero": {
+    "image": "/images/news/new-collaboration/hero.jpg",
+    "caption": "The project will focus on computational modeling and validation workflows relevant to clinical physics.",
+    "credit": "Physics of Life and Stuff / UST"
+  },
+
+  "links": [
+    { "label": "Project overview (PDF)", "url": "/papers/project-overview.pdf" },
+    { "label": "Partner institution page", "url": "https://example.com" }
+  ],
+
+  "content": [
+    {
+      "type": "paragraph",
+      "text": "The Physics of Life and Stuff Research Group at the University of Santo Tomas has launched a new collaboration aimed at improving computational dose modeling and validation workflows for medical physics applications."
+    },
+    {
+      "type": "paragraph",
+      "text": "The work will combine numerical methods with clinically meaningful benchmarks, with initial focus on stopping power ratio modeling and robust comparison against reference datasets."
+    },
+
+    {
+      "type": "subhead",
+      "text": "What the collaboration will build"
+    },
+    {
+      "type": "list",
+      "items": [
+        "A numerical pipeline for evaluating stopping power ratios under clinically relevant conditions",
+        "Validation workflows using phantom-like scenarios and controlled geometry studies",
+        "Reproducible documentation and data packaging for future students and collaborators"
+      ]
+    },
+
+    {
+      "type": "image",
+      "src": "/images/news/new-collaboration/lab-1.jpg",
+      "alt": "Lab workspace",
+      "caption": "Early-stage workflow development and testing.",
+      "credit": "UST"
+    },
+
+    {
+      "type": "quote",
+      "text": "We’re designing this to be both mathematically rigorous and clinically interpretable — the goal is to reduce friction between theory, simulation, and practice.",
+      "cite": "Project team"
+    },
+
+    {
+      "type": "subhead",
+      "text": "Materials and references"
+    },
+    {
+      "type": "links",
+      "title": "Key links",
+      "items": [
+        { "label": "Poster / slide deck (PDF)", "url": "/papers/poster.pdf" },
+        { "label": "Related lab update", "url": "https://example.com" }
+      ]
+    },
+
+    {
+      "type": "gallery",
+      "title": "Project images",
+      "images": [
+        { "src": "/images/news/new-collaboration/gal-1.jpg", "alt": "Figure 1" },
+        { "src": "/images/news/new-collaboration/gal-2.jpg", "alt": "Figure 2" },
+        { "src": "/images/news/new-collaboration/gal-3.jpg", "alt": "Figure 3" }
+      ]
+    },
+
+    {
+      "type": "embed",
+      "title": "Embedded announcement / social post",
+      "provider": "iframe",
+      "url": "https://www.youtube.com/embed/dQw4w9WgXcQ"
+    },
+
+    {
+      "type": "pdf",
+      "title": "Embedded paper (placeholder)",
+      "src": "/papers/sample-paper.pdf"
+    },
+
+    {
+      "type": "paragraph",
+      "text": "The group will share periodic updates as the collaboration progresses. Interested collaborators may reach out via the contact details on the lab homepage."
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "news": {
+    "eyebrow": "News",
+    "title": "Updates & highlights",
+    "subtitle": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "viewAllLabel": "View all",
+    "items": [
+      {
+        "title": "Lorem ipsum dolor sit amet: new collaboration",
+        "slug": "1",
+        "date": "Jan 2026",
+        "tag": "Announcement",
+        "excerpt": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+        "image": "/images/placeholder-news-1.jpg",
+        "href": "#"
+      },
+      {
+        "title": "Seminar series: computational methods in medical physics",
+        "slug": "2",
+        "date": "Dec 2025",
+        "tag": "Events",
+        "excerpt": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+        "image": "/images/placeholder-news-2.jpg",
+        "href": "#"
+      },
+      {
+        "title": "New preprint: numerical model for dosimetric quantities",
+        "slug": "3",
+        "date": "Nov 2025",
+        "tag": "Publication",
+        "excerpt": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+        "image": "/images/placeholder-news-3.jpg",
+        "href": "#"
+      }
+    ],
+    "gallery": {
+      "eyebrow": "Gallery",
+      "subtitle": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+      "images": [
+        { "src": "/images/placeholder-gallery-1.jpg", "alt": "Gallery image 1" },
+        { "src": "/images/placeholder-gallery-2.jpg", "alt": "Gallery image 2" },
+        { "src": "/images/placeholder-gallery-3.jpg", "alt": "Gallery image 3" },
+                { "src": "/images/placeholder-gallery-3.jpg", "alt": "Gallery image 3" },
+        { "src": "/images/placeholder-gallery-3.jpg", "alt": "Gallery image 3" },
+        { "src": "/images/placeholder-gallery-3.jpg", "alt": "Gallery image 3" },
+
+        { "src": "/images/placeholder-gallery-4.jpg", "alt": "Gallery image 4" }
+        
+      ]
+    }
+  },
+
+  "about": {
+    "eyebrow": "About the group",
+    "title": "Physics of Life and Stuff",
+    "subtitle": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "bullets": [
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+      "Ut enim ad minim veniam, quis nostrud exercitation ullamco.",
+      "Duis aute irure dolor in reprehenderit in voluptate velit."
+    ],
+    "stats": [
+      { "label": "Labs", "value": "03" },
+      { "label": "Projects", "value": "12" },
+      { "label": "Collaborators", "value": "20+" }
+    ],
+    "images": [
+      { "src": "/images/placeholder-team.jpg", "alt": "Team placeholder" },
+      { "src": "/images/placeholder-ct.jpg", "alt": "Medical imaging placeholder" },
+      { "src": "/images/placeholder-sim.jpg", "alt": "Simulation placeholder" }
+    ],
+    "focusBlocks": [
+      { "title": "Focus area", "body": "Lorem ipsum dolor sit amet, consectetur adipiscing elit." },
+      { "title": "Methods", "body": "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." }
+    ],
+    "contact": {
+      "eyebrow": "Contact",
+      "emailLabel": "Email",
+      "email": "physicslife@ust.edu.ph",
+      "locationLabel": "Location",
+      "location": "Department of Math and Physics, University of Santo Tomas",
+      "addressLabel": "Address",
+      "address": "España Blvd, Sampaloc, Manila, Philippines",
+      "links": [
+        { "label": "Facebook", "href": "#" },
+        { "label": "Google Scholar", "href": "#" },
+        { "label": "ORCID", "href": "#" }
+      ]
+    }
+  }
+}

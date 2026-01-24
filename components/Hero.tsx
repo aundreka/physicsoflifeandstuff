@@ -21,10 +21,7 @@ function rgba(hex: string, a: number) {
   return `rgba(${r}, ${g}, ${b}, ${a})`;
 }
 
-/**
- * ✅ Edit colors only here.
- * Names are component-based: background, ring, electron, text, etc.
- */
+
 const THEME = {
   // Page (slightly lighter dark)
   pageBg: "#0A1026",
@@ -59,7 +56,6 @@ atomGlow: "#FF3131",
   buttonBorder: "#FFFFFF",
   buttonText: "#FFFFFF", // stays white since button is glassy
 };
-
 
 
 
@@ -407,7 +403,7 @@ ctx.shadowBlur = 16 * dpr;
             University of Santo Tomas
           </p>
 
-          <a className="heroBtn" href="#explore">
+          <a className="heroBtn" href="#news">
             <span>Explore</span>
             <span aria-hidden="true">→</span>
           </a>
@@ -440,7 +436,7 @@ ctx.shadowBlur = 16 * dpr;
             ${rgba(THEME.panelBgBottom, 0.01)}
           );
           border: 1px solid ${rgba(THEME.panelBorder, 0.05)};
-          backdrop-filter: blur(5px);
+          backdrop-filter: blur(2px);
           box-shadow: 0 20px 60px ${rgba(THEME.panelShadow, 0.12)};
 
           text-align: left;

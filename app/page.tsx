@@ -1,6 +1,6 @@
-//page.tsx
-import Hero from "@/components/Hero";
+// app/page.tsx
+import HomeLayout from "@/components/HomeLayout";
 
 export default function Home() {
-  return <Hero />;
+  return <HomeLayout />;
 }

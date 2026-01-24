@@ -45,10 +45,11 @@ export default function Header() {
   </a>
 
   <div className="desktopNav">
+<a className="navLink" href="/news">News</a>
+        <a className="navLink" href="/#about">About</a>
+
     <a className="navLink" href="#members">Members</a>
     <a className="navLink" href="#publications">Publications</a>
-    <a className="navLink" href="#news">News</a>
-        <a className="navLink" href="#contact">Contact</a>
 
   </div>
 
@@ -137,8 +138,13 @@ export default function Header() {
                 ✕
               </button>
             </div>
-
-            <a className="mobileLink" href="#members" onClick={() => setOpen(false)}>
+            <a className="mobileLink" href="/news" onClick={() => setOpen(false)}>
+              News
+            </a>
+            <a className="mobileLink" href="/about" onClick={() => setOpen(false)}>
+              About
+            </a>
+            <a className="mobileLink" href="/members" onClick={() => setOpen(false)}>
               Members
             </a>
             <a
@@ -148,12 +154,7 @@ export default function Header() {
             >
               Publications
             </a>
-            <a className="mobileLink" href="#news" onClick={() => setOpen(false)}>
-              News
-            </a>
-            <a className="mobileLink" href="#contact" onClick={() => setOpen(false)}>
-              Contact
-            </a>
+
 
             <div style={{ flex: 1 }} />
             <p style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.6)" }}>
