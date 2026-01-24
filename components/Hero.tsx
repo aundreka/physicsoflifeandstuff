@@ -160,7 +160,7 @@ s: 0.35 + Math.random() * 1.5,
       const gy = h / 2 + mouse.y * (h * 0.04);
       const bg = ctx.createRadialGradient(gx, gy, 0, w / 2, h / 2, Math.max(w, h) * 0.75);
       bg.addColorStop(0, rgba(THEME.vignetteCenter, 0.02));
-      bg.addColorStop(0.45, rgba(THEME.vignetteCenter, 0.04));
+      bg.addColorStop(0.45, rgba(THEME.vignetteCenter, 0.04)); 
       bg.addColorStop(1, rgba(THEME.vignetteEdge, 0.03));
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, w, h);
@@ -398,7 +398,8 @@ ctx.shadowBlur = 16 * dpr;
 
       <div className="heroPanelWrap">
         <div className="heroPanel">
-          <h1 className="heroTitle">Physics of Life and Stuff</h1>
+          <p className="abovetitle" >UST Department of Math and Physics</p>
+          <h1 className="heroTitle">Physics of Life and Stuff </h1><h2 className="heroGroup" >Research Group</h2>
 
           <p className="heroSubtitle">
             Department of Math and Physics,
@@ -418,22 +419,27 @@ ctx.shadowBlur = 16 * dpr;
           position:absolute;
           top:50%;
           transform: translateY(-56%);
-          right: clamp(340px, 6vw, 380px);
+          right: clamp(200px, 6vw, 240px);
           z-index:5;
-          max-width: 560px;
+          max-width: 700px;
+
+          
         }
-
+          .abovetitle{
+          display:none;}
         .heroPanel{
-          padding: 18px 20px;
+        
+          padding-left: 58px;
+          padding-top: 44px;
+          padding-bottom: 44px;
           border-radius: 18px;
-
           /* light glass on white */
           background: linear-gradient(
             to bottom,
-            ${rgba(THEME.panelBgTop, 0.20)},
-            ${rgba(THEME.panelBgBottom, 0.05)}
+            ${rgba(THEME.panelBgTop, 0.03)},
+            ${rgba(THEME.panelBgBottom, 0.01)}
           );
-          border: 1px solid ${rgba(THEME.panelBorder, 0.15)};
+          border: 1px solid ${rgba(THEME.panelBorder, 0.05)};
           backdrop-filter: blur(5px);
           box-shadow: 0 20px 60px ${rgba(THEME.panelShadow, 0.12)};
 
@@ -446,13 +452,15 @@ ctx.shadowBlur = 16 * dpr;
           font-weight: 850;
           letter-spacing: 0.02em;
           line-height: 1.12;
-          font-size: clamp(2.5rem, 3.2vw, 3.4rem);
+          font-size: clamp(2.3rem, 4.8vw, 4.7rem);
           color: ${THEME.textTitle};
+          
         }
 
         .heroSubtitle{
           margin: 10px 0 18px;
           font-size: clamp(0.95rem, 1.15vw, 1.05rem);
+          font-weight: 300;
           line-height: 1.5;
           color: ${THEME.textSubtitle};
         }
@@ -463,7 +471,7 @@ ctx.shadowBlur = 16 * dpr;
           gap: 10px;
           padding: 10px 14px;
           border-radius: 999px;
-          font-size: 11px;
+          font-size: 15px;
           letter-spacing: 0.12em;
           text-transform: uppercase;
 
@@ -487,22 +495,33 @@ ctx.shadowBlur = 16 * dpr;
         @media (max-width: 768px){
           .heroPanelWrap{
             top: auto;
-            bottom: 6%;
+            bottom: 16%;
             right: 50%;
             transform: translateX(50%);
             width: min(92vw, 520px);
+            opacity: 0.7  5;
           }
-
+          .heroGroup {
+          display:none;
+          }
           .heroPanel{
             text-align: center;
+            background: none;
+            padding: 24px 32px;
           }
-
+            .abovetitle{
+            display:block;
+            font-weight:300;
+            font-size:clamp(0.7rem,3vw,0.85rem);
+            }
           .heroTitle{
-            font-size: clamp(1.25rem, 7vw, 1.7rem);
+            font-size: clamp(1.7rem, 9vw, 2.8rem);
+            margin-bottom: 16px;
           }
 
           .heroSubtitle{
             font-size: clamp(0.8rem, 3.4vw, 0.95rem);
+            display: none;
           }
         }
 

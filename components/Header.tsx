@@ -20,66 +20,51 @@ export default function Header() {
         position: "sticky",
         top: 0,
         zIndex: 50,
-        background: "#fff",
-        borderBottom: "1px solid rgba(0,0,0,0.08)",
+
+        // match hero dark vibe
+        background: "rgba(10, 16, 38, 0.92)", // THEME.pageBg-ish
+        borderBottom: "1px solid rgba(255,255,255,0.08)",
+        backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
       }}
     >
-      <nav
-        className="siteNav"
-        style={{
-          maxWidth: "980px",
-          margin: "0 auto",
-          padding: "0.75rem 1rem",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          position: "relative", // needed for centering
-        }}
-      >
-        {/* Logo */}
-        <a
-          href="/"
-          className="brand"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "0.75rem",
-            textDecoration: "none",
-            color: "inherit",
-          }}
-        >
-          <Image src="/logo.svg" alt="Logo" width={44} height={44} priority />
-          <span className="siteTitle">
-            <strong>Physics of Life and Stuff</strong>
-          </span>
-        </a>
+<nav
+  className="siteNav"
+  style={{
+    maxWidth: "1200px",
+    margin: "0 auto",
+    padding: "0.65rem 0.75rem",
+    color: "rgba(255,255,255,0.92)",
+  }}
+>
+  <a href="/" className="brand">
+    <Image src="/logo.svg" alt="Logo" width={44} height={44} priority />
+    <span className="siteTitle">
+      <strong style={{ letterSpacing: "0.02em" }}>Physics of Life and Stuff</strong>
+    </span>
+  </a>
 
-        {/* Desktop links */}
-        <div className="desktopNav">
-          <a className="navLink" href="#members">Members</a>
-          <a className="navLink" href="#publications">Publications</a>
-          <a className="navLink" href="#news">News</a>
-        </div>
+  <div className="desktopNav">
+    <a className="navLink" href="#members">Members</a>
+    <a className="navLink" href="#publications">Publications</a>
+    <a className="navLink" href="#news">News</a>
+        <a className="navLink" href="#contact">Contact</a>
 
-        {/* Hamburger */}
-        <button
-          className="hamburger"
-          onClick={() => setOpen(!open)}
-          aria-label="Open menu"
-          style={{
-            border: "1px solid rgba(0,0,0,0.12)",
-            background: "#fff",
-            borderRadius: "12px",
-            padding: "0.55rem 0.65rem",
-          }}
-        >
-          <span style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-            <span className="bar" />
-            <span className="bar" />
-            <span className="bar" />
-          </span>
-        </button>
-      </nav>
+  </div>
+
+<button
+  className="hamburger"
+  onClick={() => setOpen(!open)}
+  aria-label="Open menu"
+  aria-expanded={open}
+  aria-controls="mobile-menu"
+>
+  <span className="hamburgerIcon">
+    <span className="bar" />
+    <span className="bar" />
+  </span>
+</button>
+</nav>
 
 
       {/* Mobile menu */}
@@ -92,7 +77,7 @@ export default function Header() {
             style={{
               position: "fixed",
               inset: 0,
-              background: "rgba(0,0,0,0.25)",
+              background: "rgba(0,0,0,0.35)",
               border: "none",
               padding: 0,
               margin: 0,
@@ -100,6 +85,7 @@ export default function Header() {
               zIndex: 40,
             }}
           />
+
           <div
             id="mobile-menu"
             role="dialog"
@@ -111,13 +97,19 @@ export default function Header() {
               height: "100dvh",
               width: "78vw",
               maxWidth: "320px",
-              background: "#fff",
-              borderLeft: "1px solid rgba(0,0,0,0.1)",
+
+              // dark sheet to match hero
+              background: "rgba(5, 8, 22, 0.92)", // THEME.vignetteEdge-ish
+              borderLeft: "1px solid rgba(255,255,255,0.10)",
+              backdropFilter: "blur(14px)",
+              WebkitBackdropFilter: "blur(14px)",
+
               zIndex: 60,
               padding: "1rem",
               display: "flex",
               flexDirection: "column",
               gap: "0.75rem",
+              color: "rgba(255,255,255,0.92)",
             }}
           >
             <div
@@ -126,19 +118,20 @@ export default function Header() {
                 alignItems: "center",
                 justifyContent: "space-between",
                 paddingBottom: "0.5rem",
-                borderBottom: "1px solid rgba(0,0,0,0.08)",
+                borderBottom: "1px solid rgba(255,255,255,0.10)",
               }}
             >
-              <strong>Menu</strong>
+              <strong style={{ letterSpacing: "0.02em", paddingLeft: "10px" }}>Menu</strong>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Close menu"
                 style={{
-                  border: "1px solid rgba(0,0,0,0.12)",
-                  background: "#fff",
+                  border: "1px solid rgba(255,255,255,0.18)",
+                  background: "rgba(255,255,255,0.06)",
                   borderRadius: "10px",
                   padding: "0.4rem 0.6rem",
+                  color: "rgba(255,255,255,0.92)",
                 }}
               >
                 ✕
@@ -148,7 +141,11 @@ export default function Header() {
             <a className="mobileLink" href="#members" onClick={() => setOpen(false)}>
               Members
             </a>
-            <a className="mobileLink" href="#publications" onClick={() => setOpen(false)}>
+            <a
+              className="mobileLink"
+              href="#publications"
+              onClick={() => setOpen(false)}
+            >
               Publications
             </a>
             <a className="mobileLink" href="#news" onClick={() => setOpen(false)}>
@@ -157,6 +154,11 @@ export default function Header() {
             <a className="mobileLink" href="#contact" onClick={() => setOpen(false)}>
               Contact
             </a>
+
+            <div style={{ flex: 1 }} />
+            <p style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.6)" }}>
+              Physics of Life and Stuff • UST
+            </p>
           </div>
         </>
       )}
