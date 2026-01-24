@@ -1,0 +1,39 @@
+/* bars */
+.bar {
+  width: 18px;
+  height: 2px;
+  background: rgba(37, 36, 36, 0.75);
+  border-radius: 2px;
+}
+
+/* desktop */
+.desktopNav {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.hamburger {
+  display: none;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .desktopNav {
+    display: none !important;
+  }
+
+  .siteTitle {
+    display: none !important;
+  }
+
+  .hamburger {
+    display: inline-flex !important;
+  }
+
+  /* center logo */
+  .brand {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
