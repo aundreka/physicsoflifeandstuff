@@ -4,6 +4,7 @@ backend:
   branch: main
   base_url: https://pols.pols-oauth.workers.dev
   auth_endpoint: auth
+site_url: https://physicsoflifeandstuff.netlify.app
 
 
 media_folder: "public/images/uploads"
