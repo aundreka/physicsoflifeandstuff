@@ -1,0 +1,32 @@
+{
+  "content": [
+    {
+      "type": "paragraph",
+      "text": "lebron james is the goat"
+    },
+    {
+      "type": "quote",
+      "text": "lebron james is the goat",
+      "cite": "lebron james"
+    },
+    {
+      "type": "embed",
+      "title": "youtube video",
+      "url": "https://www.youtube.com/watch?v=a9j4m1TkYrk"
+    }
+  ],
+  "hero": {
+    "image": "/images/uploads/screenshot-2026-01-15-at-5.44.21 pm.png"
+  },
+  "tags": [
+    "2025",
+    "announcement"
+  ],
+  "title": "Example",
+  "slug": "example",
+  "dek": "this is a subtitle",
+  "author": {
+    "name": "aundreka perez"
+  },
+  "publishedAt": "2022-04-05"
+}
