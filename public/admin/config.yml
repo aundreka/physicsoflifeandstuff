@@ -137,4 +137,4 @@ collections:
         fields:
           - { label: "Image", name: "image", widget: "image", required: false }
           - { label: "Caption", name: "caption", widget: "string", required: false }
-          - { label: "Credit", name: "credit", widget: "string", required: false
+          - { label: "Credit", name: "credit", widget: "string", required: false}
