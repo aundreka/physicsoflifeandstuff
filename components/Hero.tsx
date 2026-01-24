@@ -415,7 +415,7 @@ ctx.shadowBlur = 16 * dpr;
           position:absolute;
           top:50%;
           transform: translateY(-56%);
-          right: clamp(200px, 6vw, 240px);
+          right: clamp(150px, 6vw, 190px);
           z-index:5;
           max-width: 700px;
 
