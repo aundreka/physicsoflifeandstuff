@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import RedirectHandler from "@/components/RedirectHandler";
 import { Inter } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,7 +25,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           background: "#070C1B",
         }}
       >
-        <RedirectHandler />
+        <Suspense fallback={null}>
+          <RedirectHandler />
+        </Suspense>
         <Header />
         <main style={{ flex: 1 }}>{children}</main>
         <Footer />
