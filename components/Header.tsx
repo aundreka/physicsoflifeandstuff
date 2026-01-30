@@ -45,12 +45,25 @@ export default function Header() {
   </a>
 
   <div className="desktopNav">
-<a className="navLink" href="/news">News</a>
-        <a className="navLink" href="/#about">About</a>
+    <a className="navLink" href="/news">News</a>
+    <a className="navLink" href="/#about">About</a>
 
-    <a className="navLink" href="#members">Members</a>
-    <a className="navLink" href="#publications">Publications</a>
+    <div className="navDropdown">
+      <a
+        href="/community"
+        className="navLink navDropdownTrigger"
+        aria-haspopup="true"
+      >
+        Community
+        <span className="navDropdownChevron" aria-hidden="true">▾</span>
+      </a>
+      <div className="navDropdownMenu" role="menu">
+        <a className="navDropdownItem" href="/community#members" role="menuitem">Members</a>
+        <a className="navDropdownItem" href="/community#alumni" role="menuitem">Alumni</a>
+      </div>
+    </div>
 
+    <a className="navLink" href="/publications">Publications</a>
   </div>
 
 <button
@@ -141,17 +154,31 @@ export default function Header() {
             <a className="mobileLink" href="/news" onClick={() => setOpen(false)}>
               News
             </a>
-            <a className="mobileLink" href="/about" onClick={() => setOpen(false)}>
+            <a className="mobileLink" href="/#about" onClick={() => setOpen(false)}>
               About
             </a>
-            <a className="mobileLink" href="/members" onClick={() => setOpen(false)}>
-              Members
-            </a>
-            <a
-              className="mobileLink"
-              href="#publications"
-              onClick={() => setOpen(false)}
-            >
+            <div className="mobileMenuGroup">
+              <a className="mobileLink" href="/community" onClick={() => setOpen(false)}>
+                Community
+              </a>
+              <div className="mobileDropdownMenu">
+                <a
+                  className="mobileDropdownItem"
+                  href="/community/#members"
+                  onClick={() => setOpen(false)}
+                >
+                  Members
+                </a>
+                <a
+                  className="mobileDropdownItem"
+                  href="/community/#alumni"
+                  onClick={() => setOpen(false)}
+                >
+                  Alumni
+                </a>
+              </div>
+            </div>
+            <a className="mobileLink" href="/publications" onClick={() => setOpen(false)}>
               Publications
             </a>
 

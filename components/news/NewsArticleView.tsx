@@ -1,22 +1,78 @@
 // components/news/NewsArticleView.tsx
+"use client";
+
 import type { NewsArticle, NewsBlock, NewsListItem } from "@/lib/newsContent";
 import { estimateReadingTime, formatDate } from "@/lib/newsContent";
 import SimilarArticles from "@/components/news/SimilarArticles";
+
+function toIsoDate(iso?: string | number | Date | null): string | undefined {
+  if (iso == null) return undefined;
+
+  if (iso instanceof Date && !Number.isNaN(iso.getTime())) {
+    return iso.toISOString().slice(0, 10);
+  }
+
+  const raw = typeof iso === "string" ? iso.trim() : String(iso);
+  if (!raw) return undefined;
+
+  const ymdMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (ymdMatch) return `${ymdMatch[1]}-${ymdMatch[2]}-${ymdMatch[3]}`;
+
+  const gvMatch = raw.match(/Date\((\d{1,4}),\s*(\d{1,2}),\s*(\d{1,2})\)/i);
+  if (gvMatch) {
+    const y = Number(gvMatch[1]);
+    const m = Number(gvMatch[2]) + 1;
+    const d = Number(gvMatch[3]);
+    const pad2 = (n: number) => String(n).padStart(2, "0");
+    if (Number.isFinite(y) && Number.isFinite(m) && Number.isFinite(d)) {
+      return `${String(y).padStart(4, "0")}-${pad2(m)}-${pad2(d)}`;
+    }
+  }
+
+  const parsed = new Date(raw);
+  if (!Number.isNaN(parsed.getTime())) return parsed.toISOString().slice(0, 10);
+
+  return undefined;
+}
+
+function TextWithBreaks({ text }: { text: string }) {
+  const lines = text.split(/\r?\n/);
+  return (
+    <>
+      {lines.map((line, i) => (
+        <span key={`${i}-${line}`}>
+          {i > 0 ? <br /> : null}
+          {line}
+        </span>
+      ))}
+    </>
+  );
+}
 
 function Blocks({ blocks }: { blocks: NewsBlock[] }) {
   return (
     <div className="articleBody">
       {blocks.map((b, i) => {
         if (b.type === "paragraph") {
-          return <p key={i} className="articleP">{b.text}</p>;
+          return (
+            <p key={i} className="articleP">
+              <TextWithBreaks text={b.text} />
+            </p>
+          );
         }
         if (b.type === "subhead") {
-          return <h2 key={i} className="articleH2">{b.text}</h2>;
+          return (
+            <h2 key={i} className="articleH2">
+              <TextWithBreaks text={b.text} />
+            </h2>
+          );
         }
         if (b.type === "quote") {
           return (
             <blockquote key={i} className="articleQuote">
-              <p>{b.text}</p>
+              <p>
+                <TextWithBreaks text={b.text} />
+              </p>
               {b.cite ? <cite>{b.cite}</cite> : null}
             </blockquote>
           );
@@ -24,7 +80,9 @@ function Blocks({ blocks }: { blocks: NewsBlock[] }) {
         if (b.type === "list") {
           return (
             <ul key={i} className="articleList">
-              {b.items.map((it) => <li key={it}>{it}</li>)}
+              {b.items.map((it, idx) => (
+                <li key={`${idx}-${it}`}>{it}</li>
+              ))}
             </ul>
           );
         }
@@ -35,7 +93,9 @@ function Blocks({ blocks }: { blocks: NewsBlock[] }) {
               <ul className="articleLinksList">
                 {b.items.map((l) => (
                   <li key={l.url}>
-                    <a href={l.url} target="_blank" rel="noreferrer">{l.label} ↗</a>
+                    <a href={l.url} target="_blank" rel="noreferrer">
+                      {l.label || l.url} ↗
+                    </a>
                   </li>
                 ))}
               </ul>
@@ -43,10 +103,11 @@ function Blocks({ blocks }: { blocks: NewsBlock[] }) {
           );
         }
         if (b.type === "image") {
+          const alt = b.alt || b.caption || "";
           return (
             <figure key={i} className="articleFigure">
               <div className="articleFigureMedia">
-                <img src={b.src} alt={b.alt ?? ""} loading="lazy" />
+                <img src={b.src} alt={alt} loading="lazy" />
               </div>
               {(b.caption || b.credit) ? (
                 <figcaption className="articleCaption">
@@ -108,9 +169,12 @@ export default function NewsArticleView({
   similar,
 }: {
   article: NewsArticle;
-  similar: NewsListItem[];
-}) {
-  const hasHero = Boolean(article.hero?.image);
+    similar: NewsListItem[];
+  }) {
+  const heroImage = (article.hero?.image ?? "").trim();
+  const hasHero = Boolean(heroImage);
+  const publishedDateTime = toIsoDate(article.publishedAt);
+  const updatedDateTime = toIsoDate(article.updatedAt ?? null);
 
   return (
     <main className="newsPageWhite">
@@ -127,7 +191,7 @@ export default function NewsArticleView({
           <article className="articleMain">
             <header className="articleHeader">
               <div className="articleMeta">
-                <time dateTime={article.publishedAt}>{formatDate(article.publishedAt)}</time>
+                <time dateTime={publishedDateTime}>{formatDate(article.publishedAt)}</time>
                 <span className="articleMetaDot" aria-hidden="true" />
                 <span className="articleRead">{estimateReadingTime(article)}</span>
                 {article.tags?.length ? (
@@ -150,7 +214,9 @@ export default function NewsArticleView({
                 ) : null}
 
                 {article.updatedAt ? (
-                  <div className="articleUpdated">Updated {formatDate(article.updatedAt)}</div>
+                  <div className="articleUpdated">
+                    <time dateTime={updatedDateTime}>Updated {formatDate(article.updatedAt)}</time>
+                  </div>
                 ) : null}
               </div>
             </header>
@@ -159,7 +225,7 @@ export default function NewsArticleView({
             <section className={`articleHero ${hasHero ? "hasImage" : "noImage"}`}>
               {hasHero ? (
                 <div className="articleHeroMedia">
-                  <img src={article.hero!.image!} alt="" />
+                  <img src={heroImage} alt={article.title ? `${article.title} hero` : ""} />
                 </div>
               ) : (
                 <div className="articleHeroFallback" aria-hidden="true" />
@@ -180,7 +246,9 @@ export default function NewsArticleView({
                 <ul className="articleLinksList">
                   {article.links.map((l) => (
                     <li key={l.url}>
-                      <a href={l.url} target="_blank" rel="noreferrer">{l.label} ↗</a>
+                      <a href={l.url} target="_blank" rel="noreferrer">
+                        {l.label || l.url} ↗
+                      </a>
                     </li>
                   ))}
                 </ul>

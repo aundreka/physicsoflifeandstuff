@@ -1,0 +1,1622 @@
+<!-- CommunityCMS.html -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root{
+        --bg:#ffffff;
+        --panel:#ffffff;
+        --muted:#6b7280;
+        --text:#111827;
+        --line:#e5e7eb;
+        --soft:#f9fafb;
+        --accent:#111827;
+        --danger:#b91c1c;
+        --radius:12px;
+      }
+      *{box-sizing:border-box}
+      body{
+        margin:0;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        font-size:13px;
+        line-height:1.4;
+        color:var(--text);
+        background:var(--bg);
+      }
+      .wrap{ padding:10px; }
+      .topbar{
+        display:flex;
+        flex-direction:row;
+        align-items:center;
+        flex-wrap:wrap;
+        gap:6px;
+        padding:8px;
+        border:1px solid var(--line);
+        border-radius:var(--radius);
+        background:var(--soft);
+      }
+      .topbar select{ max-width:220px; }
+      select, input, textarea, button{
+        font:inherit;
+      }
+      select, input, textarea{
+        width:100%;
+        padding:7px 8px;
+        border:1px solid var(--line);
+        border-radius:8px;
+        background:#fff;
+        outline:none;
+      }
+      textarea{ min-height:80px; resize:vertical; }
+      .btn{
+        padding:6px 10px;
+        border:1px solid var(--line);
+        border-radius:8px;
+        background:#fff;
+        cursor:pointer;
+      }
+      .btn:hover{ background:var(--soft); }
+      .btn.primary{
+        border-color:var(--accent);
+        background:var(--accent);
+        color:#fff;
+      }
+      .btn.primary:hover{ filter:brightness(0.95); }
+      .btn.danger{
+        border-color:#fca5a5;
+        color:var(--danger);
+      }
+      .btn.small{ padding:4px 8px; border-radius:8px; }
+      .hint{ color:var(--muted); font-size:11px; }
+      .layout{
+        margin-top:10px;
+        display:grid;
+        grid-template-columns: 1fr;
+        gap:8px;
+      }
+      .card{
+        border:1px solid var(--line);
+        border-radius:var(--radius);
+        background:var(--panel);
+        overflow:hidden;
+      }
+      .cardHead{
+        padding:8px 8px;
+        border-bottom:1px solid var(--line);
+        display:flex;
+        flex-direction:row;
+        align-items:center;
+        justify-content:space-between;
+        gap:8px;
+      }
+      .cardBody{ padding:8px; }
+      .list{
+        max-height: 260px;
+        overflow:auto;
+      }
+      .rowItem{
+        padding:7px 8px;
+        border-top:1px solid var(--line);
+        cursor:pointer;
+      }
+      .rowItem:hover{ background:var(--soft); }
+      .rowItem.active{ background:#f3f4f6; }
+      .rowTitle{ font-size:12.5px; line-height:1.2; }
+      .rowSub{ font-size:11px; color:var(--muted); margin-top:2px; }
+      .grid2{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:6px;
+      }
+      .grid3{
+        display:grid;
+        grid-template-columns:1fr 1fr 1fr;
+        gap:6px;
+      }
+      .field{ margin-bottom:6px; }
+      .field label{
+        display:block;
+        font-size:11px;
+        color:var(--muted);
+        margin:0 0 5px 2px;
+      }
+      .actions{
+        display:flex;
+        gap:6px;
+        flex-wrap:wrap;
+        margin-top:8px;
+      }
+      .splitLine{
+        height:1px;
+        background:var(--line);
+        margin:10px 0;
+      }
+      .relHead{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:6px;
+        margin:2px 0 8px;
+      }
+      .relList .mini{
+        display:flex;
+        gap:6px;
+        align-items:center;
+        padding:6px 0;
+        border-top:1px solid var(--line);
+      }
+      .relList .mini:first-child{ border-top:none; padding-top:0; }
+      .relList .mini > *{ flex:1; }
+      .relList .mini .btn{ flex:0 0 auto; }
+      .relList .mini .drag{
+        flex:0 0 auto;
+        cursor:move;
+        color:var(--muted);
+        font-size:12px;
+        padding:0 4px;
+        user-select:none;
+      }
+      .thumb{
+        width:36px;height:36px;border-radius:8px;
+        border:1px solid var(--line);
+        background:var(--soft);
+        overflow:hidden;
+        display:flex;align-items:center;justify-content:center;
+      }
+      .thumb img{ width:100%;height:100%;object-fit:cover; display:block; }
+      .fileRow{
+        display:flex; gap:6px; align-items:center;
+      }
+      .fileRow .btn{ white-space:nowrap; }
+      .toast{
+        position:fixed;
+        left:12px;
+        right:12px;
+        bottom:12px;
+        background:#111827;
+        color:#fff;
+        padding:10px 12px;
+        border-radius:12px;
+        font-size:12px;
+        display:none;
+      }
+      @media (max-width: 820px){
+        .layout{ grid-template-columns: 1fr; }
+        .list{ max-height: 260px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="topbar">
+        <select id="entitySelect" style="max-width:220px">
+          <option value="members">Members</option>
+          <option value="publications">Publications</option>
+          <option value="presentations">Presentations</option>
+          <option value="awards">Awards</option>
+          <option value="certificates">Certificates</option>
+        </select>
+
+        <input id="search" type="text" placeholder="Search" />
+
+        <button class="btn" id="newBtn">New</button>
+        <button class="btn" id="refreshBtn">Refresh</button>
+      </div>
+
+      <div class="layout">
+        <!-- LIST -->
+        <div class="card">
+          <div class="cardHead">
+            <div class="hint" id="listHint">—</div>
+            <div class="hint" id="listCount"></div>
+          </div>
+          <div class="list" id="list"></div>
+        </div>
+
+        <!-- EDITOR -->
+        <div class="card">
+          <div class="cardHead">
+            <div class="hint" id="editorHint">Select an item</div>
+            <div class="actions">
+              <button class="btn primary" id="saveBtn" disabled>Save</button>
+              <button class="btn danger" id="deleteBtn" disabled>Delete</button>
+            </div>
+          </div>
+
+          <div class="cardBody">
+            <div id="editor"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+      // ---- State ----
+      var S = {
+        entity: "members",
+        rows: [],
+        activeId: null,
+        activeRow: null,
+        bootstrap: null,
+        loadingMembers: false,
+        pending: {
+          publication_authors: [],
+          publication_links: [],
+          presentation_authors: [],
+          award_recipients: [],
+          award_publications: [],
+          certificate_holders: []
+        },
+        // related caches
+        all: {
+          publication_links: [],
+          publication_authors: [],
+          presentation_authors: [],
+          award_recipients: [],
+          award_publications: [],
+          certificate_holders: []
+        }
+      };
+
+      var EL = {
+        entitySelect: document.getElementById("entitySelect"),
+        search: document.getElementById("search"),
+        newBtn: document.getElementById("newBtn"),
+        refreshBtn: document.getElementById("refreshBtn"),
+        list: document.getElementById("list"),
+        listHint: document.getElementById("listHint"),
+        listCount: document.getElementById("listCount"),
+        editor: document.getElementById("editor"),
+        editorHint: document.getElementById("editorHint"),
+        saveBtn: document.getElementById("saveBtn"),
+        deleteBtn: document.getElementById("deleteBtn"),
+        toast: document.getElementById("toast")
+      };
+
+      // ---- Utilities ----
+      function toast(msg) {
+        EL.toast.textContent = msg;
+        EL.toast.style.display = "block";
+        clearTimeout(toast._t);
+        toast._t = setTimeout(function () { EL.toast.style.display = "none"; }, 2200);
+      }
+
+      function run(fn, args, onSuccess, onFailure) {
+        var runner = google.script.run
+          .withSuccessHandler(function (res) {
+            if (onSuccess) onSuccess(res);
+          })
+          .withFailureHandler(function (err) {
+            if (onFailure) onFailure(err);
+          });
+        runner[fn].apply(runner, args || []);
+      }
+
+      function qsa(root, sel) {
+        return Array.prototype.slice.call(root.querySelectorAll(sel));
+      }
+      function esc(s) {
+        var str = String(s == null ? "" : s);
+        return str.replace(/[&<>"']/g, function (m) {
+          return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[m];
+        });
+      }
+      function isOk(res) {
+        return !(res && res.ok === false);
+      }
+      function getData(res) {
+        return (res && typeof res === "object" && res.hasOwnProperty("data")) ? res.data : res;
+      }
+      function errMsg(err, fallback) {
+        if (err && err.message) return String(err.message);
+        return fallback || "Request failed";
+      }
+      function hasRequiredRelations(entity, parentId) {
+        if (entity === "publications") {
+          if (parentId && (S.all.publication_authors || []).some(function (x) { return String(x.publication_id) === String(parentId); })) return true;
+          return (S.pending.publication_authors || []).some(function (x) { return x.person_id; });
+        }
+        if (entity === "presentations") {
+          if (parentId && (S.all.presentation_authors || []).some(function (x) { return String(x.presentation_id) === String(parentId); })) return true;
+          return (S.pending.presentation_authors || []).some(function (x) { return x.person_id; });
+        }
+        if (entity === "awards") {
+          if (parentId && (S.all.award_recipients || []).some(function (x) { return String(x.award_id) === String(parentId); })) return true;
+          return (S.pending.award_recipients || []).some(function (x) { return x.person_id; });
+        }
+        if (entity === "certificates") {
+          if (parentId && (S.all.certificate_holders || []).some(function (x) { return String(x.certificate_id) === String(parentId); })) return true;
+          return (S.pending.certificate_holders || []).some(function (x) { return x.person_id; });
+        }
+        return true;
+      }
+      function pendingValidationError(entity) {
+        if (entity === "publications") {
+          if ((S.pending.publication_authors || []).some(function (x) { return !x.person_id; })) return "Select an author";
+        }
+        if (entity === "presentations") {
+          if ((S.pending.presentation_authors || []).some(function (x) { return !x.person_id; })) return "Select an author";
+        }
+        if (entity === "awards") {
+          if ((S.pending.award_recipients || []).some(function (x) { return !x.person_id; })) return "Select a recipient";
+          if ((S.pending.award_publications || []).some(function (x) { return !x.publication_id; })) return "Select a publication";
+        }
+        if (entity === "certificates") {
+          if ((S.pending.certificate_holders || []).some(function (x) { return !x.person_id; })) return "Select a holder";
+        }
+        return "";
+      }
+      function ensureSaved(done) {
+        if (S.activeRow && S.activeRow.id) {
+          if (done) done(S.activeRow.id);
+          return;
+        }
+        var payload = collectFields();
+        delete payload.id;
+        toast("Saving…");
+        run("communityUpsert", [S.entity, payload], function (res) {
+          if (!isOk(res)) {
+            toast(errMsg(res && res.error, "Save failed"));
+            return;
+          }
+          var saved = getData(res);
+          if (!saved || !saved.id) {
+            toast("Save failed");
+            return;
+          }
+          S.activeId = saved.id;
+          S.activeRow = saved;
+          loadEntity(S.entity, function () {
+            selectRow(saved.id);
+            if (done) done(saved.id);
+          });
+        }, function (err) {
+          console.error(err);
+          toast(errMsg(err, "Save failed"));
+        });
+      }
+      function syncDraft() {
+        if (!EL.editor) return;
+        var draft = collectFields();
+        if (S.activeRow && S.activeRow.id) {
+          draft.id = S.activeRow.id;
+        } else {
+          delete draft.id;
+        }
+        S.activeRow = draft;
+      }
+      function enableDragSort(container, onReorder) {
+        if (!container) return;
+        var dragEl = null;
+        qsa(container, ".mini").forEach(function (item) {
+          item.setAttribute("draggable", "true");
+          item.addEventListener("dragstart", function (e) {
+            dragEl = item;
+            if (e.dataTransfer) {
+              e.dataTransfer.effectAllowed = "move";
+              try { e.dataTransfer.setData("text/plain", ""); } catch (err) {}
+            }
+          });
+          item.addEventListener("dragover", function (e) {
+            e.preventDefault();
+            if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+          });
+          item.addEventListener("drop", function (e) {
+            e.preventDefault();
+            if (!dragEl || dragEl === item) return;
+            if (dragEl.compareDocumentPosition(item) & 4) {
+              item.parentNode.insertBefore(dragEl, item);
+            } else {
+              item.parentNode.insertBefore(dragEl, item.nextSibling);
+            }
+            if (onReorder) onReorder();
+          });
+          item.addEventListener("dragend", function () {
+            dragEl = null;
+          });
+        });
+      }
+
+      function pickLabel(entity, row) {
+        if (!row) return "";
+        switch (entity) {
+          case "members":
+            return [row.last_name, row.first_name].filter(Boolean).join(", ") || row.id;
+          case "publications":
+            return row.title || row.id;
+          case "presentations":
+            return row.title || row.id;
+          case "awards":
+            return row.award || row.id;
+          case "certificates":
+            return row.certificate || row.id;
+          default:
+            return row.id || "";
+        }
+      }
+
+      function pickSub(entity, row) {
+        if (!row) return "";
+        switch (entity) {
+          case "members":
+            return [row.specialization, row.course].filter(Boolean).join(" • ");
+          case "publications":
+            return row.publishing_date ? String(row.publishing_date) : (row.field_of_study || "");
+          case "presentations":
+            return row.presentation_date ? String(row.presentation_date) : (row.conference_name || "");
+          case "awards":
+            return row.awarded_date ? String(row.awarded_date) : (row.awarded_by || "");
+          case "certificates":
+            return row.certified_date ? String(row.certified_date) : (row.certified_by || "");
+          default:
+            return "";
+        }
+      }
+
+      function normalizeDateForInput(v) {
+        if (!v) return "";
+        // If Apps Script returned a Date, it serializes to string; if already yyyy-mm-dd keep.
+        var s = String(v);
+        var m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (m) return m[1] + "-" + m[2] + "-" + m[3];
+        // Try parse
+        var d = new Date(s);
+        if (!isNaN(d.getTime())) {
+          var yyyy = d.getFullYear();
+          var mm = String(d.getMonth() + 1);
+          var dd = String(d.getDate());
+          if (mm.length < 2) mm = "0" + mm;
+          if (dd.length < 2) dd = "0" + dd;
+          return yyyy + "-" + mm + "-" + dd;
+        }
+        return "";
+      }
+
+      function fileToBase64(file, onSuccess, onFailure) {
+        var r = new FileReader();
+        r.onload = function () { if (onSuccess) onSuccess(r.result); };
+        r.onerror = function (e) { if (onFailure) onFailure(e); };
+        r.readAsDataURL(file);
+      }
+
+      // ---- Boot ----
+      function boot() {
+        run("communityBootstrap", [], function (res) {
+          if (!isOk(res)) {
+            toast(errMsg(res && res.error, "Failed to load"));
+            return;
+          }
+          S.bootstrap = getData(res);
+          loadEntity(S.entity);
+        }, function (err) {
+          console.error(err);
+          toast(errMsg(err, "Failed to load"));
+        });
+      }
+
+      // ---- Data loading ----
+      function loadEntity(entity, done) {
+        S.entity = entity;
+        S.activeId = null;
+        S.activeRow = null;
+        S.pending.publication_links = [];
+        S.pending.publication_authors = [];
+        S.pending.presentation_authors = [];
+        S.pending.award_recipients = [];
+        S.pending.award_publications = [];
+        S.pending.certificate_holders = [];
+
+        EL.editorHint.textContent = "Select an item";
+        EL.saveBtn.disabled = true;
+        EL.deleteBtn.disabled = true;
+        EL.editor.innerHTML = "";
+
+        EL.listHint.textContent = entity;
+        EL.search.value = "";
+
+        run("communityList", [entity], function (res) {
+          if (!isOk(res)) {
+            toast(errMsg(res && res.error, "List failed"));
+            return;
+          }
+          var listData = getData(res) || [];
+          S.rows = listData.slice();
+          renderList();
+          if (done) done();
+          // Related tables for detail editors (fetch after list renders)
+          loadRelatedCaches(entity, function () {
+            if (S.activeRow) renderEditor();
+          });
+        }, function (err) {
+          console.error(err);
+          toast(errMsg(err, "List failed"));
+        });
+      }
+
+      function loadRelatedCaches(entity, done) {
+        // Only fetch what we might need for this entity
+        var wants = [];
+        if (entity === "publications") wants = ["publication_links", "publication_authors"];
+        if (entity === "presentations") wants = ["presentation_authors"];
+        if (entity === "awards") wants = ["award_recipients", "award_publications"];
+        if (entity === "certificates") wants = ["certificate_holders"];
+
+        var i = 0;
+        function next() {
+          if (i >= wants.length) {
+            if (done) done();
+            return;
+          }
+          var t = wants[i++];
+          run("communityList", [t], function (r) {
+            S.all[t] = (r && r.ok && r.data) ? r.data : [];
+            next();
+          }, function () {
+            S.all[t] = [];
+            next();
+          });
+        }
+        next();
+      }
+
+      function renderList() {
+        var term = EL.search.value.trim().toLowerCase();
+        var filtered = term
+          ? S.rows.filter(function (r) {
+              return (pickLabel(S.entity, r) + " " + pickSub(S.entity, r)).toLowerCase().indexOf(term) !== -1;
+            })
+          : S.rows;
+
+        EL.listCount.textContent = String(filtered.length);
+
+        filtered.sort(function (a, b) {
+          return String(pickLabel(S.entity, a)).localeCompare(String(pickLabel(S.entity, b)));
+        });
+
+        var html = [];
+        for (var i = 0; i < filtered.length; i++) {
+          var r = filtered[i];
+          var active = r.id === S.activeId ? "active" : "";
+          html.push('<div class="rowItem ' + active + '" data-id="' + esc(r.id) + '">');
+          html.push('<div class="rowTitle">' + esc(pickLabel(S.entity, r)) + "</div>");
+          html.push('<div class="rowSub">' + esc(pickSub(S.entity, r)) + "</div>");
+          html.push("</div>");
+        }
+        EL.list.innerHTML = html.join("");
+
+        qsa(EL.list, ".rowItem").forEach(function (el) {
+          el.addEventListener("click", function () { selectRow(el.getAttribute("data-id")); });
+        });
+      }
+
+      function selectRow(id) {
+        S.activeId = id;
+        run("communityGet", [S.entity, id], function (res) {
+          if (!isOk(res)) {
+            toast(errMsg(res && res.error, "Get failed"));
+            return;
+          }
+          var rowData = getData(res);
+          S.activeRow = rowData || { id: id };
+          EL.saveBtn.disabled = false;
+          EL.deleteBtn.disabled = false;
+          renderList();
+          renderEditor();
+        }, function (err) {
+          console.error(err);
+          toast(errMsg(err, "Get failed"));
+        });
+      }
+
+      function newRowTemplate(entity) {
+        switch (entity) {
+          case "members":
+            return {
+              id: "",
+              last_name: "",
+              first_name: "",
+              image: "",
+              specialization: "",
+              course: "",
+              graduation_ay: "",
+              educational_attainment: "",
+              member_since: "",
+              associated_institutes: "",
+              bionotes: "",
+              email: "",
+              type: "member"
+              // status hidden / auto
+            };
+          case "publications":
+            return {
+              id: "",
+              title: "",
+              publishing_date: "",
+              description: "",
+              field_of_study: "",
+              abstract: "",
+              institute: ""
+            };
+          case "presentations":
+            return {
+              id: "",
+              title: "",
+              conference_name: "",
+              presentation_date: "",
+              description: ""
+            };
+          case "awards":
+            return {
+              id: "",
+              award: "",
+              image: "",
+              awarded_by: "",
+              awarded_date: ""
+            };
+          case "certificates":
+            return {
+              id: "",
+              certificate: "",
+              image: "",
+              certified_by: "",
+              certified_date: ""
+            };
+          default:
+            return { id: "" };
+        }
+      }
+
+      // ---- Editor rendering ----
+      function renderEditor() {
+        var e = S.entity;
+        var row = S.activeRow || null;
+        if (!row) { EL.editor.innerHTML = ""; return; }
+
+        EL.editorHint.textContent = row.id ? pickLabel(e, row) : "New";
+
+        if (e === "members") return renderMembersEditor(row);
+        if (e === "publications") return renderPublicationsEditor(row);
+        if (e === "presentations") return renderPresentationsEditor(row);
+        if (e === "awards") return renderAwardsEditor(row);
+        if (e === "certificates") return renderCertificatesEditor(row);
+
+        EL.editor.innerHTML = "";
+      }
+
+      function renderMembersEditor(row) {
+        var memberTypes = (S.bootstrap && S.bootstrap.memberTypeValues) ? S.bootstrap.memberTypeValues : ["member", "alumni"];
+        var typeOptionsArr = [];
+        for (var i = 0; i < memberTypes.length; i++) {
+          var v = memberTypes[i];
+          var selected = String(row.type || "").toLowerCase() === String(v).toLowerCase() ? "selected" : "";
+          typeOptionsArr.push('<option value="' + esc(v) + '" ' + selected + ">" + esc(v) + "</option>");
+        }
+        var typeOptions = typeOptionsArr.join("");
+
+        var html = [];
+        html.push('<div class="grid2">');
+        html.push('  <div class="field"><label>Last name</label><input data-k="last_name" value="' + esc(row.last_name) + '" /></div>');
+        html.push('  <div class="field"><label>First name</label><input data-k="first_name" value="' + esc(row.first_name) + '" /></div>');
+        html.push("</div>");
+        html.push('<div class="grid2">');
+        html.push('  <div class="field"><label>Type</label><select data-k="type">' + typeOptions + "</select></div>");
+        html.push('  <div class="field"><label>Email</label><input data-k="email" value="' + esc(row.email) + '" /></div>');
+        html.push("</div>");
+        html.push('<div class="field"><label>Image</label>');
+        html.push('  <div class="fileRow">');
+        html.push('    <div class="thumb" id="memberThumb">' + (row.image ? '<img src="' + esc(row.image) + '" />' : "") + "</div>");
+        html.push('    <input type="file" id="memberImageFile" accept="image/*" />');
+        html.push('    <button class="btn small" id="memberUploadBtn">Upload</button>');
+        html.push("  </div>");
+        html.push('  <input type="hidden" data-k="image" value="' + esc(row.image) + '" />');
+        html.push("</div>");
+        html.push('<div class="grid2">');
+        html.push('  <div class="field"><label>Specialization</label><input data-k="specialization" value="' + esc(row.specialization) + '" /></div>');
+        html.push('  <div class="field"><label>Course</label><input data-k="course" value="' + esc(row.course) + '" /></div>');
+        html.push("</div>");
+        html.push('<div class="grid3">');
+        html.push('  <div class="field"><label>Graduation AY</label><input data-k="graduation_ay" value="' + esc(row.graduation_ay) + '" /></div>');
+        html.push('  <div class="field"><label>Educational attainment</label><input data-k="educational_attainment" value="' + esc(row.educational_attainment) + '" /></div>');
+        html.push('  <div class="field"><label>Member since</label><input data-k="member_since" value="' + esc(row.member_since) + '" /></div>');
+        html.push("</div>");
+        html.push('<div class="field"><label>Associated institutes</label><input data-k="associated_institutes" value="' + esc(row.associated_institutes) + '" /></div>');
+        html.push('<div class="field"><label>Bio</label><textarea data-k="bionotes">' + esc(row.bionotes) + "</textarea></div>");
+        EL.editor.innerHTML = html.join("");
+
+        document.getElementById("memberUploadBtn").addEventListener("click", function () {
+          var fileEl = document.getElementById("memberImageFile");
+          var f = fileEl.files && fileEl.files[0];
+          var last = getField("last_name");
+          var first = getField("first_name");
+          if (!f) return toast("Choose an image");
+          if (!last || !first) return toast("Fill last + first name first");
+
+          toast("Uploading…");
+          fileToBase64(f, function (dataUrl) {
+            run("uploadMemberImage", [dataUrl, f.type, last, first], function (res) {
+              if (!isOk(res)) {
+                toast(errMsg(res && res.error, "Upload failed"));
+                return;
+              }
+              var upData = getData(res) || {};
+              setField("image", upData.url);
+              document.getElementById("memberThumb").innerHTML = '<img src="' + esc(upData.url) + '" />';
+              toast("Uploaded");
+            }, function (err) {
+              console.error(err);
+              toast(errMsg(err, "Upload failed"));
+            });
+          }, function (err) {
+            console.error(err);
+            toast(errMsg(err, "Upload failed"));
+          });
+        });
+      }
+
+      function renderPublicationsEditor(row) {
+        if (!row.id) {
+          S.pending.publication_authors = S.pending.publication_authors || [];
+          S.pending.publication_links = S.pending.publication_links || [];
+        }
+        var links = (S.all.publication_links || []).filter(function (x) { return String(x.publication_id) === String(row.id); });
+        var authors = (S.all.publication_authors || []).filter(function (x) { return String(x.publication_id) === String(row.id); });
+        authors.sort(function (a, b) { return (Number(a.author_order) || 0) - (Number(b.author_order) || 0); });
+
+        var html = [];
+        html.push('<div class="field"><label>Title</label><input data-k="title" value="' + esc(row.title) + '" /></div>');
+        html.push('<div class="grid2">');
+        html.push('  <div class="field"><label>Publishing date</label><input data-k="publishing_date" type="date" value="' + esc(normalizeDateForInput(row.publishing_date)) + '" /></div>');
+        html.push('  <div class="field"><label>Field</label><input data-k="field_of_study" value="' + esc(row.field_of_study) + '" /></div>');
+        html.push("</div>");
+        html.push('<div class="grid2">');
+        html.push('  <div class="field"><label>Institute</label><input data-k="institute" value="' + esc(row.institute) + '" /></div>');
+        html.push('  <div class="field"><label>Description</label><input data-k="description" value="' + esc(row.description) + '" /></div>');
+        html.push("</div>");
+        html.push('<div class="field"><label>Abstract</label><textarea data-k="abstract">' + esc(row.abstract) + "</textarea></div>");
+        html.push('<div class="splitLine"></div>');
+        html.push('<div class="relHead"><div class="hint">Authors</div><button class="btn small" id="addPubAuthorBtn">Add</button></div>');
+        html.push('<div class="relList" id="pubAuthors"></div>');
+        html.push('<div class="splitLine"></div>');
+        html.push('<div class="relHead"><div class="hint">Links</div><button class="btn small" id="addPubLinkBtn">Add</button></div>');
+        html.push('<div class="relList" id="pubLinks"></div>');
+        EL.editor.innerHTML = html.join("");
+
+        renderPublicationAuthors(authors);
+        renderPublicationLinks(links);
+
+        document.getElementById("addPubAuthorBtn").addEventListener("click", function () {
+          if (!row.id) {
+            syncDraft();
+            var nextOrder = (S.pending.publication_authors.length ? S.pending.publication_authors.length : 0) + 1;
+            S.pending.publication_authors.push({ id: "__p_pub_author__" + Date.now() + "_" + nextOrder, person_id: "", author_order: nextOrder });
+            renderEditor();
+            return;
+          }
+          ensureSaved(function (parentId) {
+            var maxOrder = 0;
+            for (var i = 0; i < authors.length; i++) {
+              var n = Number(authors[i].author_order) || 0;
+              if (n > maxOrder) maxOrder = n;
+            }
+            var nextOrder = maxOrder + 1;
+            var rec = { publication_id: parentId, person_id: "", author_order: nextOrder };
+            run("communityUpsert", ["publication_authors", rec], function (r) {
+              if (!isOk(r)) return toast(errMsg(r && r.error, "Failed"));
+              loadRelatedCaches("publications", function () { renderEditor(); });
+            }, function (err) {
+              console.error(err);
+              toast(errMsg(err, "Failed"));
+            });
+          });
+        });
+
+        document.getElementById("addPubLinkBtn").addEventListener("click", function () {
+          if (!row.id) {
+            syncDraft();
+            S.pending.publication_links.push({ id: "__p_pub_link__" + Date.now(), label: "", url: "", sort: "" });
+            renderEditor();
+            return;
+          }
+          ensureSaved(function (parentId) {
+            var rec = { publication_id: parentId, label: "", url: "", sort: "" };
+            run("communityUpsert", ["publication_links", rec], function (r) {
+              if (!isOk(r)) return toast(errMsg(r && r.error, "Failed"));
+              loadRelatedCaches("publications", function () { renderEditor(); });
+            }, function (err) {
+              console.error(err);
+              toast(errMsg(err, "Failed"));
+            });
+          });
+        });
+      }
+
+      function memberSelectOptions(selectedId) {
+        var members = (S.bootstrap && S.bootstrap.members) ? S.bootstrap.members : [];
+        if (!members.length && !S.loadingMembers) {
+          S.loadingMembers = true;
+          run("communityList", ["members"], function (res) {
+            S.loadingMembers = false;
+            var data = getData(res) || [];
+            S.bootstrap = S.bootstrap || {};
+            S.bootstrap.members = data.map(function (m) {
+              return {
+                id: m.id,
+                label: [m.last_name, m.first_name].filter(Boolean).join(", ") || m.id,
+                type: m.type || "",
+                status: m.status || ""
+              };
+            });
+            renderEditor();
+          }, function () {
+            S.loadingMembers = false;
+          });
+        }
+        var sorted = members.slice().sort(function (a, b) { return String(a.label).localeCompare(String(b.label)); });
+        var out = ['<option value=""></option>'];
+        for (var i = 0; i < sorted.length; i++) {
+          var m = sorted[i];
+          var sel = String(m.id) === String(selectedId) ? "selected" : "";
+          out.push('<option value="' + esc(m.id) + '" ' + sel + ">" + esc(m.label) + "</option>");
+        }
+        return out.join("");
+      }
+
+      function publicationSelectOptions(selectedId) {
+        var pubs = (S.bootstrap && S.bootstrap.publications) ? S.bootstrap.publications : [];
+        var sorted = pubs.slice().sort(function (a, b) { return String(a.label).localeCompare(String(b.label)); });
+        var out = ['<option value=""></option>'];
+        for (var i = 0; i < sorted.length; i++) {
+          var p = sorted[i];
+          var sel = String(p.id) === String(selectedId) ? "selected" : "";
+          out.push('<option value="' + esc(p.id) + '" ' + sel + ">" + esc(p.label) + "</option>");
+        }
+        return out.join("");
+      }
+
+      function renderPublicationAuthors(authors) {
+        var wrap = document.getElementById("pubAuthors");
+        if (!wrap) return;
+        if ((!authors || !authors.length) && S.activeRow && !S.activeRow.id) {
+          authors = S.pending.publication_authors || [];
+        }
+
+        if (authors.length) {
+          var html = [];
+          for (var i = 0; i < authors.length; i++) {
+            var a = authors[i];
+            html.push('<div class="mini" data-id="' + esc(a.id) + '">');
+            html.push('  <span class="drag">≡</span>');
+            html.push('  <select class="pa-person">' + memberSelectOptions(a.person_id) + "</select>");
+            html.push('  <button class="btn small danger pa-del">×</button>');
+            html.push("</div>");
+          }
+          wrap.innerHTML = html.join("");
+        } else {
+          wrap.innerHTML = '<div class="hint">—</div>';
+        }
+
+        qsa(wrap, ".mini").forEach(function (rowEl) {
+          var id = rowEl.getAttribute("data-id");
+          rowEl.querySelector(".pa-person").addEventListener("change", function (ev) {
+            if (String(id).indexOf("__p_") === 0) {
+              for (var i = 0; i < S.pending.publication_authors.length; i++) {
+                if (S.pending.publication_authors[i].id === id) S.pending.publication_authors[i].person_id = ev.target.value;
+              }
+              return;
+            }
+            run("communityUpsert", ["publication_authors", { id: id, person_id: ev.target.value }], function () {
+              loadRelatedCaches("publications");
+            }, function (err) { console.error(err); });
+          });
+          rowEl.querySelector(".pa-del").addEventListener("click", function () {
+            if (String(id).indexOf("__p_") === 0) {
+              S.pending.publication_authors = (S.pending.publication_authors || []).filter(function (x) { return x.id !== id; });
+              renderEditor();
+              return;
+            }
+            run("communityDelete", ["publication_authors", id], function () {
+              loadRelatedCaches("publications", function () { renderEditor(); });
+            }, function (err) { console.error(err); });
+          });
+        });
+        enableDragSort(wrap, function () {
+          var ids = qsa(wrap, ".mini").map(function (el) { return el.getAttribute("data-id"); });
+          if (S.activeRow && !S.activeRow.id) {
+            var nextPending = [];
+            for (var i = 0; i < ids.length; i++) {
+              for (var j = 0; j < S.pending.publication_authors.length; j++) {
+                if (S.pending.publication_authors[j].id === ids[i]) nextPending.push(S.pending.publication_authors[j]);
+              }
+            }
+            for (var k = 0; k < nextPending.length; k++) nextPending[k].author_order = k + 1;
+            S.pending.publication_authors = nextPending;
+          } else {
+            for (var idx = 0; idx < ids.length; idx++) {
+              if (String(ids[idx]).indexOf("__p_") === 0) continue;
+              run("communityUpsert", ["publication_authors", { id: ids[idx], author_order: idx + 1 }]);
+            }
+          }
+        });
+      }
+
+      function renderPublicationLinks(links) {
+        var wrap = document.getElementById("pubLinks");
+        if (!wrap) return;
+        if ((!links || !links.length) && S.activeRow && !S.activeRow.id) {
+          links = S.pending.publication_links || [];
+        }
+
+        if (links.length) {
+          var html = [];
+          for (var i = 0; i < links.length; i++) {
+            var l = links[i];
+            html.push('<div class="mini" data-id="' + esc(l.id) + '">');
+            html.push('  <span class="drag">≡</span>');
+            html.push('  <input class="pl-label" value="' + esc(l.label) + '" placeholder="label" />');
+            html.push('  <input class="pl-url" value="' + esc(l.url) + '" placeholder="url" />');
+            html.push('  <button class="btn small danger pl-del">×</button>');
+            html.push("</div>");
+          }
+          wrap.innerHTML = html.join("");
+        } else {
+          wrap.innerHTML = '<div class="hint">—</div>';
+        }
+
+        qsa(wrap, ".mini").forEach(function (rowEl) {
+          var id = rowEl.getAttribute("data-id");
+          function bind(cls, key) {
+            rowEl.querySelector(cls).addEventListener("change", function (ev) {
+              if (String(id).indexOf("__p_") === 0) {
+                for (var i = 0; i < S.pending.publication_links.length; i++) {
+                  if (S.pending.publication_links[i].id === id) S.pending.publication_links[i][key] = ev.target.value;
+                }
+                return;
+              }
+              var obj = { id: id };
+              obj[key] = ev.target.value;
+              run("communityUpsert", ["publication_links", obj], function () {
+                loadRelatedCaches("publications");
+              }, function (err) { console.error(err); });
+            });
+          }
+          bind(".pl-label", "label");
+          bind(".pl-url", "url");
+
+          rowEl.querySelector(".pl-del").addEventListener("click", function () {
+            if (String(id).indexOf("__p_") === 0) {
+              S.pending.publication_links = (S.pending.publication_links || []).filter(function (x) { return x.id !== id; });
+              renderEditor();
+              return;
+            }
+            run("communityDelete", ["publication_links", id], function () {
+              loadRelatedCaches("publications", function () { renderEditor(); });
+            }, function (err) { console.error(err); });
+          });
+        });
+        enableDragSort(wrap, function () {
+          var ids = qsa(wrap, ".mini").map(function (el) { return el.getAttribute("data-id"); });
+          if (S.activeRow && !S.activeRow.id) {
+            var nextPending = [];
+            for (var i = 0; i < ids.length; i++) {
+              for (var j = 0; j < S.pending.publication_links.length; j++) {
+                if (S.pending.publication_links[j].id === ids[i]) nextPending.push(S.pending.publication_links[j]);
+              }
+            }
+            for (var k = 0; k < nextPending.length; k++) nextPending[k].sort = k + 1;
+            S.pending.publication_links = nextPending;
+          } else {
+            for (var idx = 0; idx < ids.length; idx++) {
+              if (String(ids[idx]).indexOf("__p_") === 0) continue;
+              run("communityUpsert", ["publication_links", { id: ids[idx], sort: idx + 1 }]);
+            }
+          }
+        });
+      }
+
+      function renderPresentationsEditor(row) {
+        if (!row.id) {
+          S.pending.presentation_authors = S.pending.presentation_authors || [];
+        }
+        var authors = (S.all.presentation_authors || []).filter(function (x) { return String(x.presentation_id) === String(row.id); });
+
+        var html = [];
+        html.push('<div class="field"><label>Title</label><input data-k="title" value="' + esc(row.title) + '" /></div>');
+        html.push('<div class="grid2">');
+        html.push('  <div class="field"><label>Conference</label><input data-k="conference_name" value="' + esc(row.conference_name) + '" /></div>');
+        html.push('  <div class="field"><label>Date</label><input data-k="presentation_date" type="date" value="' + esc(normalizeDateForInput(row.presentation_date)) + '" /></div>');
+        html.push("</div>");
+        html.push('<div class="field"><label>Description</label><textarea data-k="description">' + esc(row.description) + "</textarea></div>");
+        html.push('<div class="splitLine"></div>');
+        html.push('<div class="relHead"><div class="hint">Authors</div><button class="btn small" id="addPresAuthorBtn">Add</button></div>');
+        html.push('<div class="relList" id="presAuthors"></div>');
+        EL.editor.innerHTML = html.join("");
+
+        var wrap = document.getElementById("presAuthors");
+        if (!authors.length && S.activeRow && !S.activeRow.id) {
+          authors = S.pending.presentation_authors || [];
+        }
+        if (authors.length) {
+          var ahtml = [];
+          for (var i = 0; i < authors.length; i++) {
+            var a = authors[i];
+            ahtml.push('<div class="mini" data-id="' + esc(a.id) + '">');
+            ahtml.push('  <span class="drag">≡</span>');
+            ahtml.push('  <select class="pra-person">' + memberSelectOptions(a.person_id) + "</select>");
+            ahtml.push('  <button class="btn small danger pra-del">×</button>');
+            ahtml.push("</div>");
+          }
+          wrap.innerHTML = ahtml.join("");
+        } else {
+          wrap.innerHTML = '<div class="hint">—</div>';
+        }
+
+        qsa(wrap, ".mini").forEach(function (rowEl) {
+          var id = rowEl.getAttribute("data-id");
+          rowEl.querySelector(".pra-person").addEventListener("change", function (ev) {
+            if (String(id).indexOf("__p_") === 0) {
+              for (var i = 0; i < S.pending.presentation_authors.length; i++) {
+                if (S.pending.presentation_authors[i].id === id) S.pending.presentation_authors[i].person_id = ev.target.value;
+              }
+              return;
+            }
+            run("communityUpsert", ["presentation_authors", { id: id, person_id: ev.target.value }], function () {
+              loadRelatedCaches("presentations");
+            }, function (err) { console.error(err); });
+          });
+          rowEl.querySelector(".pra-del").addEventListener("click", function () {
+            if (String(id).indexOf("__p_") === 0) {
+              S.pending.presentation_authors = (S.pending.presentation_authors || []).filter(function (x) { return x.id !== id; });
+              renderEditor();
+              return;
+            }
+            run("communityDelete", ["presentation_authors", id], function () {
+              loadRelatedCaches("presentations", function () { renderEditor(); });
+            }, function (err) { console.error(err); });
+          });
+        });
+        enableDragSort(wrap, function () {
+          if (S.activeRow && !S.activeRow.id) {
+            var ids = qsa(wrap, ".mini").map(function (el) { return el.getAttribute("data-id"); });
+            var nextPending = [];
+            for (var i = 0; i < ids.length; i++) {
+              for (var j = 0; j < S.pending.presentation_authors.length; j++) {
+                if (S.pending.presentation_authors[j].id === ids[i]) nextPending.push(S.pending.presentation_authors[j]);
+              }
+            }
+            S.pending.presentation_authors = nextPending;
+          }
+        });
+
+        document.getElementById("addPresAuthorBtn").addEventListener("click", function () {
+          if (!row.id) {
+            syncDraft();
+            S.pending.presentation_authors.push({ id: "__p_pres_author__" + Date.now(), person_id: "" });
+            renderEditor();
+            return;
+          }
+          ensureSaved(function (parentId) {
+            var rec = { presentation_id: parentId, person_id: "" };
+            run("communityUpsert", ["presentation_authors", rec], function (r) {
+              if (!isOk(r)) return toast(errMsg(r && r.error, "Failed"));
+              loadRelatedCaches("presentations", function () { renderEditor(); });
+            }, function (err) {
+              console.error(err);
+              toast(errMsg(err, "Failed"));
+            });
+          });
+        });
+      }
+
+      function renderAwardsEditor(row) {
+        if (!row.id) {
+          S.pending.award_recipients = S.pending.award_recipients || [];
+          S.pending.award_publications = S.pending.award_publications || [];
+        }
+        var recipients = (S.all.award_recipients || []).filter(function (x) { return String(x.award_id) === String(row.id); });
+        var awardPubs = (S.all.award_publications || []).filter(function (x) { return String(x.award_id) === String(row.id); });
+
+        var html = [];
+        html.push('<div class="field"><label>Award</label><input data-k="award" value="' + esc(row.award) + '" /></div>');
+        html.push('<div class="grid2">');
+        html.push('  <div class="field"><label>Awarded by</label><input data-k="awarded_by" value="' + esc(row.awarded_by) + '" /></div>');
+        html.push('  <div class="field"><label>Date</label><input data-k="awarded_date" type="date" value="' + esc(normalizeDateForInput(row.awarded_date)) + '" /></div>');
+        html.push("</div>");
+        html.push('<div class="field"><label>Image</label>');
+        html.push('  <div class="fileRow">');
+        html.push('    <div class="thumb" id="awardThumb">' + (row.image ? '<img src="' + esc(row.image) + '" />' : "") + "</div>");
+        html.push('    <input type="file" id="awardImageFile" accept="image/*" />');
+        html.push('    <button class="btn small" id="awardUploadBtn">Upload</button>');
+        html.push("  </div>");
+        html.push('  <input data-k="image" value="' + esc(row.image) + '" style="margin-top:8px" />');
+        html.push("</div>");
+        html.push('<div class="splitLine"></div>');
+        html.push('<div class="relHead"><div class="hint">Recipients</div><button class="btn small" id="addAwardRecBtn">Add</button></div>');
+        html.push('<div class="relList" id="awardRecipients"></div>');
+        html.push('<div class="splitLine"></div>');
+        html.push('<div class="relHead"><div class="hint">Publications</div><button class="btn small" id="addAwardPubBtn">Add</button></div>');
+        html.push('<div class="relList" id="awardPubs"></div>');
+        EL.editor.innerHTML = html.join("");
+
+        var rWrap = document.getElementById("awardRecipients");
+        if (!recipients.length && S.activeRow && !S.activeRow.id) {
+          recipients = S.pending.award_recipients || [];
+        }
+        if (recipients.length) {
+          var rhtml = [];
+          for (var i = 0; i < recipients.length; i++) {
+            var a = recipients[i];
+            rhtml.push('<div class="mini" data-id="' + esc(a.id) + '">');
+            rhtml.push('  <span class="drag">≡</span>');
+            rhtml.push('  <select class="ar-person">' + memberSelectOptions(a.person_id) + "</select>");
+            rhtml.push('  <button class="btn small danger ar-del">×</button>');
+            rhtml.push("</div>");
+          }
+          rWrap.innerHTML = rhtml.join("");
+        } else {
+          rWrap.innerHTML = '<div class="hint">—</div>';
+        }
+
+        qsa(rWrap, ".mini").forEach(function (rowEl) {
+          var id = rowEl.getAttribute("data-id");
+          rowEl.querySelector(".ar-person").addEventListener("change", function (ev) {
+            if (String(id).indexOf("__p_") === 0) {
+              for (var i = 0; i < S.pending.award_recipients.length; i++) {
+                if (S.pending.award_recipients[i].id === id) S.pending.award_recipients[i].person_id = ev.target.value;
+              }
+              return;
+            }
+            run("communityUpsert", ["award_recipients", { id: id, person_id: ev.target.value }], function () {
+              loadRelatedCaches("awards");
+            }, function (err) { console.error(err); });
+          });
+          rowEl.querySelector(".ar-del").addEventListener("click", function () {
+            if (String(id).indexOf("__p_") === 0) {
+              S.pending.award_recipients = (S.pending.award_recipients || []).filter(function (x) { return x.id !== id; });
+              renderEditor();
+              return;
+            }
+            run("communityDelete", ["award_recipients", id], function () {
+              loadRelatedCaches("awards", function () { renderEditor(); });
+            }, function (err) { console.error(err); });
+          });
+        });
+        enableDragSort(rWrap, function () {
+          if (S.activeRow && !S.activeRow.id) {
+            var ids = qsa(rWrap, ".mini").map(function (el) { return el.getAttribute("data-id"); });
+            var nextPending = [];
+            for (var i = 0; i < ids.length; i++) {
+              for (var j = 0; j < S.pending.award_recipients.length; j++) {
+                if (S.pending.award_recipients[j].id === ids[i]) nextPending.push(S.pending.award_recipients[j]);
+              }
+            }
+            S.pending.award_recipients = nextPending;
+          }
+        });
+
+        var pWrap = document.getElementById("awardPubs");
+        if (!awardPubs.length && S.activeRow && !S.activeRow.id) {
+          awardPubs = S.pending.award_publications || [];
+        }
+        if (awardPubs.length) {
+          var phtml = [];
+          for (var j = 0; j < awardPubs.length; j++) {
+            var ap = awardPubs[j];
+            phtml.push('<div class="mini" data-id="' + esc(ap.id) + '">');
+            phtml.push('  <span class="drag">≡</span>');
+            phtml.push('  <select class="ap-pub">' + publicationSelectOptions(ap.publication_id) + "</select>");
+            phtml.push('  <button class="btn small danger ap-del">×</button>');
+            phtml.push("</div>");
+          }
+          pWrap.innerHTML = phtml.join("");
+        } else {
+          pWrap.innerHTML = '<div class="hint">—</div>';
+        }
+
+        qsa(pWrap, ".mini").forEach(function (rowEl) {
+          var id = rowEl.getAttribute("data-id");
+          rowEl.querySelector(".ap-pub").addEventListener("change", function (ev) {
+            if (String(id).indexOf("__p_") === 0) {
+              for (var i = 0; i < S.pending.award_publications.length; i++) {
+                if (S.pending.award_publications[i].id === id) S.pending.award_publications[i].publication_id = ev.target.value;
+              }
+              return;
+            }
+            run("communityUpsert", ["award_publications", { id: id, publication_id: ev.target.value }], function () {
+              loadRelatedCaches("awards");
+            }, function (err) { console.error(err); });
+          });
+          rowEl.querySelector(".ap-del").addEventListener("click", function () {
+            if (String(id).indexOf("__p_") === 0) {
+              S.pending.award_publications = (S.pending.award_publications || []).filter(function (x) { return x.id !== id; });
+              renderEditor();
+              return;
+            }
+            run("communityDelete", ["award_publications", id], function () {
+              loadRelatedCaches("awards", function () { renderEditor(); });
+            }, function (err) { console.error(err); });
+          });
+        });
+        enableDragSort(pWrap, function () {
+          if (S.activeRow && !S.activeRow.id) {
+            var ids = qsa(pWrap, ".mini").map(function (el) { return el.getAttribute("data-id"); });
+            var nextPending = [];
+            for (var i = 0; i < ids.length; i++) {
+              for (var j = 0; j < S.pending.award_publications.length; j++) {
+                if (S.pending.award_publications[j].id === ids[i]) nextPending.push(S.pending.award_publications[j]);
+              }
+            }
+            S.pending.award_publications = nextPending;
+          }
+        });
+
+        document.getElementById("addAwardRecBtn").addEventListener("click", function () {
+          if (!row.id) {
+            syncDraft();
+            S.pending.award_recipients.push({ id: "__p_award_rec__" + Date.now(), person_id: "" });
+            renderEditor();
+            return;
+          }
+          ensureSaved(function (parentId) {
+            var rec = { award_id: parentId, person_id: "" };
+            run("communityUpsert", ["award_recipients", rec], function (r) {
+              if (!isOk(r)) return toast(errMsg(r && r.error, "Failed"));
+              loadRelatedCaches("awards", function () { renderEditor(); });
+            }, function (err) {
+              console.error(err);
+              toast(errMsg(err, "Failed"));
+            });
+          });
+        });
+
+        document.getElementById("addAwardPubBtn").addEventListener("click", function () {
+          if (!row.id) {
+            syncDraft();
+            S.pending.award_publications.push({ id: "__p_award_pub__" + Date.now(), publication_id: "" });
+            renderEditor();
+            return;
+          }
+          ensureSaved(function (parentId) {
+            var rec = { award_id: parentId, publication_id: "" };
+            run("communityUpsert", ["award_publications", rec], function (r) {
+              if (!isOk(r)) return toast(errMsg(r && r.error, "Failed"));
+              loadRelatedCaches("awards", function () { renderEditor(); });
+            }, function (err) {
+              console.error(err);
+              toast(errMsg(err, "Failed"));
+            });
+          });
+        });
+
+        document.getElementById("awardUploadBtn").addEventListener("click", function () {
+          var fileEl = document.getElementById("awardImageFile");
+          var f = fileEl.files && fileEl.files[0];
+          if (!f) return toast("Choose an image");
+
+          var recs = (S.all.award_recipients || []).filter(function (x) { return String(x.award_id) === String(row.id); });
+          var memberId = recs.length ? recs[0].person_id : "";
+          if (!memberId) return toast("Add a recipient first");
+
+          toast("Uploading…");
+          run("communityGet", ["members", memberId], function (mRes) {
+            var mData = getData(mRes) || {};
+            var last = mData.last_name || "";
+            var first = mData.first_name || "";
+            fileToBase64(f, function (dataUrl) {
+              run("uploadAwardImage", [dataUrl, f.type, last, first], function (up) {
+                if (!isOk(up)) {
+                  toast(errMsg(up && up.error, "Upload failed"));
+                  return;
+                }
+                var upData = getData(up) || {};
+                setField("image", upData.url);
+                document.getElementById("awardThumb").innerHTML = '<img src="' + esc(upData.url) + '" />';
+                toast("Uploaded");
+              }, function (err) {
+                console.error(err);
+                toast(errMsg(err, "Upload failed"));
+              });
+            }, function (err) {
+              console.error(err);
+              toast(errMsg(err, "Upload failed"));
+            });
+          }, function (err) {
+            console.error(err);
+            toast(errMsg(err, "Upload failed"));
+          });
+        });
+      }
+
+      function renderCertificatesEditor(row) {
+        if (!row.id) {
+          S.pending.certificate_holders = S.pending.certificate_holders || [];
+        }
+        var holders = (S.all.certificate_holders || []).filter(function (x) { return String(x.certificate_id) === String(row.id); });
+
+        var html = [];
+        html.push('<div class="field"><label>Certificate</label><input data-k="certificate" value="' + esc(row.certificate) + '" /></div>');
+        html.push('<div class="grid2">');
+        html.push('  <div class="field"><label>Certified by</label><input data-k="certified_by" value="' + esc(row.certified_by) + '" /></div>');
+        html.push('  <div class="field"><label>Date</label><input data-k="certified_date" type="date" value="' + esc(normalizeDateForInput(row.certified_date)) + '" /></div>');
+        html.push("</div>");
+        html.push('<div class="field"><label>Image</label>');
+        html.push('  <div class="fileRow">');
+        html.push('    <div class="thumb" id="certThumb">' + (row.image ? '<img src="' + esc(row.image) + '" />' : "") + "</div>");
+        html.push('    <input type="file" id="certImageFile" accept="image/*" />');
+        html.push('    <button class="btn small" id="certUploadBtn">Upload</button>');
+        html.push("  </div>");
+        html.push('  <input data-k="image" value="' + esc(row.image) + '" style="margin-top:8px" />');
+        html.push("</div>");
+        html.push('<div class="splitLine"></div>');
+        html.push('<div class="relHead"><div class="hint">Holders</div><button class="btn small" id="addCertHolderBtn">Add</button></div>');
+        html.push('<div class="relList" id="certHolders"></div>');
+        EL.editor.innerHTML = html.join("");
+
+        var wrap = document.getElementById("certHolders");
+        if (!holders.length && S.activeRow && !S.activeRow.id) {
+          holders = S.pending.certificate_holders || [];
+        }
+        if (holders.length) {
+          var hhtml = [];
+          for (var i = 0; i < holders.length; i++) {
+            var a = holders[i];
+            hhtml.push('<div class="mini" data-id="' + esc(a.id) + '">');
+            hhtml.push('  <span class="drag">≡</span>');
+            hhtml.push('  <select class="ch-person">' + memberSelectOptions(a.person_id) + "</select>");
+            hhtml.push('  <button class="btn small danger ch-del">×</button>');
+            hhtml.push("</div>");
+          }
+          wrap.innerHTML = hhtml.join("");
+        } else {
+          wrap.innerHTML = '<div class="hint">—</div>';
+        }
+
+        qsa(wrap, ".mini").forEach(function (rowEl) {
+          var id = rowEl.getAttribute("data-id");
+          rowEl.querySelector(".ch-person").addEventListener("change", function (ev) {
+            if (String(id).indexOf("__p_") === 0) {
+              for (var i = 0; i < S.pending.certificate_holders.length; i++) {
+                if (S.pending.certificate_holders[i].id === id) S.pending.certificate_holders[i].person_id = ev.target.value;
+              }
+              return;
+            }
+            run("communityUpsert", ["certificate_holders", { id: id, person_id: ev.target.value }], function () {
+              loadRelatedCaches("certificates");
+            }, function (err) { console.error(err); });
+          });
+          rowEl.querySelector(".ch-del").addEventListener("click", function () {
+            if (String(id).indexOf("__p_") === 0) {
+              S.pending.certificate_holders = (S.pending.certificate_holders || []).filter(function (x) { return x.id !== id; });
+              renderEditor();
+              return;
+            }
+            run("communityDelete", ["certificate_holders", id], function () {
+              loadRelatedCaches("certificates", function () { renderEditor(); });
+            }, function (err) { console.error(err); });
+          });
+        });
+        enableDragSort(wrap, function () {
+          if (S.activeRow && !S.activeRow.id) {
+            var ids = qsa(wrap, ".mini").map(function (el) { return el.getAttribute("data-id"); });
+            var nextPending = [];
+            for (var i = 0; i < ids.length; i++) {
+              for (var j = 0; j < S.pending.certificate_holders.length; j++) {
+                if (S.pending.certificate_holders[j].id === ids[i]) nextPending.push(S.pending.certificate_holders[j]);
+              }
+            }
+            S.pending.certificate_holders = nextPending;
+          }
+        });
+
+        document.getElementById("addCertHolderBtn").addEventListener("click", function () {
+          if (!row.id) {
+            syncDraft();
+            S.pending.certificate_holders.push({ id: "__p_cert_hold__" + Date.now(), person_id: "" });
+            renderEditor();
+            return;
+          }
+          ensureSaved(function (parentId) {
+            var rec = { certificate_id: parentId, person_id: "" };
+            run("communityUpsert", ["certificate_holders", rec], function (r) {
+              if (!isOk(r)) return toast(errMsg(r && r.error, "Failed"));
+              loadRelatedCaches("certificates", function () { renderEditor(); });
+            }, function (err) {
+              console.error(err);
+              toast(errMsg(err, "Failed"));
+            });
+          });
+        });
+
+        document.getElementById("certUploadBtn").addEventListener("click", function () {
+          var fileEl = document.getElementById("certImageFile");
+          var f = fileEl.files && fileEl.files[0];
+          if (!f) return toast("Choose an image");
+
+          var holders = (S.all.certificate_holders || []).filter(function (x) { return String(x.certificate_id) === String(row.id); });
+          var memberId = holders.length ? holders[0].person_id : "";
+          if (!memberId) return toast("Add a holder first");
+
+          toast("Uploading…");
+          run("communityGet", ["members", memberId], function (mRes) {
+            var mData = getData(mRes) || {};
+            var last = mData.last_name || "";
+            var first = mData.first_name || "";
+            fileToBase64(f, function (dataUrl) {
+              run("uploadCertificateImage", [dataUrl, f.type, last, first], function (up) {
+                if (!isOk(up)) {
+                  toast(errMsg(up && up.error, "Upload failed"));
+                  return;
+                }
+                var upData = getData(up) || {};
+                setField("image", upData.url);
+                document.getElementById("certThumb").innerHTML = '<img src="' + esc(upData.url) + '" />';
+                toast("Uploaded");
+              }, function (err) {
+                console.error(err);
+                toast(errMsg(err, "Upload failed"));
+              });
+            }, function (err) {
+              console.error(err);
+              toast(errMsg(err, "Upload failed"));
+            });
+          }, function (err) {
+            console.error(err);
+            toast(errMsg(err, "Upload failed"));
+          });
+        });
+      }
+
+      // ---- Form helpers ----
+      function getField(k) {
+        var el = EL.editor.querySelector('[data-k="' + CSS.escape(k) + '"]');
+        return el ? el.value : "";
+      }
+      function setField(k, v) {
+        var el = EL.editor.querySelector('[data-k="' + CSS.escape(k) + '"]');
+        if (el) el.value = (v == null ? "" : v);
+      }
+      function collectFields() {
+        var obj = {};
+        qsa(EL.editor, "[data-k]").forEach(function (el) {
+          var k = el.getAttribute("data-k");
+          obj[k] = el.value;
+        });
+        if (S.activeRow && S.activeRow.id) obj.id = S.activeRow.id; // keep id on update
+        return obj;
+      }
+
+      // ---- Actions ----
+      function onSave() {
+        var payload = collectFields();
+        if (!S.activeRow || !S.activeRow.id) delete payload.id;
+        if (S.entity === "publications" || S.entity === "presentations" || S.entity === "awards" || S.entity === "certificates") {
+          var parentId = (S.activeRow && S.activeRow.id) ? S.activeRow.id : "";
+          var pendingErr = pendingValidationError(S.entity);
+          if (pendingErr) {
+            toast(pendingErr);
+            return;
+          }
+          if (!hasRequiredRelations(S.entity, parentId)) {
+            toast("Add at least one required relation first");
+            return;
+          }
+        }
+        toast("Saving…");
+        run("communityUpsert", [S.entity, payload], function (res) {
+          if (!isOk(res)) {
+            toast(errMsg(res && res.error, "Save failed"));
+            return;
+          }
+          var saved = getData(res);
+          var pending = [];
+          if (saved && saved.id) {
+            if (S.entity === "publications") {
+              pending = (S.pending.publication_authors || []).map(function (p, idx) { return { table: "publication_authors", rec: { publication_id: saved.id, person_id: p.person_id, author_order: idx + 1 } }; })
+                .concat((S.pending.publication_links || []).map(function (p, idx) { return { table: "publication_links", rec: { publication_id: saved.id, label: p.label, url: p.url, sort: p.sort || (idx + 1) } }; }));
+              S.pending.publication_authors = [];
+              S.pending.publication_links = [];
+            }
+            if (S.entity === "presentations") {
+              pending = (S.pending.presentation_authors || []).map(function (p) { return { table: "presentation_authors", rec: { presentation_id: saved.id, person_id: p.person_id } }; });
+              S.pending.presentation_authors = [];
+            }
+            if (S.entity === "awards") {
+              pending = (S.pending.award_recipients || []).map(function (p) { return { table: "award_recipients", rec: { award_id: saved.id, person_id: p.person_id } }; })
+                .concat((S.pending.award_publications || []).map(function (p) { return { table: "award_publications", rec: { award_id: saved.id, publication_id: p.publication_id } }; }));
+              S.pending.award_recipients = [];
+              S.pending.award_publications = [];
+            }
+            if (S.entity === "certificates") {
+              pending = (S.pending.certificate_holders || []).map(function (p) { return { table: "certificate_holders", rec: { certificate_id: saved.id, person_id: p.person_id } }; });
+              S.pending.certificate_holders = [];
+            }
+          }
+
+          function finishSave(errText) {
+            if (errText) toast(errText);
+            loadEntity(S.entity, function () {
+              if (saved && saved.id) selectRow(saved.id);
+              if (!errText) toast("Saved");
+            });
+          }
+          if (!pending.length) {
+            finishSave("");
+            return;
+          }
+          run("communityBulkUpsert", [pending], function (r) {
+            if (!isOk(r)) {
+              finishSave(errMsg(r && r.error, "Save failed"));
+              return;
+            }
+            var data = getData(r) || {};
+            if (data.errors && data.errors.length) {
+              finishSave(data.errors[0].message || "Save failed");
+              return;
+            }
+            finishSave("");
+          }, function (err) {
+            console.error(err);
+            finishSave(errMsg(err, "Save failed"));
+          });
+        }, function (err) {
+          console.error(err);
+          toast(errMsg(err, "Save failed"));
+        });
+      }
+
+      function onDelete() {
+        if (!S.activeRow || !S.activeRow.id) return;
+        var ok = confirm("Delete this item?");
+        if (!ok) return;
+        toast("Deleting…");
+        run("communityDelete", [S.entity, S.activeRow.id], function (r) {
+          if (!isOk(r)) {
+            toast(errMsg(r && r.error, "Delete failed"));
+            return;
+          }
+          loadEntity(S.entity, function () {
+            toast("Deleted");
+          });
+        }, function (err) {
+          console.error(err);
+          toast(errMsg(err, "Delete failed"));
+        });
+      }
+
+      function onNew() {
+        S.activeId = "__new__";
+        S.activeRow = newRowTemplate(S.entity);
+        S.pending.publication_links = [];
+        S.pending.publication_authors = [];
+        S.pending.presentation_authors = [];
+        S.pending.award_recipients = [];
+        S.pending.award_publications = [];
+        S.pending.certificate_holders = [];
+        EL.saveBtn.disabled = false;
+        EL.deleteBtn.disabled = true;
+        renderList();
+        renderEditor();
+      }
+
+      // ---- Wire up ----
+      EL.entitySelect.addEventListener("change", function () {
+        loadEntity(EL.entitySelect.value);
+      });
+      EL.search.addEventListener("input", renderList);
+      EL.refreshBtn.addEventListener("click", function () {
+        loadEntity(S.entity, function () {
+          toast("Refreshed");
+        });
+      });
+      EL.newBtn.addEventListener("click", onNew);
+      EL.saveBtn.addEventListener("click", onSave);
+      EL.deleteBtn.addEventListener("click", onDelete);
+
+      // ---- Start ----
+      boot();
+    </script>
+  </body>
+</html>

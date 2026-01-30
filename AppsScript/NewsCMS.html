@@ -1,0 +1,1092 @@
+<!-- NewsCMS.html -->
+<!doctype html>
+<html>
+  <head>
+    <base target="_top" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      :root{
+        --bg:#ffffff;
+        --fg:#111827;
+        --muted:#6b7280;
+        --line:#e5e7eb;
+        --soft:#f9fafb;
+        --btn:#111827;
+        --btnfg:#ffffff;
+        --danger:#b91c1c;
+        --focus:#2563eb;
+        --radius:12px;
+      }
+      *{box-sizing:border-box}
+      html,body{height:100%}
+      body{
+        margin:0;
+        background:var(--bg);
+        color:var(--fg);
+        font:13px/1.4 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      }
+      a{color:inherit}
+      .wrap{padding:12px 12px 18px}
+      .row{display:flex; gap:8px; align-items:center}
+      .col{display:flex; flex-direction:column; gap:8px}
+      .spacer{height:10px}
+      .hr{height:1px; background:var(--line); margin:10px 0}
+      .muted{color:var(--muted)}
+      .pill{border:1px solid var(--line); border-radius:999px; padding:4px 8px; background:var(--soft); font-size:12px}
+      button{
+        appearance:none;
+        border:1px solid var(--line);
+        background:#fff;
+        border-radius:10px;
+        padding:8px 10px;
+        font:inherit;
+        cursor:pointer;
+      }
+      button.primary{
+        background:var(--btn);
+        border-color:var(--btn);
+        color:var(--btnfg);
+      }
+      button.danger{
+        border-color:rgba(185,28,28,.35);
+        color:var(--danger);
+        background:#fff;
+      }
+      button:disabled{opacity:.5; cursor:not-allowed}
+      input, textarea, select{
+        width:100%;
+        border:1px solid var(--line);
+        border-radius:10px;
+        padding:8px 10px;
+        font:inherit;
+        outline:none;
+        background:#fff;
+      }
+      textarea{min-height:74px; resize:vertical}
+      input:focus, textarea:focus, select:focus, button:focus{
+        border-color:var(--focus);
+        box-shadow:0 0 0 3px rgba(37,99,235,.12);
+      }
+      .list{
+        border:1px solid var(--line);
+        border-radius:var(--radius);
+        overflow:hidden;
+      }
+      .listItem{
+        padding:10px 10px;
+        border-bottom:1px solid var(--line);
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:8px;
+        cursor:pointer;
+        background:#fff;
+      }
+      .listItem:last-child{border-bottom:none}
+      .listItem:hover{background:var(--soft)}
+      .title{font-weight:600}
+      .tiny{font-size:12px}
+      .card{
+        border:1px solid var(--line);
+        border-radius:var(--radius);
+        padding:10px;
+        background:#fff;
+      }
+      .grid2{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+      .grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px}
+      .miniActions{display:flex; gap:6px; align-items:center}
+      .ghost{
+        border-color:transparent;
+        background:transparent;
+        padding:6px 8px;
+      }
+      .ghost:hover{background:var(--soft); border-color:var(--line)}
+      .right{margin-left:auto}
+      .hidden{display:none !important}
+      .kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+      .toast{
+        position:sticky;
+        bottom:0;
+        margin-top:10px;
+        padding:10px;
+        border:1px solid var(--line);
+        border-radius:12px;
+        background:var(--soft);
+      }
+      .smallBtn{padding:6px 8px; border-radius:10px}
+      .dangerText{color:var(--danger)}
+      .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <!-- HOME (list) -->
+      <div id="viewList" class="col">
+        <div class="row">
+          <input id="search" placeholder="Search" />
+          <button id="btnNew" class="primary">Add</button>
+        </div>
+
+        <div id="articles" class="list"></div>
+
+        <div class="toast hidden" id="toast"></div>
+      </div>
+
+      <!-- EDITOR -->
+      <div id="viewEditor" class="col hidden">
+        <div class="row">
+          <button id="btnBack" class="ghost">Back</button>
+          <span class="pill mono" id="slugPill"></span>
+          <span class="right"></span>
+          <button id="btnDelete" class="danger hidden">Delete</button>
+          <button id="btnSave" class="primary">Save</button>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="col">
+          <div class="card col">
+            <div class="grid2">
+              <div class="col">
+                <div class="muted tiny">Slug</div>
+                <input id="f_slug" placeholder="auto" />
+              </div>
+              <div class="col">
+                <div class="muted tiny">Author name *</div>
+                <input id="f_author_name" placeholder="Physics of Life and Stuff Research Group" />
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="muted tiny">Title *</div>
+              <input id="f_title" placeholder="Title" />
+            </div>
+
+            <div class="col">
+              <div class="muted tiny">Dek *</div>
+              <textarea id="f_dek" placeholder="Short summary"></textarea>
+            </div>
+
+            <div class="grid2">
+              <div class="col">
+                <div class="muted tiny">Hero image *</div>
+                <div class="row">
+                  <input id="f_hero_image" placeholder="Paste URL or upload" />
+                  <label class="smallBtn" style="border:1px solid var(--line); border-radius:10px; padding:6px 8px; cursor:pointer;">
+                    Upload
+                    <input id="heroUpload" type="file" accept="image/*" class="hidden" />
+                  </label>
+                </div>
+                <div class="muted tiny">Uploads go to Drive; stored as link.</div>
+              </div>
+              <div class="col">
+                <div class="muted tiny">Tags</div>
+                <input id="f_tags" placeholder="Announcement, Collaboration" />
+              </div>
+            </div>
+
+            <div class="grid2">
+              <div class="col">
+                <div class="muted tiny">Hero caption</div>
+                <input id="f_hero_caption" placeholder="" />
+              </div>
+              <div class="col">
+                <div class="muted tiny">Hero credit</div>
+                <input id="f_hero_credit" placeholder="" />
+              </div>
+            </div>
+
+            <div class="grid2">
+              <div class="col">
+                <div class="muted tiny">Author role</div>
+                <input id="f_author_role" placeholder="" />
+              </div>
+              <div class="col">
+                <div class="muted tiny">Links</div>
+                <div id="linksWrap" class="col"></div>
+                <div class="row">
+                  <button id="btnAddLink" class="ghost">+ Link</button>
+                  <button id="btnClearLinks" class="ghost">Clear</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid3">
+              <div class="col">
+                <div class="muted tiny">Publication id</div>
+                <input id="f_publication_id" placeholder="" />
+              </div>
+              <div class="col">
+                <div class="muted tiny">Presentation id</div>
+                <input id="f_presentation_id" placeholder="" />
+              </div>
+              <div class="col">
+                <div class="muted tiny">Award id</div>
+                <input id="f_award_id" placeholder="" />
+              </div>
+            </div>
+
+            <div class="row">
+              <span class="muted tiny">Published/Updated are automatic on save.</span>
+            </div>
+          </div>
+
+          <div class="card col">
+            <div class="row">
+              <span class="title">Blocks</span>
+              <span class="right"></span>
+              <button id="btnAddBlock" class="ghost">+ Block</button>
+            </div>
+            <div id="blocksWrap" class="col"></div>
+          </div>
+
+          <div class="card col">
+            <div class="row">
+              <span class="title">People</span>
+              <span class="right"></span>
+              <button id="btnAddPerson" class="ghost">+ Person</button>
+            </div>
+            <div id="peopleWrap" class="col"></div>
+          </div>
+
+          <div class="toast hidden" id="toast2"></div>
+        </div>
+      </div>
+    </div>
+
+   <script>
+(function () {
+  // ---------- tiny ES5 helpers ----------
+  function $(id) { return document.getElementById(id); }
+  function s(v) { return (v === null || v === undefined) ? "" : String(v); }
+  function trim(v) { return s(v).replace(/^\s+|\s+$/g, ""); }
+
+  function escHtml(str) {
+    return s(str).replace(/[&<>"']/g, function (c) {
+      return ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" })[c];
+    });
+  }
+
+  function slugify(str) {
+    return trim(str).toLowerCase()
+      .replace(/['"]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 80);
+  }
+
+  function parseJsonArray(str) {
+    var t = trim(str);
+    if (!t) return [];
+    try {
+      var v = JSON.parse(t);
+      return (v && typeof v.length === "number") ? v : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function showToast(el, msg, isError) {
+    if (!el) return;
+    el.textContent = msg;
+    el.className = "toast";
+    if (isError) {
+      el.style.borderColor = "rgba(185,28,28,.35)";
+      el.style.background = "rgba(185,28,28,.06)";
+      el.style.color = "var(--danger)";
+    } else {
+      el.style.borderColor = "var(--line)";
+      el.style.background = "var(--soft)";
+      el.style.color = "var(--fg)";
+    }
+    setTimeout(function () { el.className = "toast hidden"; }, 2600);
+  }
+
+  function runGS(name, args, ok, fail) {
+    try {
+      var r = google.script.run.withSuccessHandler(ok).withFailureHandler(fail);
+      if (args && args.length) r[name].apply(r, args);
+      else r[name]();
+    } catch (e) {
+      fail(e);
+    }
+  }
+
+  function setEditorVisible(on) {
+    $("viewEditor").className = on ? "col" : "col hidden";
+    $("viewList").className = on ? "col hidden" : "col";
+  }
+
+  function fileToBase64(file, cb) {
+    var fr = new FileReader();
+    fr.onerror = function () { cb(new Error("Failed to read file.")); };
+    fr.onload = function () {
+      var res = s(fr.result);
+      var idx = res.indexOf("base64,");
+      if (idx === -1) return cb(new Error("Unexpected file encoding."));
+      cb(null, { base64: res.slice(idx + 7), mimeType: file.type || "application/octet-stream" });
+    };
+    fr.readAsDataURL(file);
+  }
+
+  // ---------- state ----------
+  var state = {
+    articles: [],
+    members: [],
+    currentSlug: "",
+    isNew: false
+  };
+
+  // ---------- elements ----------
+  var articlesEl = $("articles");
+  var searchEl = $("search");
+  var btnNew = $("btnNew");
+  var toast = $("toast");
+  var toast2 = $("toast2");
+
+  var btnBack = $("btnBack");
+  var btnSave = $("btnSave");
+  var btnDelete = $("btnDelete");
+  var slugPill = $("slugPill");
+
+  var f_slug = $("f_slug");
+  var f_title = $("f_title");
+  var f_dek = $("f_dek");
+  var f_author_name = $("f_author_name");
+  var f_author_role = $("f_author_role");
+  var f_tags = $("f_tags");
+  var f_hero_image = $("f_hero_image");
+  var f_hero_caption = $("f_hero_caption");
+  var f_hero_credit = $("f_hero_credit");
+  var f_publication_id = $("f_publication_id");
+  var f_presentation_id = $("f_presentation_id");
+  var f_award_id = $("f_award_id");
+  var heroUpload = $("heroUpload");
+
+  var linksWrap = $("linksWrap");
+  var btnAddLink = $("btnAddLink");
+  var btnClearLinks = $("btnClearLinks");
+
+  var blocksWrap = $("blocksWrap");
+  var peopleWrap = $("peopleWrap");
+  var btnAddBlock = $("btnAddBlock");
+  var btnAddPerson = $("btnAddPerson");
+
+  // ---------- list ----------
+  function renderList() {
+    var q = trim(searchEl.value).toLowerCase();
+    var rows = [];
+    var i, a, title, slug;
+
+    for (i = 0; i < state.articles.length; i++) {
+      a = state.articles[i] || {};
+      title = s(a.title).toLowerCase();
+      slug = s(a.slug).toLowerCase();
+      if (!q || title.indexOf(q) !== -1 || slug.indexOf(q) !== -1) rows.push(a);
+    }
+
+    rows.sort(function (x, y) {
+      var dx = s(x.updatedAt || x.publishedAt || "");
+      var dy = s(y.updatedAt || y.publishedAt || "");
+      if (dy < dx) return -1;
+      if (dy > dx) return 1;
+      return 0;
+    });
+
+    if (!rows.length) {
+      articlesEl.innerHTML = '<div class="listItem"><span class="muted">No articles</span></div>';
+      return;
+    }
+
+    var html = "";
+    for (i = 0; i < rows.length; i++) {
+      a = rows[i] || {};
+      var meta = [];
+      if (trim(a.updatedAt)) meta.push(trim(a.updatedAt));
+      if (trim(a.slug)) meta.push(trim(a.slug));
+      html += ''
+        + '<div class="listItem" data-slug="' + escHtml(a.slug) + '">'
+        +   '<div class="col" style="gap:2px;">'
+        +     '<div class="title">' + escHtml(a.title) + '</div>'
+        +     '<div class="muted tiny">' + escHtml(meta.join(" • ")) + '</div>'
+        +   '</div>'
+        +   '<div class="miniActions"><span class="muted tiny">›</span></div>'
+        + '</div>';
+    }
+    articlesEl.innerHTML = html;
+
+    var items = articlesEl.querySelectorAll(".listItem[data-slug]");
+    for (i = 0; i < items.length; i++) {
+      items[i].addEventListener("click", function () {
+        openArticle(this.getAttribute("data-slug"));
+      });
+    }
+  }
+
+  function refreshList() {
+    articlesEl.innerHTML = '<div class="listItem"><span class="muted">Loading…</span></div>';
+    runGS("news_listArticles", null, function (list) {
+      state.articles = (list && list.length) ? list : [];
+      renderList();
+    }, function (err) {
+      showToast(toast, "news_listArticles failed: " + (err && err.message ? err.message : String(err)), true);
+      articlesEl.innerHTML = "";
+    });
+  }
+
+  // ---------- editor core ----------
+  function clearEditor() {
+    state.currentSlug = "";
+    state.isNew = false;
+
+    f_slug.value = "";
+    f_title.value = "";
+    f_dek.value = "";
+    f_author_name.value = "";
+    f_author_role.value = "";
+    f_tags.value = "";
+    f_hero_image.value = "";
+    f_hero_caption.value = "";
+    f_hero_credit.value = "";
+    f_publication_id.value = "";
+    f_presentation_id.value = "";
+    f_award_id.value = "";
+
+    linksWrap.innerHTML = "";
+    blocksWrap.innerHTML = "";
+    peopleWrap.innerHTML = "";
+
+    slugPill.textContent = "";
+    btnDelete.className = "danger hidden";
+  }
+
+  // ---------- links ----------
+  function renderLinks(arr) {
+    linksWrap.innerHTML = "";
+    for (var i = 0; i < arr.length; i++) addLinkRow(arr[i].label, arr[i].url);
+  }
+
+  function addLinkRow(label, url) {
+    var row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = ''
+      + '<input class="linkLabel" placeholder="Label" value="' + escHtml(label) + '"/>'
+      + '<input class="linkUrl" placeholder="URL" value="' + escHtml(url) + '"/>'
+      + '<button class="ghost smallBtn" title="Remove">×</button>';
+    row.querySelector("button").addEventListener("click", function () {
+      row.parentNode.removeChild(row);
+    });
+    linksWrap.appendChild(row);
+  }
+
+  function collectLinks() {
+    var out = [];
+    var rows = linksWrap.querySelectorAll(".row");
+    for (var i = 0; i < rows.length; i++) {
+      var lab = trim(rows[i].querySelector(".linkLabel").value);
+      var url = trim(rows[i].querySelector(".linkUrl").value);
+      if (lab && url) out.push({ label: lab, url: url });
+    }
+    return out;
+  }
+
+  // ---------- blocks (FULL) ----------
+  var BLOCK_TYPES = ["paragraph","subhead","quote","image","gallery","pdf","embed","list"];
+
+  function renderBlocks(blocks) {
+    blocksWrap.innerHTML = "";
+    blocks = blocks || [];
+    blocks.sort(function (a, b) { return Number(a.idx || 0) - Number(b.idx || 0); });
+    for (var i = 0; i < blocks.length; i++) addBlockCard(blocks[i] || {});
+    renumberBlocks();
+  }
+
+  function defaultBlock() {
+    return {
+      type: "paragraph",
+      text: "",
+      src: "",
+      alt: "",
+      caption: "",
+      credit: "",
+      title: "",
+      provider: "",
+      url: "",
+      items_json: "",
+      images_json: ""
+    };
+  }
+
+  function addBlockCard(b) {
+    var card = document.createElement("div");
+    card.className = "card col";
+    card.setAttribute("data-kind", "block");
+
+    // type options
+    var opts = '<option value=""></option>';
+    for (var i = 0; i < BLOCK_TYPES.length; i++) {
+      var t = BLOCK_TYPES[i];
+      opts += '<option value="' + t + '"' + (t === s(b.type) ? " selected" : "") + '>' + t + '</option>';
+    }
+
+    // main structure
+    card.innerHTML = ''
+      + '<div class="row">'
+      +   '<span class="pill mono">#<span class="bIdx"></span></span>'
+      +   '<select class="bType" style="max-width:160px;">' + opts + '</select>'
+      +   '<span class="right"></span>'
+      +   '<button class="ghost smallBtn bUp" title="Up">↑</button>'
+      +   '<button class="ghost smallBtn bDown" title="Down">↓</button>'
+      +   '<button class="ghost smallBtn bRemove" title="Remove">×</button>'
+      + '</div>'
+
+      + '<div class="col bCommon">'
+      +   '<div class="muted tiny">Text</div>'
+      +   '<textarea class="bText" placeholder=""></textarea>'
+      + '</div>'
+      + '<div class="col bCiteWrap hidden">'
+      +   '<div class="muted tiny">Cited by</div>'
+      +   '<input class="bCite" placeholder="" />'
+      + '</div>'
+      // image block
+      + '<div class="grid2 bImage hidden">'
+      +   '<div class="col">'
+      +     '<div class="muted tiny">Source</div>'
+      +     '<div class="row">'
+      +       '<input class="bSrc" placeholder="Paste link or upload" />'
+      +       '<label class="smallBtn" style="border:1px solid var(--line); border-radius:10px; padding:6px 8px; cursor:pointer;">'
+      +         'Upload'
+      +         '<input type="file" accept="image/*" class="bUpload hidden" />'
+      +       '</label>'
+      +     '</div>'
+      +   '</div>'
+      +   '<div class="col"><div class="muted tiny">Alt</div><input class="bAlt" placeholder="" /></div>'
+      +   '<div class="col"><div class="muted tiny">Caption</div><input class="bCaption" placeholder="" /></div>'
+      +   '<div class="col"><div class="muted tiny">Credit</div><input class="bCredit" placeholder="" /></div>'
+      + '</div>'
+
+      // gallery block
+      + '<div class="col bGallery hidden">'
+      +   '<div class="row">'
+      +     '<span class="muted tiny">Gallery images</span>'
+      +     '<span class="right"></span>'
+      +     '<button class="ghost smallBtn gAdd">+ Image</button>'
+      +     '<button class="ghost smallBtn gClear">Clear</button>'
+      +   '</div>'
+      +   '<div class="col gWrap"></div>'
+      + '</div>'
+
+      // embed/pdf block
+      + '<div class="grid2 bEmbed hidden">'
+      +   '<div class="col"><div class="muted tiny">Title</div><input class="bETitle" placeholder="" /></div>'
+      +   '<div class="col"><div class="muted tiny">Provider</div><input class="bProvider" placeholder="" /></div>'
+      +   '<div class="col" style="grid-column:1 / -1;"><div class="muted tiny">URL</div><input class="bUrl" placeholder="" /></div>'
+      + '</div>'
+
+      // list block
+      + '<div class="col bList hidden">'
+      +   '<div class="row">'
+      +     '<span class="muted tiny">List items</span>'
+      +     '<span class="right"></span>'
+      +     '<button class="ghost smallBtn liAdd">+ Item</button>'
+      +     '<button class="ghost smallBtn liClear">Clear</button>'
+      +   '</div>'
+      +   '<div class="col liWrap"></div>'
+      + '</div>';
+
+    // fill values
+    card.querySelector(".bText").value = s(b.text);
+    card.querySelector(".bCite").value = s(b.cite);
+    card.querySelector(".bSrc").value = s(b.src);
+    card.querySelector(".bAlt").value = s(b.alt);
+    card.querySelector(".bCaption").value = s(b.caption);
+    card.querySelector(".bCredit").value = s(b.credit);
+    card.querySelector(".bETitle").value = s(b.title);
+    card.querySelector(".bProvider").value = s(b.provider);
+    card.querySelector(".bUrl").value = s(b.url);
+
+    // hydrate gallery/list from json
+    var gal = parseJsonArray(b.images_json);
+    for (i = 0; i < gal.length; i++) addGalleryRow(card, gal[i].src, gal[i].alt);
+
+    var items = parseJsonArray(b.items_json);
+    for (i = 0; i < items.length; i++) addListItemRow(card, items[i].text, items[i].cite, items[i].url);
+
+    // type UI
+    function applyTypeUI() {
+      var citeWrap = card.querySelector(".bCiteWrap");
+      var type = trim(card.querySelector(".bType").value);
+      var img = card.querySelector(".bImage");
+      var gallery = card.querySelector(".bGallery");
+      var embed = card.querySelector(".bEmbed");
+      var list = card.querySelector(".bList");
+      citeWrap.className = "col bCiteWrap hidden";
+
+      img.className = "grid2 bImage hidden";
+      gallery.className = "col bGallery hidden";
+      embed.className = "grid2 bEmbed hidden";
+      list.className = "col bList hidden";
+      if (type === "quote") citeWrap.className = "col bCiteWrap";
+
+      if (type === "image") img.className = "grid2 bImage";
+      if (type === "gallery") gallery.className = "col bGallery";
+      if (type === "pdf" || type === "embed") embed.className = "grid2 bEmbed";
+      if (type === "list") list.className = "col bList";
+    }
+
+    card.querySelector(".bType").addEventListener("change", applyTypeUI);
+    applyTypeUI();
+
+    // actions
+    card.querySelector(".bRemove").addEventListener("click", function () {
+      card.parentNode.removeChild(card);
+      renumberBlocks();
+    });
+    card.querySelector(".bUp").addEventListener("click", function () { moveBlockCard(card, -1); });
+    card.querySelector(".bDown").addEventListener("click", function () { moveBlockCard(card, +1); });
+
+    // upload for image block
+    var up = card.querySelector(".bUpload");
+    up.addEventListener("change", function (ev) {
+      var file = ev.target.files && ev.target.files[0];
+      if (!file) return;
+      fileToBase64(file, function (err, data) {
+        if (err) { showToast(toast2, err.message, true); up.value = ""; return; }
+        runGS("news_uploadBlockImage", [data], function (res) {
+          card.querySelector(".bSrc").value = s(res && res.url);
+          showToast(toast2, "Uploaded.", false);
+          up.value = "";
+        }, function (e2) {
+          showToast(toast2, (e2 && e2.message ? e2.message : String(e2)), true);
+          up.value = "";
+        });
+      });
+    });
+
+    // gallery actions
+    card.querySelector(".gAdd").addEventListener("click", function () {
+      addGalleryRow(card, "", "");
+    });
+    card.querySelector(".gClear").addEventListener("click", function () {
+      card.querySelector(".gWrap").innerHTML = "";
+    });
+
+    // list actions
+    card.querySelector(".liAdd").addEventListener("click", function () {
+      addListItemRow(card, "", "", "");
+    });
+    card.querySelector(".liClear").addEventListener("click", function () {
+      card.querySelector(".liWrap").innerHTML = "";
+    });
+
+    blocksWrap.appendChild(card);
+  }
+
+  function renumberBlocks() {
+    var cards = blocksWrap.querySelectorAll('[data-kind="block"]');
+    for (var i = 0; i < cards.length; i++) {
+      cards[i].querySelector(".bIdx").textContent = String(i);
+    }
+  }
+
+  function moveBlockCard(card, dir) {
+    var cards = Array.prototype.slice.call(blocksWrap.querySelectorAll('[data-kind="block"]'));
+    var idx = cards.indexOf(card);
+    var next = idx + dir;
+    if (next < 0 || next >= cards.length) return;
+    if (dir < 0) blocksWrap.insertBefore(card, cards[next]);
+    else blocksWrap.insertBefore(cards[next], card);
+    renumberBlocks();
+  }
+
+  function addGalleryRow(card, src, alt) {
+    var wrap = card.querySelector(".gWrap");
+    var row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = ''
+      + '<input class="gSrc" placeholder="Image link or upload" value="' + escHtml(src) + '" />'
+      + '<input class="gAlt" placeholder="Alt" value="' + escHtml(alt) + '" />'
+      + '<label class="smallBtn" style="border:1px solid var(--line); border-radius:10px; padding:6px 8px; cursor:pointer;">'
+      +   'Upload'
+      +   '<input type="file" accept="image/*" class="gUpload hidden" />'
+      + '</label>'
+      + '<button class="ghost smallBtn" title="Remove">×</button>';
+
+    row.querySelector("button").addEventListener("click", function () {
+      row.parentNode.removeChild(row);
+    });
+
+    var up = row.querySelector(".gUpload");
+    up.addEventListener("change", function (ev) {
+      var file = ev.target.files && ev.target.files[0];
+      if (!file) return;
+      fileToBase64(file, function (err, data) {
+        if (err) { showToast(toast2, err.message, true); up.value = ""; return; }
+        runGS("news_uploadBlockImage", [data], function (res) {
+          row.querySelector(".gSrc").value = s(res && res.url);
+          showToast(toast2, "Uploaded.", false);
+          up.value = "";
+        }, function (e2) {
+          showToast(toast2, (e2 && e2.message ? e2.message : String(e2)), true);
+          up.value = "";
+        });
+      });
+    });
+
+    wrap.appendChild(row);
+  }
+
+  function addListItemRow(card, text, cite, url) {
+    var wrap = card.querySelector(".liWrap");
+    var box = document.createElement("div");
+    box.className = "col";
+    box.style.gap = "6px";
+    box.style.border = "1px solid var(--line)";
+    box.style.borderRadius = "12px";
+    box.style.padding = "8px";
+
+    box.innerHTML = ''
+      + '<div class="row">'
+      +   '<span class="muted tiny">Item</span>'
+      +   '<span class="right"></span>'
+      +   '<button class="ghost smallBtn liRemove" title="Remove">×</button>'
+      + '</div>'
+      + '<input class="liText" placeholder="Text" value="' + escHtml(text) + '" />'
+      + '<div class="grid2">'
+      +   '<input class="liCite" placeholder="Cite" value="' + escHtml(cite) + '" />'
+      +   '<input class="liUrl" placeholder="URL" value="' + escHtml(url) + '" />'
+      + '</div>';
+
+    box.querySelector(".liRemove").addEventListener("click", function () {
+      box.parentNode.removeChild(box);
+    });
+
+    wrap.appendChild(box);
+  }
+
+  function collectBlocks() {
+    var slug = trim(f_slug.value) || slugify(f_title.value);
+    var cards = blocksWrap.querySelectorAll('[data-kind="block"]');
+    var out = [];
+
+    for (var i = 0; i < cards.length; i++) {
+      var c = cards[i];
+      var type = trim(c.querySelector(".bType").value);
+      var text = trim(c.querySelector(".bText").value);
+
+      // image fields
+      var src = trim(c.querySelector(".bSrc").value);
+      var alt = trim(c.querySelector(".bAlt").value);
+      var caption = trim(c.querySelector(".bCaption").value);
+      var credit = trim(c.querySelector(".bCredit").value);
+      var cite = trim(c.querySelector(".bCite").value);
+
+      // embed/pdf fields
+      var et = trim(c.querySelector(".bETitle").value);
+      var prov = trim(c.querySelector(".bProvider").value);
+      var url = trim(c.querySelector(".bUrl").value);
+
+      // gallery json
+      var gRows = c.querySelectorAll(".gWrap .row");
+      var imgs = [];
+      for (var gi = 0; gi < gRows.length; gi++) {
+        var gs = trim(gRows[gi].querySelector(".gSrc").value);
+        var ga = trim(gRows[gi].querySelector(".gAlt").value);
+        if (gs) imgs.push({ src: gs, alt: ga });
+      }
+
+      // list items json
+      var liBoxes = c.querySelectorAll(".liWrap > .col");
+      var items = [];
+      for (var li = 0; li < liBoxes.length; li++) {
+        var it = trim(liBoxes[li].querySelector(".liText").value);
+        var ic = trim(liBoxes[li].querySelector(".liCite").value);
+        var iu = trim(liBoxes[li].querySelector(".liUrl").value);
+        if (it || ic || iu) items.push({ text: it, cite: ic, url: iu });
+      }
+
+      out.push({
+        block_id: slug + "__" + i,
+        slug: slug,
+        idx: i,
+        type: type,
+        text: text,
+        cite: (type === "quote") ? cite : "",
+
+        src: (type === "image") ? src : "",
+        alt: (type === "image") ? alt : "",
+        caption: (type === "image") ? caption : "",
+        credit: (type === "image") ? credit : "",
+
+        title: (type === "pdf" || type === "embed") ? et : "",
+        provider: (type === "pdf" || type === "embed") ? prov : "",
+        url: (type === "pdf" || type === "embed") ? url : "",
+
+        items_json: (type === "list" && items.length) ? JSON.stringify(items) : "",
+        images_json: (type === "gallery" && imgs.length) ? JSON.stringify(imgs) : ""
+      });
+    }
+
+    return out;
+  }
+
+  // ---------- people (FULL) ----------
+  function renderPeople(people) {
+    peopleWrap.innerHTML = "";
+    people = people || [];
+    people.sort(function (a, b) { return Number(a.sort || 0) - Number(b.sort || 0); });
+    for (var i = 0; i < people.length; i++) addPersonRow(s(people[i].person_id));
+    renumberPeople();
+  }
+
+  function addPersonRow(person_id) {
+    var row = document.createElement("div");
+    row.className = "row";
+    row.setAttribute("data-kind", "person");
+
+    var opts = '<option value=""></option>';
+    for (var i = 0; i < state.members.length; i++) {
+      var m = state.members[i];
+      var sel = (s(m.id) === s(person_id)) ? " selected" : "";
+      opts += '<option value="' + escHtml(m.id) + '"' + sel + '>' + escHtml(m.name) + '</option>';
+    }
+
+    row.innerHTML = ''
+      + '<span class="pill mono">#<span class="pIdx"></span></span>'
+      + '<select class="pSelect">' + opts + '</select>'
+      + '<span class="right"></span>'
+      + '<button class="ghost smallBtn pUp" title="Up">↑</button>'
+      + '<button class="ghost smallBtn pDown" title="Down">↓</button>'
+      + '<button class="ghost smallBtn pRemove" title="Remove">×</button>';
+
+    row.querySelector(".pRemove").addEventListener("click", function () {
+      row.parentNode.removeChild(row);
+      renumberPeople();
+    });
+    row.querySelector(".pUp").addEventListener("click", function () { movePerson(row, -1); });
+    row.querySelector(".pDown").addEventListener("click", function () { movePerson(row, +1); });
+
+    peopleWrap.appendChild(row);
+  }
+
+  function renumberPeople() {
+    var rows = peopleWrap.querySelectorAll('[data-kind="person"]');
+    for (var i = 0; i < rows.length; i++) rows[i].querySelector(".pIdx").textContent = String(i);
+  }
+
+  function movePerson(row, dir) {
+    var rows = Array.prototype.slice.call(peopleWrap.querySelectorAll('[data-kind="person"]'));
+    var idx = rows.indexOf(row);
+    var next = idx + dir;
+    if (next < 0 || next >= rows.length) return;
+    if (dir < 0) peopleWrap.insertBefore(row, rows[next]);
+    else peopleWrap.insertBefore(rows[next], row);
+    renumberPeople();
+  }
+
+  function collectPeople() {
+    var slug = trim(f_slug.value) || slugify(f_title.value);
+    var rows = peopleWrap.querySelectorAll('[data-kind="person"]');
+    var out = [];
+    for (var i = 0; i < rows.length; i++) {
+      var pid = trim(rows[i].querySelector(".pSelect").value);
+      if (!pid) continue;
+      out.push({ id: slug + "__" + pid + "__" + i, slug: slug, person_id: pid, sort: i });
+    }
+    return out;
+  }
+
+  // ---------- editor fill/collect ----------
+  function fillEditor(payload) {
+    var a = payload.article || {};
+    f_slug.value = s(a.slug);
+    f_title.value = s(a.title);
+    f_dek.value = s(a.dek);
+    f_author_name.value = s(a.author_name);
+    f_author_role.value = s(a.author_role);
+    f_tags.value = s(a.tags);
+    f_hero_image.value = s(a.hero_image);
+    f_hero_caption.value = s(a.hero_caption);
+    f_hero_credit.value = s(a.hero_credit);
+    f_publication_id.value = s(a.publication_id);
+    f_presentation_id.value = s(a.presentation_id);
+    f_award_id.value = s(a.award_id);
+
+    renderLinks(parseJsonArray(a.links_json));
+    renderBlocks(payload.blocks || []);
+    renderPeople(payload.people || []);
+  }
+
+  function collectEditorPayload() {
+    var links = collectLinks();
+    var slug = trim(f_slug.value) || slugify(f_title.value);
+
+    var article = {
+      slug: slug,
+      title: trim(f_title.value),
+      dek: trim(f_dek.value),
+      author_name: trim(f_author_name.value),
+      author_role: trim(f_author_role.value),
+      tags: trim(f_tags.value),
+      hero_image: trim(f_hero_image.value),
+      hero_caption: trim(f_hero_caption.value),
+      hero_credit: trim(f_hero_credit.value),
+      links_json: links.length ? JSON.stringify(links) : "",
+      publication_id: trim(f_publication_id.value),
+      presentation_id: trim(f_presentation_id.value),
+      award_id: trim(f_award_id.value)
+    };
+
+    // auto-slug if empty
+    if (!article.slug && article.title) article.slug = slugify(article.title);
+
+    return {
+      article: article,
+      blocks: collectBlocks(),
+      people: collectPeople()
+    };
+  }
+
+  // ---------- open/new/save/delete ----------
+  function openArticle(slug) {
+    runGS("news_getArticle", [slug], function (payload) {
+      if (!payload) { showToast(toast, "Not found.", true); return; }
+      clearEditor();
+      state.isNew = false;
+      state.currentSlug = s(payload.article && payload.article.slug);
+      slugPill.textContent = state.currentSlug;
+      btnDelete.className = "danger";
+      fillEditor(payload);
+      setEditorVisible(true);
+    }, function (err) {
+      showToast(toast, "news_getArticle failed: " + (err && err.message ? err.message : String(err)), true);
+    });
+  }
+
+  function newArticle() {
+    clearEditor();
+    state.isNew = true;
+    state.currentSlug = "";
+    slugPill.textContent = "new";
+    btnDelete.className = "danger hidden";
+    renderLinks([]);
+    renderBlocks([]);
+    renderPeople([]);
+    setEditorVisible(true);
+  }
+
+  function saveArticle() {
+    if (!trim(f_title.value) || !trim(f_dek.value) || !trim(f_author_name.value) || !trim(f_hero_image.value)) {
+      showToast(toast2, "Title, dek, author name, hero image are required.", true);
+      return;
+    }
+
+    btnSave.disabled = true;
+    var payload = collectEditorPayload();
+
+    if (state.isNew) {
+      runGS("news_createArticle", [payload], function (res) {
+        showToast(toast2, "Saved.", false);
+        state.isNew = false;
+        refreshList();
+        if (res && res.slug) openArticle(res.slug);
+        btnSave.disabled = false;
+      }, function (err) {
+        showToast(toast2, (err && err.message ? err.message : String(err)), true);
+        btnSave.disabled = false;
+      });
+    } else {
+      var slug = state.currentSlug || payload.article.slug;
+      runGS("news_updateArticle", [{ slug: slug, article: payload.article, blocks: payload.blocks, people: payload.people }], function () {
+        showToast(toast2, "Saved.", false);
+        refreshList();
+        openArticle(payload.article.slug);
+        btnSave.disabled = false;
+      }, function (err2) {
+        showToast(toast2, (err2 && err2.message ? err2.message : String(err2)), true);
+        btnSave.disabled = false;
+      });
+    }
+  }
+
+  function deleteArticle() {
+    var slug = trim(f_slug.value);
+    if (!slug) return;
+    if (!confirm('Delete "' + slug + '"?')) return;
+
+    btnDelete.disabled = true;
+    runGS("news_deleteArticle", [slug], function () {
+      showToast(toast, "Deleted.", false);
+      setEditorVisible(false);
+      refreshList();
+      btnDelete.disabled = false;
+    }, function (err) {
+      showToast(toast2, (err && err.message ? err.message : String(err)), true);
+      btnDelete.disabled = false;
+    });
+  }
+
+  // ---------- uploads (hero) ----------
+  heroUpload.addEventListener("change", function (ev) {
+    var file = ev.target.files && ev.target.files[0];
+    if (!file) return;
+
+    fileToBase64(file, function (err, data) {
+      if (err) { showToast(toast2, err.message, true); heroUpload.value = ""; return; }
+      runGS("news_uploadCover", [data], function (res) {
+        f_hero_image.value = s(res && res.url);
+        showToast(toast2, "Uploaded.", false);
+        heroUpload.value = "";
+      }, function (e2) {
+        showToast(toast2, (e2 && e2.message ? e2.message : String(e2)), true);
+        heroUpload.value = "";
+      });
+    });
+  });
+
+  // ---------- events wiring ----------
+  searchEl.addEventListener("input", renderList);
+  btnNew.addEventListener("click", newArticle);
+  btnBack.addEventListener("click", function () { setEditorVisible(false); });
+  btnSave.addEventListener("click", saveArticle);
+  btnDelete.addEventListener("click", deleteArticle);
+
+  btnAddLink.addEventListener("click", function () { addLinkRow("", ""); });
+  btnClearLinks.addEventListener("click", function () { linksWrap.innerHTML = ""; });
+
+  btnAddBlock.addEventListener("click", function () { addBlockCard(defaultBlock()); renumberBlocks(); });
+  btnAddPerson.addEventListener("click", function () { addPersonRow(""); renumberPeople(); });
+
+  f_title.addEventListener("input", function () {
+    if (state.isNew && !trim(f_slug.value)) {
+      slugPill.textContent = slugify(f_title.value) || "new";
+    }
+  });
+
+  // ---------- init ----------
+  function init() {
+    articlesEl.innerHTML = '<div class="listItem"><span class="muted">Loading…</span></div>';
+
+    runGS("news_listArticles", null, function (list) {
+      state.articles = (list && list.length) ? list : [];
+      renderList();
+    }, function (err) {
+      showToast(toast, "news_listArticles failed: " + (err && err.message ? err.message : String(err)), true);
+      articlesEl.innerHTML = "";
+    });
+
+    // members optional (for People dropdown)
+    runGS("news_listMembers", null, function (m) {
+      state.members = (m && m.length) ? m : [];
+    }, function () {
+      state.members = [];
+    });
+  }
+
+  init();
+})();
+</script>
+
+  </body>
+</html>

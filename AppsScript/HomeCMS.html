@@ -1,0 +1,610 @@
+<!doctype html>
+<html>
+  <head>
+    <base target="_top" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+      :root{
+        --bg:#f6f7fb;
+        --panel:#ffffff;
+        --text:#0f172a;
+        --muted:#64748b;
+        --line:rgba(15,23,42,.12);
+        --accent:#2563eb;
+        --r:14px;
+        --shadow: 0 10px 24px rgba(2,6,23,.08);
+      }
+      *{box-sizing:border-box}
+      body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+      .wrap{padding:12px}
+      .top{
+        display:flex;align-items:center;justify-content:space-between;gap:8px;
+        padding:10px 12px;background:var(--panel);border:1px solid var(--line);
+        border-radius:var(--r);box-shadow:var(--shadow)
+      }
+      .tabs{display:flex;gap:6px;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.16);border-radius:999px;padding:4px}
+      .tab{
+        border:0;background:transparent;cursor:pointer;
+        padding:7px 10px;border-radius:999px;font-size:12px;color:var(--muted)
+      }
+      .tab.active{background:#fff;color:var(--accent);font-weight:600}
+      .panel{
+        margin-top:10px;background:var(--panel);border:1px solid var(--line);
+        border-radius:var(--r);padding:12px;box-shadow:var(--shadow)
+      }
+      .row{display:flex;gap:8px;align-items:center;justify-content:space-between}
+      .btn{
+        appearance:none;border:1px solid var(--line);background:#fff;color:var(--text);
+        padding:8px 10px;border-radius:10px;cursor:pointer;font-size:12px
+      }
+      .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+            .btn.primary.upload{background:var(--accent);border-color:var(--accent);color:#fff; flex-shrink:0;
+  white-space:nowrap;}
+
+      .btn:disabled{opacity:.55;cursor:not-allowed}
+      .toast{
+        margin-top:10px;padding:10px;border-radius:12px;border:1px solid var(--line);
+        background:#fff;font-size:12px;white-space:pre-wrap
+      }
+      .toast.ok{border-color:rgba(22,163,74,.35);background:rgba(22,163,74,.06)}
+      .toast.err{border-color:rgba(220,38,38,.35);background:rgba(220,38,38,.06)}
+      .list{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+      .card{
+        border:1px solid var(--line);background:#fff;border-radius:14px;padding:10px;
+        display:flex;flex-direction:column;gap:8px
+      }
+      .meta{display:flex;align-items:center;justify-content:space-between;gap:8px}
+      .pill{
+        font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+        font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid rgba(15,23,42,.12);
+        background:rgba(15,23,42,.03);color:rgba(15,23,42,.8)
+      }
+      .handle{
+        cursor:grab;user-select:none;padding:6px 8px;border-radius:10px;
+        border:1px solid rgba(15,23,42,.12);background:rgba(15,23,42,.03);
+        font-size:12px;color:rgba(15,23,42,.75)
+      }
+      .dropTarget{outline:2px dashed rgba(37,99,235,.55);outline-offset:2px}
+      label{display:block;font-size:11px;color:var(--muted);margin-top:6px}
+      input[type="text"], textarea, select{
+        width:100%;border:1px solid rgba(15,23,42,.14);background:#fff;border-radius:12px;
+        padding:10px;font-size:12px;outline:none
+      }
+      textarea{min-height:64px;resize:vertical}
+      .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+      .danger{border-color:rgba(220,38,38,.35);color:rgb(220,38,38)}
+.fileRow{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex:1;
+  min-width:0;          /* 🔑 allows shrinking */
+  flex-wrap:nowrap;     /* prevent pushing button */
+}
+.fileRow input[type="file"]{
+  max-width:100%;
+  flex:1;
+}
+
+.fileRow input[type="text"]{
+  flex:1;
+  min-width:120px;
+}
+@media (max-width: 420px){
+  .row{
+    flex-direction:column;
+    align-items:stretch;
+    gap:8px;
+  }
+
+  .btn.primary.upload{
+    width:100%;
+  }
+}
+
+    </style>
+  </head>
+
+  <body>
+    <div class="wrap">
+      <div class="top">
+        <div class="tabs">
+          <button class="tab active" id="tHome" onclick="switchTab('home')">Home</button>
+          <button class="tab" id="tGallery" onclick="switchTab('gallery')">Gallery</button>
+          <button class="tab" id="tAbout" onclick="switchTab('about')">About</button>
+        </div>
+        <button class="btn" onclick="refreshActive()">Refresh</button>
+      </div>
+
+      <div class="panel" id="pHome">
+        <div class="row">
+          <button class="btn primary" id="saveHomeBtn" onclick="saveHome()">Save</button>
+        </div>
+        <div class="list" id="homeFields"></div>
+      </div>
+
+      <div class="panel" id="pGallery" style="display:none">
+        <div class="row">
+          <div class="fileRow" style="flex:1">
+            <input id="newFile" type="file" accept="image/*" />
+            <input id="newAlt" type="text" placeholder="Alt text" />
+          </div>
+          <button class="btn primary upload" id="addBtn" onclick="addImage()">Upload</button>
+        </div>
+
+        <div class="list" id="galList"></div>
+      </div>
+
+      <div class="panel" id="pAbout" style="display:none">
+        <div class="row">
+          <select id="aboutSheetSel" onchange="loadAbout()">
+            <option value="about_bullets">Bullets</option>
+            <option value="about_stats">Stats</option>
+            <option value="about_images">Images</option>
+            <option value="about_focus">Focus</option>
+            <option value="about_links">Links</option>
+          </select>
+          <button class="btn primary" id="saveAboutOrderBtn" onclick="saveAboutOrder()" disabled>Save order</button>
+        </div>
+        <div class="list" id="aboutList"></div>
+      </div>
+
+      <div id="toast" class="toast" style="display:none"></div>
+    </div>
+
+    <script>
+      const toast = document.getElementById("toast");
+
+      let activeTab = "home";
+
+      let homeData = [];
+      let galleryData = [];
+
+      let aboutItems = [];
+      let aboutDirtyOrder = false;
+
+      const FIELD_SETS = {
+        about_bullets: ["text"],
+        about_stats: ["label","value"],
+        about_images: ["src","alt"],
+        about_focus: ["title","body"],
+        about_links: ["label","href"],
+      };
+
+      function showToast(msg, type){
+        toast.style.display = "block";
+        toast.className = "toast " + (type || "");
+        toast.textContent = msg;
+      }
+      function clearToast(){
+        toast.style.display = "none";
+        toast.textContent = "";
+      }
+
+      function switchTab(tab){
+        clearToast();
+        activeTab = tab;
+
+        document.getElementById("pHome").style.display = tab === "home" ? "" : "none";
+        document.getElementById("pGallery").style.display = tab === "gallery" ? "" : "none";
+        document.getElementById("pAbout").style.display = tab === "about" ? "" : "none";
+
+        ["Home","Gallery","About"].forEach(k => {
+          document.getElementById("t"+k).classList.toggle("active", tab === k.toLowerCase());
+        });
+
+        refreshActive();
+      }
+
+      function refreshActive(){
+        if(activeTab === "home") loadHome();
+        else if(activeTab === "gallery") loadGallery();
+        else loadAbout();
+      }
+
+      /** ================= HOME ================= */
+      function loadHome(){
+        clearToast();
+        showToast("Loading…");
+        document.getElementById("saveHomeBtn").disabled = true;
+        google.script.run
+          .withSuccessHandler((res) => {
+            homeData = res || [];
+            renderHome();
+            document.getElementById("saveHomeBtn").disabled = false;
+            showToast("Loaded.", "ok");
+          })
+          .withFailureHandler((err) => showToast((err?.message || String(err)), "err"))
+          .getHomeEntries();
+      }
+
+      function renderHome(){
+        const root = document.getElementById("homeFields");
+        root.innerHTML = "";
+
+        homeData.forEach(item => {
+          const isLong = (item.value || "").length > 80 ||
+            (item.key || "").includes("subtitle") ||
+            (item.key || "").includes("address");
+
+          const el = document.createElement("div");
+          el.className = "card";
+          el.dataset.rowIndex = item.rowIndex;
+
+          el.innerHTML = `
+            <div class="meta">
+              <span class="pill">${escapeHtml(item.key)}</span>
+            </div>
+            ${isLong
+              ? `<textarea>${escapeHtml(item.value || "")}</textarea>`
+              : `<input type="text" value="${escapeAttr(item.value || "")}"/>`
+            }
+          `;
+          root.appendChild(el);
+        });
+      }
+
+      function saveHome(){
+        clearToast();
+        const updates = [];
+        document.querySelectorAll("#homeFields .card").forEach(card => {
+          const rowIndex = Number(card.dataset.rowIndex);
+          const input = card.querySelector("textarea, input");
+          updates.push({ rowIndex, value: input ? input.value : "" });
+        });
+
+        document.getElementById("saveHomeBtn").disabled = true;
+        showToast("Saving…");
+        google.script.run
+          .withSuccessHandler(() => {
+            document.getElementById("saveHomeBtn").disabled = false;
+            showToast("Saved.", "ok");
+            loadHome();
+          })
+          .withFailureHandler((err) => {
+            document.getElementById("saveHomeBtn").disabled = false;
+            showToast((err?.message || String(err)), "err");
+          })
+          .saveHomeEntries(updates);
+      }
+
+      /** ================= GALLERY (NO PREVIEWS) ================= */
+      function loadGallery(){
+        clearToast();
+        showToast("Loading…");
+        google.script.run
+          .withSuccessHandler((res) => {
+            galleryData = res || [];
+            renderGallery();
+            showToast("Loaded.", "ok");
+          })
+          .withFailureHandler((err) => showToast((err?.message || String(err)), "err"))
+          .getGalleryItems();
+      }
+
+      function renderGallery(){
+        const list = document.getElementById("galList");
+        list.innerHTML = "";
+
+        const active = galleryData.filter(x => (x.status || "").toLowerCase() !== "archived");
+
+        active.forEach(item => {
+          const card = document.createElement("div");
+          card.className = "card";
+          card.dataset.rowIndex = item.rowIndex;
+          card.draggable = true;
+
+          card.innerHTML = `
+            <div class="meta">
+              <span class="pill">row ${escapeHtml(String(item.rowIndex))}</span>
+              <span class="handle">⋮⋮</span>
+            </div>
+
+            <label>Src</label>
+            <input type="text" value="${escapeAttr(item.src || "")}" readonly />
+
+            <label>Alt</label>
+            <input data-role="alt" type="text" value="${escapeAttr(item.alt || "")}" />
+
+            <div class="row">
+              <button class="btn" onclick="copyText('${escapeJs(item.src || "")}')">Copy src</button>
+              <button class="btn danger" onclick="archiveItem(${item.rowIndex})">Delete</button>
+            </div>
+          `;
+
+          const altInput = card.querySelector('[data-role="alt"]');
+          altInput.addEventListener("change", () => {
+            google.script.run
+              .withFailureHandler((err) => showToast((err?.message || String(err)), "err"))
+              .updateGalleryAlt(item.rowIndex, altInput.value);
+          });
+
+          list.appendChild(card);
+        });
+
+        wireGalleryDnD();
+      }
+
+      function copyText(s){
+        navigator.clipboard?.writeText(s);
+        showToast("Copied.", "ok");
+      }
+
+      function archiveItem(rowIndex){
+        if(!confirm("Archive this image?")) return;
+        showToast("Archiving…");
+        google.script.run
+          .withSuccessHandler(() => { showToast("Archived.", "ok"); loadGallery(); })
+          .withFailureHandler((err) => showToast((err?.message || String(err)), "err"))
+          .archiveGalleryRow(rowIndex);
+      }
+
+      function addImage(){
+        clearToast();
+        const f = document.getElementById("newFile").files?.[0];
+        const alt = (document.getElementById("newAlt").value || "").trim();
+        if(!f) return showToast("Choose a file.", "err");
+        if(!alt) return showToast("Alt text required.", "err");
+
+        const btn = document.getElementById("addBtn");
+        btn.disabled = true;
+        showToast("Uploading…");
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const dataUrl = e.target.result;
+          const base64 = dataUrl.split(",")[1];
+
+          google.script.run
+            .withSuccessHandler(() => {
+              btn.disabled = false;
+              document.getElementById("newFile").value = "";
+              document.getElementById("newAlt").value = "";
+              showToast("Added.", "ok");
+              loadGallery();
+            })
+            .withFailureHandler((err) => {
+              btn.disabled = false;
+              showToast((err?.message || String(err)), "err");
+            })
+            .addGalleryImage({ base64, contentType: f.type, alt });
+        };
+        reader.onerror = () => { btn.disabled = false; showToast("Read failed.", "err"); };
+        reader.readAsDataURL(f);
+      }
+
+      function wireGalleryDnD(){
+        const list = document.getElementById("galList");
+        const cards = Array.from(list.querySelectorAll(".card"));
+        let dragging = null;
+
+        cards.forEach(card => {
+          card.addEventListener("dragstart", () => { dragging = card; card.style.opacity = "0.6"; });
+          card.addEventListener("dragend", () => {
+            if(dragging) dragging.style.opacity = "1";
+            dragging = null;
+            cards.forEach(c => c.classList.remove("dropTarget"));
+          });
+          card.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            if(!dragging || dragging === card) return;
+            card.classList.add("dropTarget");
+          });
+          card.addEventListener("dragleave", () => card.classList.remove("dropTarget"));
+          card.addEventListener("drop", (e) => {
+            e.preventDefault();
+            if(!dragging || dragging === card) return;
+            card.classList.remove("dropTarget");
+
+            const parent = card.parentNode;
+            const draggingIndex = Array.from(parent.children).indexOf(dragging);
+            const targetIndex = Array.from(parent.children).indexOf(card);
+
+            if(draggingIndex < targetIndex) parent.insertBefore(dragging, card.nextSibling);
+            else parent.insertBefore(dragging, card);
+
+            const newOrder = Array.from(parent.querySelectorAll(".card"))
+              .map(c => Number(c.dataset.rowIndex));
+
+            showToast("Saving order…");
+            google.script.run
+              .withSuccessHandler(() => { showToast("Saved.", "ok"); loadGallery(); })
+              .withFailureHandler((err) => showToast((err?.message || String(err)), "err"))
+              .reorderGallery(newOrder);
+          });
+        });
+      }
+
+      /** ================= ABOUT (NO IMAGE PREVIEWS) ================= */
+      function loadAbout(){
+        clearToast();
+        aboutDirtyOrder = false;
+        document.getElementById("saveAboutOrderBtn").disabled = true;
+
+        const sheetName = document.getElementById("aboutSheetSel").value;
+        showToast("Loading…");
+        google.script.run
+          .withSuccessHandler((res) => {
+            aboutItems = (res && res.items) ? res.items : [];
+            renderAbout();
+            showToast("Loaded.", "ok");
+          })
+          .withFailureHandler((err) => showToast((err?.message || String(err)), "err"))
+          .aboutGetSheet(sheetName);
+      }
+
+      function renderAbout(){
+        const list = document.getElementById("aboutList");
+        list.innerHTML = "";
+
+        const sheetName = document.getElementById("aboutSheetSel").value;
+        const fields = FIELD_SETS[sheetName];
+
+        aboutItems.forEach(it => {
+          const card = document.createElement("div");
+          card.className = "card";
+          card.dataset.rowIndex = it.rowIndex;
+          card.draggable = true;
+
+          let body = `
+            <div class="meta">
+              <span class="pill">${escapeHtml(it.id)}</span>
+              <span class="handle">⋮⋮</span>
+            </div>
+          `;
+
+          if(sheetName === "about_images"){
+            body += `
+              <label>Src</label>
+              <input type="text" value="${escapeAttr(it.src || "")}" readonly />
+              <label>Alt</label>
+              <input data-field="alt" type="text" value="${escapeAttr(it.alt || "")}" />
+              <div class="fileRow">
+                <input data-role="file" type="file" accept="image/*" />
+                <button class="btn" data-role="replace">Replace</button>
+              </div>
+            `;
+          } else {
+            fields.forEach(f => {
+              const v = it[f] ?? "";
+              const isLong = f === "body" || f === "text";
+              body += `
+                <label>${escapeHtml(f)}</label>
+                ${isLong
+                  ? `<textarea data-field="${escapeAttr(f)}">${escapeHtml(v)}</textarea>`
+                  : `<input data-field="${escapeAttr(f)}" type="text" value="${escapeAttr(v)}" />`
+                }
+              `;
+            });
+          }
+
+          card.innerHTML = body;
+          list.appendChild(card);
+
+          // autosave field edits
+          card.querySelectorAll("[data-field]").forEach(input => {
+            input.addEventListener("change", () => {
+              const field = input.dataset.field;
+              const value = input.value;
+              google.script.run
+                .withFailureHandler((err) => showToast((err?.message || String(err)), "err"))
+                .aboutUpdateRow({ sheetName, rowIndex: it.rowIndex, patch: { [field]: value }});
+            });
+          });
+
+          // images: replace upload
+          if(sheetName === "about_images"){
+            const fileEl = card.querySelector('[data-role="file"]');
+            const btn = card.querySelector('[data-role="replace"]');
+            btn.addEventListener("click", () => {
+              const f = fileEl.files?.[0];
+              if(!f) return showToast("Choose a file.", "err");
+
+              btn.disabled = true;
+              showToast("Uploading…");
+
+              const reader = new FileReader();
+              reader.onload = (e) => {
+                const dataUrl = e.target.result;
+                const base64 = dataUrl.split(",")[1];
+                const altInput = card.querySelector('[data-field="alt"]');
+                const newAlt = altInput ? altInput.value : "";
+
+                google.script.run
+                  .withSuccessHandler((res) => {
+                    btn.disabled = false;
+                    fileEl.value = "";
+                    it.src = res.src;
+                    showToast("Updated.", "ok");
+                    renderAbout();
+                  })
+                  .withFailureHandler((err) => {
+                    btn.disabled = false;
+                    showToast((err?.message || String(err)), "err");
+                  })
+                  .aboutReplaceImage({ rowIndex: it.rowIndex, base64, contentType: f.type, alt: newAlt });
+              };
+              reader.onerror = () => { btn.disabled = false; showToast("Read failed.", "err"); };
+              reader.readAsDataURL(f);
+            });
+          }
+        });
+
+        wireAboutDnD();
+      }
+
+      function wireAboutDnD(){
+        const list = document.getElementById("aboutList");
+        const cards = Array.from(list.querySelectorAll(".card"));
+        let dragging = null;
+
+        cards.forEach(card => {
+          card.addEventListener("dragstart", () => { dragging = card; card.style.opacity = "0.6"; });
+          card.addEventListener("dragend", () => {
+            if(dragging) dragging.style.opacity = "1";
+            dragging = null;
+            cards.forEach(c => c.classList.remove("dropTarget"));
+          });
+          card.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            if(!dragging || dragging === card) return;
+            card.classList.add("dropTarget");
+          });
+          card.addEventListener("dragleave", () => card.classList.remove("dropTarget"));
+          card.addEventListener("drop", (e) => {
+            e.preventDefault();
+            if(!dragging || dragging === card) return;
+            card.classList.remove("dropTarget");
+
+            const parent = card.parentNode;
+            const draggingIndex = Array.from(parent.children).indexOf(dragging);
+            const targetIndex = Array.from(parent.children).indexOf(card);
+
+            if(draggingIndex < targetIndex) parent.insertBefore(dragging, card.nextSibling);
+            else parent.insertBefore(dragging, card);
+
+            aboutDirtyOrder = true;
+            document.getElementById("saveAboutOrderBtn").disabled = false;
+            showToast("Order changed.", "ok");
+          });
+        });
+      }
+
+      function saveAboutOrder(){
+        const sheetName = document.getElementById("aboutSheetSel").value;
+        const rowIndices = Array.from(document.querySelectorAll("#aboutList .card"))
+          .map(c => Number(c.dataset.rowIndex));
+
+        document.getElementById("saveAboutOrderBtn").disabled = true;
+        showToast("Saving…");
+
+        google.script.run
+          .withSuccessHandler(() => {
+            aboutDirtyOrder = false;
+            showToast("Saved.", "ok");
+            loadAbout();
+          })
+          .withFailureHandler((err) => {
+            showToast((err?.message || String(err)), "err");
+            document.getElementById("saveAboutOrderBtn").disabled = false;
+          })
+          .aboutReorder({ sheetName, rowIndices });
+      }
+
+      /** utils */
+      function escapeHtml(s){
+        return String(s ?? "")
+          .replaceAll("&","&amp;")
+          .replaceAll("<","&lt;")
+          .replaceAll(">","&gt;")
+          .replaceAll('"',"&quot;")
+          .replaceAll("'","&#039;");
+      }
+      function escapeAttr(s){ return escapeHtml(s); }
+      function escapeJs(s){ return String(s ?? "").replaceAll("\\","\\\\").replaceAll("'","\\'"); }
+
+      // init
+      loadHome();
+    </script>
+  </body>
+</html>

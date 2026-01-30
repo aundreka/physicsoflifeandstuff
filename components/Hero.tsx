@@ -415,7 +415,7 @@ ctx.shadowBlur = 16 * dpr;
           position:absolute;
           top:50%;
           transform: translateY(-56%);
-          right: clamp(150px, 6vw, 190px);
+          right: clamp(80px, 3vw, 120px);
           z-index:5;
           max-width: 700px;
 
@@ -424,10 +424,8 @@ ctx.shadowBlur = 16 * dpr;
           .abovetitle{
           display:none;}
         .heroPanel{
-        
-          padding-left: 58px;
-          padding-top: 44px;
-          padding-bottom: 44px;
+          padding-block: 44px;
+          padding-inline: clamp(24px, 4vw, 58px);
           border-radius: 18px;
           /* light glass on white */
           background: linear-gradient(
@@ -448,9 +446,9 @@ ctx.shadowBlur = 16 * dpr;
           font-weight: 850;
           letter-spacing: 0.02em;
           line-height: 1.12;
-          font-size: clamp(2.3rem, 4.8vw, 4.7rem);
+          font-size: clamp(2.0rem, 4.5vw, 4.4rem);
           color: ${THEME.textTitle};
-          
+          line-height: 1em;
         }
 
         .heroSubtitle{

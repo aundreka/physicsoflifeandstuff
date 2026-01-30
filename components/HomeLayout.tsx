@@ -3,14 +3,20 @@ import Hero from "@/components/Hero";
 import { THEME } from "@/components/theme";
 import NewsSection from "@/components/NewsSection";
 import AboutSection from "@/components/AboutSection";
+
 import { getHomeContent } from "@/lib/homeContent";
+import { getAllNews } from "@/lib/newsContent";
 
 function Container({ children }: { children: React.ReactNode }) {
   return <div className="homeContainer">{children}</div>;
 }
 
-export default function HomeLayout() {
-  const content = getHomeContent();
+export default async function HomeLayout() {
+
+  const home = await getHomeContent();
+  const allNews = await getAllNews();
+
+  const latestThree = allNews.slice(0, 3);
 
   return (
     <div
@@ -26,7 +32,6 @@ export default function HomeLayout() {
     >
       <Hero />
 
-      {/* Wave transition: Hero (dark) -> News (light) */}
       <div className="heroToLightWave" aria-hidden="true">
         <svg viewBox="0 0 1440 120" preserveAspectRatio="none" className="heroToLightWaveSvg">
           <path
@@ -39,13 +44,13 @@ export default function HomeLayout() {
       <div className="homeLight">
         <section id="news" className="homeSection">
           <Container>
-            <NewsSection content={content.news} />
+            <NewsSection meta={home.news} items={latestThree} />
           </Container>
         </section>
 
         <section id="about" className="homeSection">
           <Container>
-            <AboutSection content={content.about} />
+            <AboutSection content={home.about} />
           </Container>
         </section>
       </div>
