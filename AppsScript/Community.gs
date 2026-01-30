@@ -290,13 +290,31 @@ function _getSheet_(name) {
 function _getSheetMeta_(sheet) {
   const lastCol = sheet.getLastColumn();
   if (lastCol < 1) throw new Error(`Sheet "${sheet.getName()}" has no headers.`);
-  const headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(String);
+  const lastRow = sheet.getLastRow();
+  const probeRows = Math.min(Math.max(lastRow, 1), 5);
+  let headerRow = 1;
+  let headers = sheet.getRange(1, 1, 1, lastCol).getValues()[0].map(String);
+  for (let r = 1; r <= probeRows; r++) {
+    const row = sheet.getRange(r, 1, 1, lastCol).getValues()[0];
+    let hasId = false;
+    for (let c = 0; c < row.length; c++) {
+      if (String(row[c]).trim().toLowerCase() === "id") {
+        hasId = true;
+        break;
+      }
+    }
+    if (hasId) {
+      headerRow = r;
+      headers = row.map(String);
+      break;
+    }
+  }
 
   const headerMap = {};
   let idCol = 0;
   headers.forEach((h, i) => {
     headerMap[h] = i + 1;
-    const norm = String(h).trim().toLowerCase();
+    const norm = _normalizeHeader_(h).toLowerCase();
     if (!idCol && norm === "id") idCol = i + 1;
   });
 
@@ -305,8 +323,9 @@ function _getSheetMeta_(sheet) {
   return {
     headers,
     headerMap,
-    hasStatus: Boolean(headerMap.status),
+    hasStatus: headers.some((h) => _normalizeHeader_(h).toLowerCase() === "status"),
     idCol,
+    headerRow,
   };
 }
 
@@ -315,9 +334,10 @@ function _getSheetRecords(sheetName) {
   const meta = _getSheetMeta_(sheet);
   const prefix = _idPrefix_(sheet.getName());
   const lastRow = sheet.getLastRow();
-  if (lastRow < 2) return [];
+  const startRow = meta.headerRow + 1;
+  if (lastRow < startRow) return [];
 
-  const idRange = sheet.getRange(2, meta.idCol, lastRow - 1, 1);
+  const idRange = sheet.getRange(startRow, meta.idCol, lastRow - startRow + 1, 1);
   const ids = idRange.getValues();
   let max = 0;
   ids.forEach((r) => {
@@ -335,7 +355,7 @@ function _getSheetRecords(sheetName) {
   }
   if (dirty) idRange.setValues(ids);
 
-  const values = sheet.getRange(2, 1, lastRow - 1, meta.headers.length).getValues();
+  const values = sheet.getRange(startRow, 1, lastRow - startRow + 1, meta.headers.length).getValues();
   for (let i = 0; i < values.length; i++) {
     values[i][meta.idCol - 1] = ids[i][0];
   }
@@ -347,8 +367,9 @@ function _getSheetRecords(sheetName) {
 function _fillMissingIds_(sheet, meta) {
   const prefix = _idPrefix_(sheet.getName());
   const lastRow = sheet.getLastRow();
-  if (lastRow < 2) return;
-  const idRange = sheet.getRange(2, meta.idCol, lastRow - 1, 1);
+  const startRow = meta.headerRow + 1;
+  if (lastRow < startRow) return;
+  const idRange = sheet.getRange(startRow, meta.idCol, lastRow - startRow + 1, 1);
   const ids = idRange.getValues();
   let max = 0;
   ids.forEach((r) => {
@@ -370,8 +391,9 @@ function _fillMissingIds_(sheet, meta) {
 function _nextSequentialId_(sheet, meta) {
   const prefix = _idPrefix_(sheet.getName());
   const lastRow = sheet.getLastRow();
-  if (lastRow < 2) return prefix + "_001";
-  const ids = sheet.getRange(2, meta.idCol, lastRow - 1, 1).getValues().map((r) => String(r[0] || "").trim());
+  const startRow = meta.headerRow + 1;
+  if (lastRow < startRow) return prefix + "_001";
+  const ids = sheet.getRange(startRow, meta.idCol, lastRow - startRow + 1, 1).getValues().map((r) => String(r[0] || "").trim());
   let max = 0;
   ids.forEach((v) => {
     const n = _parseIdNumber_(v, prefix);
@@ -385,7 +407,8 @@ function _nextSequentialId_(sheet, meta) {
 function _rowToObj_(headers, row) {
   const o = {};
   headers.forEach((h, i) => {
-    const key = String(h).trim().toLowerCase() === "id" ? "id" : h;
+    const norm = _normalizeHeader_(h);
+    const key = norm.toLowerCase() === "id" ? "id" : norm;
     o[key] = row[i];
   });
   return o;
@@ -394,11 +417,12 @@ function _rowToObj_(headers, row) {
 function _findRowIndexById_(sheet, meta, id) {
   if (!id) return 0;
   const lastRow = sheet.getLastRow();
-  if (lastRow < 2) return 0;
+  const startRow = meta.headerRow + 1;
+  if (lastRow < startRow) return 0;
 
-  const ids = sheet.getRange(2, meta.idCol, lastRow - 1, 1).getValues().map((r) => r[0]);
+  const ids = sheet.getRange(startRow, meta.idCol, lastRow - startRow + 1, 1).getValues().map((r) => r[0]);
   const idx = ids.indexOf(id);
-  return idx === -1 ? 0 : idx + 2; // convert to sheet row
+  return idx === -1 ? 0 : idx + startRow; // convert to sheet row
 }
 
 function _getRecordById_(sheetName, id) {
@@ -486,8 +510,9 @@ function _existsId_(sheetName, id) {
   const sheet = _getSheet_(sheetName);
   const meta = _getSheetMeta_(sheet);
   const lastRow = sheet.getLastRow();
-  if (lastRow < 2) return false;
-  const ids = sheet.getRange(2, meta.idCol, lastRow - 1, 1).getValues().map((r) => r[0]);
+  const startRow = meta.headerRow + 1;
+  if (lastRow < startRow) return false;
+  const ids = sheet.getRange(startRow, meta.idCol, lastRow - startRow + 1, 1).getValues().map((r) => r[0]);
   return ids.indexOf(id) !== -1;
 }
 
@@ -617,4 +642,10 @@ function _parseIdNumber_(value, prefix) {
   // Legacy numeric ids
   const n = parseInt(v, 10);
   return isNaN(n) ? NaN : n;
+}
+
+function _normalizeHeader_(h) {
+  return String(h || "")
+    .replace(/^\uFEFF/, "")
+    .trim();
 }

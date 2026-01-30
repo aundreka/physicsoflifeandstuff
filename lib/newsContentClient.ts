@@ -89,32 +89,29 @@ function normalizeGalleryItems(
     if (raw) warnMalformed("gallery data", context, raw);
     return [];
   }
-  return raw
-    .map((item) => {
-      if (!item || typeof item !== "object") {
-        warnMalformed("gallery item", context, item);
-        return null;
-      }
-      const obj = item as Record<string, unknown>;
-      const src = toCleanString(obj.src) || toCleanString(obj.url) || "";
-      if (!src) {
-        warnMalformed("gallery item", context, item);
-        return null;
-      }
-      const alt = toCleanString(obj.alt) || toCleanString(obj.text) || undefined;
-      const caption = toCleanString(obj.caption) || toCleanString(obj.text) || undefined;
-      const credit = toCleanString(obj.credit) || toCleanString(obj.cite) || undefined;
-      return {
-        src: normalizeDriveImageUrl(src),
-        alt,
-        caption,
-        credit,
-      };
-    })
-    .filter(
-      (item): item is { src: string; alt?: string; caption?: string; credit?: string } =>
-        Boolean(item)
-    );
+  const out: Array<{ src: string; alt?: string; caption?: string; credit?: string }> = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") {
+      warnMalformed("gallery item", context, item);
+      continue;
+    }
+    const obj = item as Record<string, unknown>;
+    const src = toCleanString(obj.src) || toCleanString(obj.url) || "";
+    if (!src) {
+      warnMalformed("gallery item", context, item);
+      continue;
+    }
+    const alt = toCleanString(obj.alt) || toCleanString(obj.text) || undefined;
+    const caption = toCleanString(obj.caption) || toCleanString(obj.text) || undefined;
+    const credit = toCleanString(obj.credit) || toCleanString(obj.cite) || undefined;
+    out.push({
+      src: normalizeDriveImageUrl(src),
+      alt,
+      caption,
+      credit,
+    });
+  }
+  return out;
 }
 
 export async function getAllNewsClient(): Promise<NewsListItem[]> {
