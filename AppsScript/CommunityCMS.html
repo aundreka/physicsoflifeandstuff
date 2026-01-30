@@ -1488,9 +1488,155 @@
         return obj;
       }
 
+      function hydratePendingFromDom() {
+        if (!EL.editor) return;
+        if (S.activeRow && S.activeRow.id) return;
+        if (S.entity === "publications") {
+          var authorEls = qsa(EL.editor, "#pubAuthors .mini");
+          if (authorEls.length) {
+            var nextAuthors = [];
+            for (var i = 0; i < authorEls.length; i++) {
+              var aEl = authorEls[i];
+              var aId = aEl.getAttribute("data-id") || ("__p_pub_author__dom_" + i);
+              if (String(aId).indexOf("__p_") !== 0) continue;
+              var aSel = aEl.querySelector(".pa-person");
+              nextAuthors.push({ id: aId, person_id: aSel ? aSel.value : "", author_order: i + 1 });
+            }
+            if (nextAuthors.length) S.pending.publication_authors = nextAuthors;
+          }
+          var linkEls = qsa(EL.editor, "#pubLinks .mini");
+          if (linkEls.length) {
+            var nextLinks = [];
+            for (var j = 0; j < linkEls.length; j++) {
+              var lEl = linkEls[j];
+              var lId = lEl.getAttribute("data-id") || ("__p_pub_link__dom_" + j);
+              if (String(lId).indexOf("__p_") !== 0) continue;
+              var lLabel = lEl.querySelector(".pl-label");
+              var lUrl = lEl.querySelector(".pl-url");
+              nextLinks.push({ id: lId, label: lLabel ? lLabel.value : "", url: lUrl ? lUrl.value : "", sort: j + 1 });
+            }
+            if (nextLinks.length) S.pending.publication_links = nextLinks;
+          }
+        }
+        if (S.entity === "presentations") {
+          var pEls = qsa(EL.editor, "#presAuthors .mini");
+          if (pEls.length) {
+            var nextPres = [];
+            for (var k = 0; k < pEls.length; k++) {
+              var pEl = pEls[k];
+              var pId = pEl.getAttribute("data-id") || ("__p_pres_author__dom_" + k);
+              if (String(pId).indexOf("__p_") !== 0) continue;
+              var pSel = pEl.querySelector(".pra-person");
+              nextPres.push({ id: pId, person_id: pSel ? pSel.value : "" });
+            }
+            if (nextPres.length) S.pending.presentation_authors = nextPres;
+          }
+        }
+        if (S.entity === "awards") {
+          var rEls = qsa(EL.editor, "#awardRecipients .mini");
+          if (rEls.length) {
+            var nextRec = [];
+            for (var m = 0; m < rEls.length; m++) {
+              var rEl = rEls[m];
+              var rId = rEl.getAttribute("data-id") || ("__p_award_rec__dom_" + m);
+              if (String(rId).indexOf("__p_") !== 0) continue;
+              var rSel = rEl.querySelector(".ar-person");
+              nextRec.push({ id: rId, person_id: rSel ? rSel.value : "" });
+            }
+            if (nextRec.length) S.pending.award_recipients = nextRec;
+          }
+          var apEls = qsa(EL.editor, "#awardPubs .mini");
+          if (apEls.length) {
+            var nextPubs = [];
+            for (var n = 0; n < apEls.length; n++) {
+              var apEl = apEls[n];
+              var apId = apEl.getAttribute("data-id") || ("__p_award_pub__dom_" + n);
+              if (String(apId).indexOf("__p_") !== 0) continue;
+              var apSel = apEl.querySelector(".ap-pub");
+              nextPubs.push({ id: apId, publication_id: apSel ? apSel.value : "" });
+            }
+            if (nextPubs.length) S.pending.award_publications = nextPubs;
+          }
+        }
+        if (S.entity === "certificates") {
+          var cEls = qsa(EL.editor, "#certHolders .mini");
+          if (cEls.length) {
+            var nextHold = [];
+            for (var h = 0; h < cEls.length; h++) {
+              var cEl = cEls[h];
+              var cId = cEl.getAttribute("data-id") || ("__p_cert_hold__dom_" + h);
+              if (String(cId).indexOf("__p_") !== 0) continue;
+              var cSel = cEl.querySelector(".ch-person");
+              nextHold.push({ id: cId, person_id: cSel ? cSel.value : "" });
+            }
+            if (nextHold.length) S.pending.certificate_holders = nextHold;
+          }
+        }
+      }
+
+      function pendingFromDom(entity) {
+        var out = {
+          publication_authors: [],
+          publication_links: [],
+          presentation_authors: [],
+          award_recipients: [],
+          award_publications: [],
+          certificate_holders: []
+        };
+        if (!EL.editor) return out;
+        if (entity === "publications") {
+          var authorEls = qsa(EL.editor, "#pubAuthors .mini");
+          for (var i = 0; i < authorEls.length; i++) {
+            var aEl = authorEls[i];
+            var aSel = aEl.querySelector(".pa-person");
+            out.publication_authors.push({ person_id: aSel ? aSel.value : "", author_order: i + 1 });
+          }
+          var linkEls = qsa(EL.editor, "#pubLinks .mini");
+          for (var j = 0; j < linkEls.length; j++) {
+            var lEl = linkEls[j];
+            var lLabel = lEl.querySelector(".pl-label");
+            var lUrl = lEl.querySelector(".pl-url");
+            out.publication_links.push({ label: lLabel ? lLabel.value : "", url: lUrl ? lUrl.value : "", sort: j + 1 });
+          }
+        }
+        if (entity === "presentations") {
+          var pEls = qsa(EL.editor, "#presAuthors .mini");
+          for (var k = 0; k < pEls.length; k++) {
+            var pEl = pEls[k];
+            var pSel = pEl.querySelector(".pra-person");
+            out.presentation_authors.push({ person_id: pSel ? pSel.value : "" });
+          }
+        }
+        if (entity === "awards") {
+          var rEls = qsa(EL.editor, "#awardRecipients .mini");
+          for (var m = 0; m < rEls.length; m++) {
+            var rEl = rEls[m];
+            var rSel = rEl.querySelector(".ar-person");
+            out.award_recipients.push({ person_id: rSel ? rSel.value : "" });
+          }
+          var apEls = qsa(EL.editor, "#awardPubs .mini");
+          for (var n = 0; n < apEls.length; n++) {
+            var apEl = apEls[n];
+            var apSel = apEl.querySelector(".ap-pub");
+            out.award_publications.push({ publication_id: apSel ? apSel.value : "" });
+          }
+        }
+        if (entity === "certificates") {
+          var cEls = qsa(EL.editor, "#certHolders .mini");
+          for (var h = 0; h < cEls.length; h++) {
+            var cEl = cEls[h];
+            var cSel = cEl.querySelector(".ch-person");
+            out.certificate_holders.push({ person_id: cSel ? cSel.value : "" });
+          }
+        }
+        return out;
+      }
+
       // ---- Actions ----
       function onSave() {
         var payload = collectFields();
+        hydratePendingFromDom();
+        var domPending = pendingFromDom(S.entity);
         if (!S.activeRow || !S.activeRow.id) delete payload.id;
         if (S.entity === "publications" || S.entity === "presentations" || S.entity === "awards" || S.entity === "certificates") {
           var parentId = (S.activeRow && S.activeRow.id) ? S.activeRow.id : "";
@@ -1514,23 +1660,23 @@
           var pending = [];
           if (saved && saved.id) {
             if (S.entity === "publications") {
-              pending = (S.pending.publication_authors || []).map(function (p, idx) { return { table: "publication_authors", rec: { publication_id: saved.id, person_id: p.person_id, author_order: idx + 1 } }; })
-                .concat((S.pending.publication_links || []).map(function (p, idx) { return { table: "publication_links", rec: { publication_id: saved.id, label: p.label, url: p.url, sort: p.sort || (idx + 1) } }; }));
+              pending = (domPending.publication_authors || []).map(function (p, idx) { return { table: "publication_authors", rec: { publication_id: saved.id, person_id: p.person_id, author_order: idx + 1 } }; })
+                .concat((domPending.publication_links || []).map(function (p, idx) { return { table: "publication_links", rec: { publication_id: saved.id, label: p.label, url: p.url, sort: p.sort || (idx + 1) } }; }));
               S.pending.publication_authors = [];
               S.pending.publication_links = [];
             }
             if (S.entity === "presentations") {
-              pending = (S.pending.presentation_authors || []).map(function (p) { return { table: "presentation_authors", rec: { presentation_id: saved.id, person_id: p.person_id } }; });
+              pending = (domPending.presentation_authors || []).map(function (p) { return { table: "presentation_authors", rec: { presentation_id: saved.id, person_id: p.person_id } }; });
               S.pending.presentation_authors = [];
             }
             if (S.entity === "awards") {
-              pending = (S.pending.award_recipients || []).map(function (p) { return { table: "award_recipients", rec: { award_id: saved.id, person_id: p.person_id } }; })
-                .concat((S.pending.award_publications || []).map(function (p) { return { table: "award_publications", rec: { award_id: saved.id, publication_id: p.publication_id } }; }));
+              pending = (domPending.award_recipients || []).map(function (p) { return { table: "award_recipients", rec: { award_id: saved.id, person_id: p.person_id } }; })
+                .concat((domPending.award_publications || []).map(function (p) { return { table: "award_publications", rec: { award_id: saved.id, publication_id: p.publication_id } }; }));
               S.pending.award_recipients = [];
               S.pending.award_publications = [];
             }
             if (S.entity === "certificates") {
-              pending = (S.pending.certificate_holders || []).map(function (p) { return { table: "certificate_holders", rec: { certificate_id: saved.id, person_id: p.person_id } }; });
+              pending = (domPending.certificate_holders || []).map(function (p) { return { table: "certificate_holders", rec: { certificate_id: saved.id, person_id: p.person_id } }; });
               S.pending.certificate_holders = [];
             }
           }

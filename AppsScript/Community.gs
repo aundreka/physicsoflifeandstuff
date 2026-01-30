@@ -270,7 +270,19 @@ function _ss_() {
 }
 
 function _getSheet_(name) {
-  const sh = _ss_().getSheetByName(name);
+  const ss = _ss_();
+  let sh = ss.getSheetByName(name);
+  if (!sh) {
+    const target = String(name || "").trim().toLowerCase();
+    const sheets = ss.getSheets();
+    for (let i = 0; i < sheets.length; i++) {
+      const s = sheets[i];
+      if (String(s.getName()).trim().toLowerCase() === target) {
+        sh = s;
+        break;
+      }
+    }
+  }
   if (!sh) throw new Error(`Missing sheet: "${name}"`);
   return sh;
 }

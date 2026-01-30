@@ -11,6 +11,112 @@ import {
 
 const SHEET_ID = process.env.NEXT_PUBLIC_SHEETS_ID ?? "";
 
+function toCleanString(value: unknown): string | null {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed ? trimmed : null;
+  }
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  return null;
+}
+
+function warnMalformed(kind: string, context: string, detail: unknown) {
+  if (typeof console === "undefined" || !console.warn) return;
+  console.warn(`[news] malformed ${kind} in ${context}`, detail);
+}
+
+function normalizeListItems(raw: unknown, context: string): string[] {
+  if (!Array.isArray(raw)) {
+    if (raw) warnMalformed("list data", context, raw);
+    return [];
+  }
+  let warned = false;
+  return raw
+    .map((item) => {
+      if (typeof item === "string") return item.trim();
+      if (typeof item === "number" && Number.isFinite(item)) return String(item);
+      if (item && typeof item === "object") {
+        const obj = item as Record<string, unknown>;
+        return (
+          toCleanString(obj.text) ||
+          toCleanString(obj.label) ||
+          toCleanString(obj.url) ||
+          toCleanString(obj.cite) ||
+          ""
+        );
+      }
+      if (!warned) {
+        warned = true;
+        warnMalformed("list item", context, item);
+      }
+      return "";
+    })
+    .filter(Boolean);
+}
+
+function normalizeLinkItems(
+  raw: unknown,
+  context: string
+): Array<{ label: string; url: string }> {
+  if (!Array.isArray(raw)) {
+    if (raw) warnMalformed("link data", context, raw);
+    return [];
+  }
+  return raw
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const obj = item as Record<string, unknown>;
+      const url = toCleanString(obj.url) || "";
+      if (!url) {
+        warnMalformed("link item", context, item);
+        return null;
+      }
+      const label =
+        toCleanString(obj.label) ||
+        toCleanString(obj.text) ||
+        toCleanString(obj.cite) ||
+        url;
+      return { label, url };
+    })
+    .filter((item): item is { label: string; url: string } => Boolean(item));
+}
+
+function normalizeGalleryItems(
+  raw: unknown,
+  context: string
+): Array<{ src: string; alt?: string; caption?: string; credit?: string }> {
+  if (!Array.isArray(raw)) {
+    if (raw) warnMalformed("gallery data", context, raw);
+    return [];
+  }
+  return raw
+    .map((item) => {
+      if (!item || typeof item !== "object") {
+        warnMalformed("gallery item", context, item);
+        return null;
+      }
+      const obj = item as Record<string, unknown>;
+      const src = toCleanString(obj.src) || toCleanString(obj.url) || "";
+      if (!src) {
+        warnMalformed("gallery item", context, item);
+        return null;
+      }
+      const alt = toCleanString(obj.alt) || toCleanString(obj.text) || undefined;
+      const caption = toCleanString(obj.caption) || toCleanString(obj.text) || undefined;
+      const credit = toCleanString(obj.credit) || toCleanString(obj.cite) || undefined;
+      return {
+        src: normalizeDriveImageUrl(src),
+        alt,
+        caption,
+        credit,
+      };
+    })
+    .filter(
+      (item): item is { src: string; alt?: string; caption?: string; credit?: string } =>
+        Boolean(item)
+    );
+}
+
 export async function getAllNewsClient(): Promise<NewsListItem[]> {
   if (!SHEET_ID) return [];
 
@@ -80,24 +186,31 @@ export async function getNewsBySlugClient(slug: string): Promise<NewsArticle | n
       };
 
     if (type === "list")
-      return { type, items: parseJsonMaybe<string[]>(b.items_json, []) };
+      return {
+        type,
+        items: normalizeListItems(
+          parseJsonMaybe<unknown>(b.items_json, []),
+          `news_blocks.items_json slug=${slug} idx=${b.idx ?? ""}`
+        ),
+      };
 
     if (type === "links")
       return {
         type,
         title: b.title || undefined,
-        items: parseJsonMaybe<Array<{ label: string; url: string }>>(b.items_json, []),
+        items: normalizeLinkItems(
+          parseJsonMaybe<unknown>(b.items_json, []),
+          `news_blocks.items_json slug=${slug} idx=${b.idx ?? ""}`
+        ),
       };
 
     if (type === "gallery")
       return {
         type,
         title: b.title || undefined,
-        images: parseJsonMaybe<Array<{ src: string; alt?: string }>>(b.images_json, []).map(
-          (img) => ({
-            ...img,
-            src: normalizeDriveImageUrl(img.src),
-          })
+        images: normalizeGalleryItems(
+          parseJsonMaybe<unknown>(b.images_json, []),
+          `news_blocks.images_json slug=${slug} idx=${b.idx ?? ""}`
         ),
       };
 
@@ -122,7 +235,14 @@ export async function getNewsBySlugClient(slug: string): Promise<NewsArticle | n
       caption: row.hero_caption || undefined,
       credit: row.hero_credit || undefined,
     },
-    links: parseJsonMaybe<Array<{ label: string; url: string }>>(row.links_json, []),
+    links: normalizeLinkItems(
+      parseJsonMaybe<unknown>(row.links_json, []),
+      `news_articles.links_json slug=${row.slug || slug}`
+    ),
+    images: normalizeGalleryItems(
+      parseJsonMaybe<unknown>(row.images_json || row.images, []),
+      `news_articles.images slug=${row.slug || slug}`
+    ),
     content,
   };
 }

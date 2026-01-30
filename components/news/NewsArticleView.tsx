@@ -35,6 +35,38 @@ function toIsoDate(iso?: string | number | Date | null): string | undefined {
   return undefined;
 }
 
+function coerceText(value: unknown): string | null {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed ? trimmed : null;
+  }
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  if (value && typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    return (
+      (typeof obj.text === "string" && obj.text.trim()) ||
+      (typeof obj.label === "string" && obj.label.trim()) ||
+      (typeof obj.url === "string" && obj.url.trim()) ||
+      (typeof obj.cite === "string" && obj.cite.trim()) ||
+      null
+    );
+  }
+  return null;
+}
+
+function coerceUrl(value: unknown): string | null {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed ? trimmed : null;
+  }
+  if (value && typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    if (typeof obj.url === "string" && obj.url.trim()) return obj.url.trim();
+    if (typeof obj.src === "string" && obj.src.trim()) return obj.src.trim();
+  }
+  return null;
+}
+
 function TextWithBreaks({ text }: { text: string }) {
   const lines = text.split(/\r?\n/);
   return (
@@ -103,16 +135,18 @@ function Blocks({ blocks }: { blocks: NewsBlock[] }) {
           );
         }
         if (b.type === "image") {
-          const alt = b.alt || b.caption || "";
+          const alt = coerceText(b.alt) || coerceText(b.caption) || "";
           return (
             <figure key={i} className="articleFigure">
               <div className="articleFigureMedia">
-                <img src={b.src} alt={alt} loading="lazy" />
+                <img src={coerceUrl(b.src) ?? ""} alt={alt} loading="lazy" />
               </div>
-              {(b.caption || b.credit) ? (
+              {(coerceText(b.caption) || coerceText(b.credit)) ? (
                 <figcaption className="articleCaption">
-                  {b.caption ? <span>{b.caption}</span> : null}
-                  {b.credit ? <span className="articleCredit">{b.credit}</span> : null}
+                  {coerceText(b.caption) ? <span>{coerceText(b.caption)}</span> : null}
+                  {coerceText(b.credit) ? (
+                    <span className="articleCredit">{coerceText(b.credit)}</span>
+                  ) : null}
                 </figcaption>
               ) : null}
             </figure>
@@ -125,7 +159,19 @@ function Blocks({ blocks }: { blocks: NewsBlock[] }) {
               <div className="articleGallery">
                 {b.images.map((img, j) => (
                   <div key={`${img.src}-${j}`} className="articleGalleryTile">
-                    <img src={img.src} alt={img.alt ?? ""} loading="lazy" />
+                    <img
+                      src={coerceUrl(img.src) ?? ""}
+                      alt={coerceText(img.alt) ?? ""}
+                      loading="lazy"
+                    />
+                    {(coerceText(img.caption) || coerceText(img.credit)) ? (
+                      <div className="articleGalleryCaption">
+                        {coerceText(img.caption) ? <span>{coerceText(img.caption)}</span> : null}
+                        {coerceText(img.credit) ? (
+                          <span className="articleCredit">{coerceText(img.credit)}</span>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </div>
                 ))}
               </div>
@@ -171,10 +217,12 @@ export default function NewsArticleView({
   article: NewsArticle;
     similar: NewsListItem[];
   }) {
-  const heroImage = (article.hero?.image ?? "").trim();
+  const heroImage = coerceUrl(article.hero?.image) ?? "";
   const hasHero = Boolean(heroImage);
   const publishedDateTime = toIsoDate(article.publishedAt);
   const updatedDateTime = toIsoDate(article.updatedAt ?? null);
+  const heroCaption = coerceText(article.hero?.caption);
+  const heroCredit = coerceText(article.hero?.credit);
 
   return (
     <main className="newsPageWhite">
@@ -231,13 +279,38 @@ export default function NewsArticleView({
                 <div className="articleHeroFallback" aria-hidden="true" />
               )}
 
-              {(article.hero?.caption || article.hero?.credit) ? (
+              {(heroCaption || heroCredit) ? (
                 <div className="articleHeroCaption">
-                  {article.hero?.caption ? <span>{article.hero.caption}</span> : null}
-                  {article.hero?.credit ? <span className="articleCredit">{article.hero.credit}</span> : null}
+                  {heroCaption ? <span>{heroCaption}</span> : null}
+                  {heroCredit ? <span className="articleCredit">{heroCredit}</span> : null}
                 </div>
               ) : null}
             </section>
+
+            {/* ARTICLE IMAGES (optional) */}
+            {article.images?.length ? (
+              <section className="articleGalleryWrap">
+                <div className="articleGallery">
+                  {article.images.map((img, j) => (
+                    <div key={`${img.src}-${j}`} className="articleGalleryTile">
+                      <img
+                        src={coerceUrl(img.src) ?? ""}
+                        alt={coerceText(img.alt) ?? ""}
+                        loading="lazy"
+                      />
+                      {(coerceText(img.caption) || coerceText(img.credit)) ? (
+                        <div className="articleGalleryCaption">
+                          {coerceText(img.caption) ? <span>{coerceText(img.caption)}</span> : null}
+                          {coerceText(img.credit) ? (
+                            <span className="articleCredit">{coerceText(img.credit)}</span>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ) : null}
 
             {/* TOP LINKS (optional) */}
             {article.links?.length ? (
