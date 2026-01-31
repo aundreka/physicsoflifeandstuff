@@ -309,11 +309,25 @@
         return !(res && res.ok === false);
       }
       function getData(res) {
-        return (res && typeof res === "object" && res.hasOwnProperty("data")) ? res.data : res;
+        return (res && typeof res === "object" && ("data" in res)) ? res.data : res;
+      }
+      function toArray(v) {
+        if (Array.isArray(v)) return v;
+        if (v && typeof v.length === "number") return Array.prototype.slice.call(v);
+        return [];
       }
       function errMsg(err, fallback) {
         if (err && err.message) return String(err.message);
         return fallback || "Request failed";
+      }
+      function setListDebug(entity, rowsCount, dbgCount, envName) {
+        if (entity !== "publications" && entity !== "presentations") return;
+        var label = entity;
+        if (typeof rowsCount === "number" || typeof dbgCount === "number") {
+          label += " (" + (rowsCount || 0) + "/" + (dbgCount || 0) + ")";
+        }
+        if (envName) label += " @" + envName;
+        EL.listHint.textContent = label;
       }
       function hasRequiredRelations(entity, parentId) {
         if (entity === "publications") {
@@ -523,14 +537,59 @@
             toast(errMsg(res && res.error, "List failed"));
             return;
           }
-          var listData = getData(res) || [];
-          S.rows = listData.slice();
+          var listData = getData(res);
+          S.rows = toArray(listData);
+          for (var i = 0; i < S.rows.length; i++) {
+            var r = S.rows[i];
+            if (r && typeof r === "object" && !("id" in r)) {
+              if ("ID" in r) r.id = r.ID;
+              else if ("Id" in r) r.id = r.Id;
+            }
+          }
           renderList();
           if (done) done();
+          setListDebug(entity, S.rows.length, null, null);
           // Related tables for detail editors (fetch after list renders)
           loadRelatedCaches(entity, function () {
             if (S.activeRow) renderEditor();
           });
+          if (entity === "publications" || entity === "presentations") {
+            run("communityDebugList", [entity, 200], function (dbgList) {
+              var data = getData(dbgList) || {};
+              var sample = toArray(data.sample);
+              setListDebug(entity, S.rows.length, Number(data.count || sample.length || 0), data.spreadsheetName || "");
+              if (!S.rows.length && sample.length) {
+                S.rows = sample;
+                renderList();
+              }
+              if (S.rows.length) return;
+              run("communityDebugSheet", [entity, 10], function (dbg) {
+                var data2 = getData(dbg) || {};
+                if (!data2.rawRows || !data2.headersNormalized || !data2.rawRows.length) return;
+                var headers = data2.headersNormalized;
+                var mapped = [];
+                for (var i = 0; i < data2.rawRows.length; i++) {
+                  var row = data2.rawRows[i] || [];
+                  var obj = {};
+                  for (var c = 0; c < headers.length; c++) {
+                    var h = headers[c];
+                    if (!h) continue;
+                    var key = String(h).toLowerCase() === "id" ? "id" : h;
+                    obj[key] = row[c];
+                  }
+                  mapped.push(obj);
+                }
+                if (mapped.length) {
+                  S.rows = mapped;
+                  setListDebug(entity, S.rows.length, Number(data.count || mapped.length || 0), data.spreadsheetName || "");
+                  renderList();
+                }
+              }, function () {});
+            }, function () {
+              setListDebug(entity, S.rows.length, 0, "");
+              toast("DebugList failed for " + entity);
+            });
+          }
         }, function (err) {
           console.error(err);
           toast(errMsg(err, "List failed"));
@@ -553,7 +612,7 @@
           }
           var t = wants[i++];
           run("communityList", [t], function (r) {
-            S.all[t] = (r && r.ok && r.data) ? r.data : [];
+            S.all[t] = (r && r.ok && r.data) ? toArray(r.data) : [];
             next();
           }, function () {
             S.all[t] = [];

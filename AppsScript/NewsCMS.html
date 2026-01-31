@@ -202,28 +202,20 @@
                 <div class="muted tiny">Author role</div>
                 <input id="f_author_role" placeholder="" />
               </div>
-              <div class="col">
-                <div class="muted tiny">Links</div>
-                <div id="linksWrap" class="col"></div>
-                <div class="row">
-                  <button id="btnAddLink" class="ghost">+ Link</button>
-                  <button id="btnClearLinks" class="ghost">Clear</button>
-                </div>
-              </div>
             </div>
 
             <div class="grid3">
               <div class="col">
                 <div class="muted tiny">Publication id</div>
-                <input id="f_publication_id" placeholder="" />
+                <select id="f_publication_id"></select>
               </div>
               <div class="col">
                 <div class="muted tiny">Presentation id</div>
-                <input id="f_presentation_id" placeholder="" />
+                <select id="f_presentation_id"></select>
               </div>
               <div class="col">
                 <div class="muted tiny">Award id</div>
-                <input id="f_award_id" placeholder="" />
+                <select id="f_award_id"></select>
               </div>
             </div>
 
@@ -303,6 +295,21 @@
     setTimeout(function () { el.className = "toast hidden"; }, 2600);
   }
 
+  function renderSelectOptions(el, items) {
+    if (!el) return;
+    var current = trim(el.value);
+    var html = '<option value=""></option>';
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i] || {};
+      var id = s(it.id);
+      var label = s(it.label || it.name || it.title || it.award);
+      if (!id) continue;
+      html += '<option value="' + escHtml(id) + '">' + escHtml(label || id) + '</option>';
+    }
+    el.innerHTML = html;
+    if (current) el.value = current;
+  }
+
   function runGS(name, args, ok, fail) {
     try {
       var r = google.script.run.withSuccessHandler(ok).withFailureHandler(fail);
@@ -334,6 +341,9 @@
   var state = {
     articles: [],
     members: [],
+    publications: [],
+    presentations: [],
+    awards: [],
     currentSlug: "",
     isNew: false
   };
@@ -363,10 +373,6 @@
   var f_presentation_id = $("f_presentation_id");
   var f_award_id = $("f_award_id");
   var heroUpload = $("heroUpload");
-
-  var linksWrap = $("linksWrap");
-  var btnAddLink = $("btnAddLink");
-  var btnClearLinks = $("btnClearLinks");
 
   var blocksWrap = $("blocksWrap");
   var peopleWrap = $("peopleWrap");
@@ -453,42 +459,11 @@
     f_presentation_id.value = "";
     f_award_id.value = "";
 
-    linksWrap.innerHTML = "";
     blocksWrap.innerHTML = "";
     peopleWrap.innerHTML = "";
 
     slugPill.textContent = "";
     btnDelete.className = "danger hidden";
-  }
-
-  // ---------- links ----------
-  function renderLinks(arr) {
-    linksWrap.innerHTML = "";
-    for (var i = 0; i < arr.length; i++) addLinkRow(arr[i].label, arr[i].url);
-  }
-
-  function addLinkRow(label, url) {
-    var row = document.createElement("div");
-    row.className = "row";
-    row.innerHTML = ''
-      + '<input class="linkLabel" placeholder="Label" value="' + escHtml(label) + '"/>'
-      + '<input class="linkUrl" placeholder="URL" value="' + escHtml(url) + '"/>'
-      + '<button class="ghost smallBtn" title="Remove">×</button>';
-    row.querySelector("button").addEventListener("click", function () {
-      row.parentNode.removeChild(row);
-    });
-    linksWrap.appendChild(row);
-  }
-
-  function collectLinks() {
-    var out = [];
-    var rows = linksWrap.querySelectorAll(".row");
-    for (var i = 0; i < rows.length; i++) {
-      var lab = trim(rows[i].querySelector(".linkLabel").value);
-      var url = trim(rows[i].querySelector(".linkUrl").value);
-      if (lab && url) out.push({ label: lab, url: url });
-    }
-    return out;
   }
 
   // ---------- blocks (FULL) ----------
@@ -621,12 +596,15 @@
       var gallery = card.querySelector(".bGallery");
       var embed = card.querySelector(".bEmbed");
       var list = card.querySelector(".bList");
+      var common = card.querySelector(".bCommon");
       citeWrap.className = "col bCiteWrap hidden";
 
+      common.className = "col bCommon hidden";
       img.className = "grid2 bImage hidden";
       gallery.className = "col bGallery hidden";
       embed.className = "grid2 bEmbed hidden";
       list.className = "col bList hidden";
+      if (type === "paragraph" || type === "subhead" || type === "quote") common.className = "col bCommon";
       if (type === "quote") citeWrap.className = "col bCiteWrap";
 
       if (type === "image") img.className = "grid2 bImage";
@@ -811,7 +789,7 @@
         slug: slug,
         idx: i,
         type: type,
-        text: text,
+        text: (type === "paragraph" || type === "subhead" || type === "quote") ? text : "",
         cite: (type === "quote") ? cite : "",
 
         src: (type === "image") ? src : "",
@@ -913,13 +891,11 @@
     f_presentation_id.value = s(a.presentation_id);
     f_award_id.value = s(a.award_id);
 
-    renderLinks(parseJsonArray(a.links_json));
     renderBlocks(payload.blocks || []);
     renderPeople(payload.people || []);
   }
 
   function collectEditorPayload() {
-    var links = collectLinks();
     var slug = trim(f_slug.value) || slugify(f_title.value);
 
     var article = {
@@ -932,7 +908,6 @@
       hero_image: trim(f_hero_image.value),
       hero_caption: trim(f_hero_caption.value),
       hero_credit: trim(f_hero_credit.value),
-      links_json: links.length ? JSON.stringify(links) : "",
       publication_id: trim(f_publication_id.value),
       presentation_id: trim(f_presentation_id.value),
       award_id: trim(f_award_id.value)
@@ -970,7 +945,6 @@
     state.currentSlug = "";
     slugPill.textContent = "new";
     btnDelete.className = "danger hidden";
-    renderLinks([]);
     renderBlocks([]);
     renderPeople([]);
     setEditorVisible(true);
@@ -1052,9 +1026,6 @@
   btnSave.addEventListener("click", saveArticle);
   btnDelete.addEventListener("click", deleteArticle);
 
-  btnAddLink.addEventListener("click", function () { addLinkRow("", ""); });
-  btnClearLinks.addEventListener("click", function () { linksWrap.innerHTML = ""; });
-
   btnAddBlock.addEventListener("click", function () { addBlockCard(defaultBlock()); renumberBlocks(); });
   btnAddPerson.addEventListener("click", function () { addPersonRow(""); renumberPeople(); });
 
@@ -1081,6 +1052,30 @@
       state.members = (m && m.length) ? m : [];
     }, function () {
       state.members = [];
+    });
+
+    runGS("news_listPublications", null, function (items) {
+      state.publications = (items && items.length) ? items : [];
+      renderSelectOptions(f_publication_id, state.publications);
+    }, function () {
+      state.publications = [];
+      renderSelectOptions(f_publication_id, []);
+    });
+
+    runGS("news_listPresentations", null, function (items) {
+      state.presentations = (items && items.length) ? items : [];
+      renderSelectOptions(f_presentation_id, state.presentations);
+    }, function () {
+      state.presentations = [];
+      renderSelectOptions(f_presentation_id, []);
+    });
+
+    runGS("news_listAwards", null, function (items) {
+      state.awards = (items && items.length) ? items : [];
+      renderSelectOptions(f_award_id, state.awards);
+    }, function () {
+      state.awards = [];
+      renderSelectOptions(f_award_id, []);
     });
   }
 

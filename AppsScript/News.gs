@@ -87,6 +87,60 @@ function news_listMembers() {
   return out;
 }
 
+/** For dropdowns: [{id, label}] */
+function news_listPublications() {
+  const sh = _sheet_("publications");
+  const { headers, rows } = _readTable_(sh);
+  const get = _rowGetter_(headers);
+
+  const out = rows
+    .map((r) => {
+      const id = String(get(r, "id") || "").trim();
+      const title = String(get(r, "title") || "").trim();
+      return { id, label: title || id };
+    })
+    .filter((x) => x.id && x.label);
+
+  out.sort((a, b) => a.label.localeCompare(b.label));
+  return out;
+}
+
+/** For dropdowns: [{id, label}] */
+function news_listPresentations() {
+  const sh = _sheet_("presentations");
+  const { headers, rows } = _readTable_(sh);
+  const get = _rowGetter_(headers);
+
+  const out = rows
+    .map((r) => {
+      const id = String(get(r, "id") || "").trim();
+      const title = String(get(r, "title") || "").trim();
+      return { id, label: title || id };
+    })
+    .filter((x) => x.id && x.label);
+
+  out.sort((a, b) => a.label.localeCompare(b.label));
+  return out;
+}
+
+/** For dropdowns: [{id, label}] */
+function news_listAwards() {
+  const sh = _sheet_("awards");
+  const { headers, rows } = _readTable_(sh);
+  const get = _rowGetter_(headers);
+
+  const out = rows
+    .map((r) => {
+      const id = String(get(r, "id") || "").trim();
+      const label = String(get(r, "award") || "").trim();
+      return { id, label: label || id };
+    })
+    .filter((x) => x.id && x.label);
+
+  out.sort((a, b) => a.label.localeCompare(b.label));
+  return out;
+}
+
 /**
  * Create article (and optionally blocks + people).
  * payload = { article, blocks, people }
@@ -230,7 +284,6 @@ function _articleRowToObj_(headers, row) {
   obj.hero_image = String(obj.hero_image || "").trim();
   obj.hero_caption = String(obj.hero_caption || "").trim();
   obj.hero_credit = String(obj.hero_credit || "").trim();
-  obj.links_json = String(obj.links_json || "").trim();
   obj.publication_id = String(obj.publication_id || "").trim();
   obj.presentation_id = String(obj.presentation_id || "").trim();
   obj.award_id = String(obj.award_id || "").trim();
@@ -274,7 +327,6 @@ function _normalizeArticleInput_(article, opts) {
     hero_image,
     hero_caption: String(article.hero_caption || "").trim(),
     hero_credit: String(article.hero_credit || "").trim(),
-    links_json: _normalizeLinksJson_(article.links_json),
     publication_id: String(article.publication_id || "").trim(),
     presentation_id: String(article.presentation_id || "").trim(),
     award_id: String(article.award_id || "").trim(),
@@ -282,30 +334,6 @@ function _normalizeArticleInput_(article, opts) {
   };
 
   return out;
-}
-
-function _normalizeLinksJson_(val) {
-  // Accept: "", already-stringified json, or array of {label,url}
-  if (val == null) return "";
-  if (Array.isArray(val)) {
-    const cleaned = val
-      .map((x) => ({
-        label: String((x && x.label) || "").trim(),
-        url: String((x && x.url) || "").trim(),
-      }))
-      .filter((x) => x.label && x.url);
-    return cleaned.length ? JSON.stringify(cleaned) : "";
-  }
-  const s = String(val).trim();
-  if (!s) return "";
-  // If it's JSON, keep as-is; otherwise empty
-  try {
-    const parsed = JSON.parse(s);
-    if (Array.isArray(parsed)) return JSON.stringify(parsed);
-    return "";
-  } catch (e) {
-    return "";
-  }
 }
 
 function _ensureUniqueSlug_(slug) {

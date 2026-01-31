@@ -192,6 +192,81 @@ function communityBulkUpsert(items) {
 }
 
 /**
+ * One-time debug helper for inspecting a sheet's headers and raw rows.
+ */
+function communityDebugSheet(table, sampleRows) {
+  if (!table) {
+    return { ok: false, error: { message: "Missing table name. Example: communityDebugSheet('publications', 5)" } };
+  }
+  _assertKnownTable_(table);
+  const ss = _ss_();
+  const sheet = _getSheet_(table);
+  const meta = _getSheetMeta_(sheet);
+  const lastRow = sheet.getLastRow();
+  const lastCol = sheet.getLastColumn();
+  const startRow = meta.headerRow + 1;
+  const take = Math.max(0, Math.min(Number(sampleRows || 5), 50));
+  const rawHeader = sheet.getRange(meta.headerRow, 1, 1, lastCol).getValues()[0];
+  const rawRows = take && lastRow >= startRow
+    ? sheet.getRange(startRow, 1, Math.min(take, lastRow - startRow + 1), lastCol).getValues()
+    : [];
+  return {
+    ok: true,
+    data: {
+      spreadsheetId: ss.getId(),
+      spreadsheetName: ss.getName(),
+      sheetName: sheet.getName(),
+      headerRow: meta.headerRow,
+      idCol: meta.idCol,
+      lastRow,
+      lastCol,
+      startRow,
+      sheetNames: ss.getSheets().map((s) => s.getName()),
+      rawHeader,
+      rawRows,
+      headersNormalized: meta.headers.map(_normalizeHeader_)
+    }
+  };
+}
+
+/**
+ * Debug: list sheets in the active spreadsheet.
+ */
+function communityDebugEnv() {
+  const ss = _ss_();
+  return {
+    ok: true,
+    data: {
+      spreadsheetId: ss.getId(),
+      spreadsheetName: ss.getName(),
+      sheetNames: ss.getSheets().map((s) => s.getName())
+    }
+  };
+}
+
+/**
+ * Debug: return parsed records from _getSheetRecords for a table.
+ */
+function communityDebugList(table, sampleRows) {
+  if (!table) {
+    return { ok: false, error: { message: "Missing table name. Example: communityDebugList('publications', 5)" } };
+  }
+  _assertKnownTable_(table);
+  const ss = _ss_();
+  const records = _getSheetRecords(table);
+  const take = Math.max(0, Math.min(Number(sampleRows || 5), 500));
+  return {
+    ok: true,
+    data: {
+      spreadsheetId: ss.getId(),
+      spreadsheetName: ss.getName(),
+      count: records.length,
+      sample: take ? records.slice(0, take) : []
+    }
+  };
+}
+
+/**
  * Upload member/alumni image.
  * - Folder: MEMBER_IMAGES
  * - Filename: Lastname_Firstname
@@ -360,7 +435,7 @@ function _getSheetRecords(sheetName) {
     values[i][meta.idCol - 1] = ids[i][0];
   }
   return values
-    .map((row) => _rowToObj_(meta.headers, row))
+    .map((row) => _rowToObjWithMeta_(meta, row))
     .filter((o) => o.id); // ignore blank rows
 }
 
@@ -414,6 +489,14 @@ function _rowToObj_(headers, row) {
   return o;
 }
 
+function _rowToObjWithMeta_(meta, row) {
+  const o = _rowToObj_(meta.headers, row);
+  if (!o.id && meta && meta.idCol) {
+    o.id = row[meta.idCol - 1];
+  }
+  return o;
+}
+
 function _findRowIndexById_(sheet, meta, id) {
   if (!id) return 0;
   const lastRow = sheet.getLastRow();
@@ -432,7 +515,7 @@ function _getRecordById_(sheetName, id) {
   if (!rowIndex) return null;
 
   const row = sheet.getRange(rowIndex, 1, 1, meta.headers.length).getValues()[0];
-  return _rowToObj_(meta.headers, row);
+  return _rowToObjWithMeta_(meta, row);
 }
 
 function _upsertRow_(sheet, meta, obj) {
@@ -646,6 +729,8 @@ function _parseIdNumber_(value, prefix) {
 
 function _normalizeHeader_(h) {
   return String(h || "")
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .replace(/\u00A0/g, " ")
     .replace(/^\uFEFF/, "")
     .trim();
 }
