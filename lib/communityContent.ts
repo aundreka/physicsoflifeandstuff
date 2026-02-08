@@ -10,14 +10,16 @@ import {
   normalizeDriveImageUrl,
 } from "@/lib/sheets";
 
-export type MemberType = "admin" | "member" | "alumni";
+export type MemberType = "adviser" | "member" | "alumni";
 
 export type Member = {
   id: string;
+  title: string;
   last_name: string;
   first_name: string;
   image: string; // normalized
   specialization: string;
+  occupation: string;
   course: string;
   graduation_ay: string;
   educational_attainment: string;
@@ -28,6 +30,16 @@ export type Member = {
   linkedin: string;
   type: MemberType | ""; // tolerate blanks
   status: string;
+  show_specialization: boolean;
+  show_occupation: boolean;
+  show_course: boolean;
+  show_graduation_ay: boolean;
+  show_educational_attainment: boolean;
+  show_member_since: boolean;
+  show_associated_institutes: boolean;
+  show_bionotes: boolean;
+  show_email: boolean;
+  show_linkedin: boolean;
 };
 
 export type Publication = {
@@ -169,8 +181,17 @@ function getField(o: Record<string, string>, keys: string[]): string {
 
 function safeMemberType(v: string): MemberType | "" {
   var t = lower(v);
-  if (t === "admin" || t === "member" || t === "alumni") return t as MemberType;
+  if (t === "adviser") return "adviser";
+  if (t === "admin") return "adviser";
+  if (t === "member" || t === "alumni") return t as MemberType;
   return "";
+}
+
+function showFlag(v: string): boolean {
+  var t = lower(v);
+  if (!t) return true;
+  if (t === "false" || t === "0" || t === "no" || t === "hide") return false;
+  return true;
 }
 
 function byLastFirst(a: Member, b: Member): number {
@@ -207,10 +228,12 @@ async function fetchTabObjects(
 function mapMember(o: Record<string, string>): Member {
   return {
     id: getField(o, ["id"]),
+    title: getField(o, ["title", "honorific", "prefix"]),
     last_name: getField(o, ["last_name", "lastname", "last name", "surname"]),
     first_name: getField(o, ["first_name", "firstname", "first name", "given name"]),
     image: normalizeDriveImageUrl(getField(o, ["image", "photo", "avatar"])),
     specialization: getField(o, ["specialization", "specialisation"]),
+    occupation: getField(o, ["occupation"]),
     course: getField(o, ["course"]),
     graduation_ay: getField(o, ["graduation_ay", "graduation ay", "graduation_year"]),
     educational_attainment: getField(o, ["educational_attainment", "educational attainment", "education"]),
@@ -221,6 +244,16 @@ function mapMember(o: Record<string, string>): Member {
     linkedin: getField(o, ["linkedin", "linked_in", "linkedin_url", "linked in", "linkedin url"]),
     type: safeMemberType(getField(o, ["type"])),
     status: getField(o, ["status"]),
+    show_specialization: showFlag(getField(o, ["show_specialization"])),
+    show_occupation: showFlag(getField(o, ["show_occupation"])),
+    show_course: showFlag(getField(o, ["show_course"])),
+    show_graduation_ay: showFlag(getField(o, ["show_graduation_ay"])),
+    show_educational_attainment: showFlag(getField(o, ["show_educational_attainment"])),
+    show_member_since: showFlag(getField(o, ["show_member_since"])),
+    show_associated_institutes: showFlag(getField(o, ["show_associated_institutes"])),
+    show_bionotes: showFlag(getField(o, ["show_bionotes"])),
+    show_email: showFlag(getField(o, ["show_email"])),
+    show_linkedin: showFlag(getField(o, ["show_linkedin"])),
   };
 }
 
@@ -404,7 +437,7 @@ export function splitMembersByType(members: Member[]): {
 
   for (var i = 0; i < members.length; i++) {
     var m = members[i];
-    if (m.type === "admin") admins.push(m);
+    if (m.type === "adviser") admins.push(m);
     else if (m.type === "alumni") alumni.push(m);
     else mems.push(m);
   }

@@ -107,12 +107,12 @@
       .rowSub{ font-size:11px; color:var(--muted); margin-top:2px; }
       .grid2{
         display:grid;
-        grid-template-columns:1fr 1fr;
+        grid-template-columns:1fr;
         gap:6px;
       }
       .grid3{
         display:grid;
-        grid-template-columns:1fr 1fr 1fr;
+        grid-template-columns:1fr;
         gap:6px;
       }
       .field{ margin-bottom:6px; }
@@ -121,6 +121,31 @@
         font-size:11px;
         color:var(--muted);
         margin:0 0 5px 2px;
+      }
+      .fieldRow{
+        display:flex;
+        gap:6px;
+        align-items:center;
+        min-width:0;
+      }
+      .fieldRow > *{ min-width:0; }
+      .showToggle{
+        flex:0 0 auto;
+        white-space:nowrap;
+      }
+      .showToggle svg{
+        display:block;
+        width:16px;
+        height:16px;
+        stroke:currentColor;
+        fill:none;
+        stroke-width:1.8;
+        stroke-linecap:round;
+        stroke-linejoin:round;
+      }
+      .showToggle.is-off{
+        border-color:#fca5a5;
+        color:var(--danger);
       }
       .actions{
         display:flex;
@@ -142,14 +167,15 @@
       }
       .relList .mini{
         display:flex;
+        flex-direction:column;
         gap:6px;
-        align-items:center;
+        align-items:stretch;
         padding:6px 0;
         border-top:1px solid var(--line);
       }
       .relList .mini:first-child{ border-top:none; padding-top:0; }
-      .relList .mini > *{ flex:1; }
-      .relList .mini .btn{ flex:0 0 auto; }
+      .relList .mini > *{ flex:0 0 auto; }
+      .relList .mini .btn{ align-self:flex-start; }
       .relList .mini .drag{
         flex:0 0 auto;
         cursor:move;
@@ -167,7 +193,10 @@
       }
       .thumb img{ width:100%;height:100%;object-fit:cover; display:block; }
       .fileRow{
-        display:flex; gap:6px; align-items:center;
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+        align-items:stretch;
       }
       .fileRow .btn{ white-space:nowrap; }
       .toast{
@@ -320,6 +349,21 @@
         if (err && err.message) return String(err.message);
         return fallback || "Request failed";
       }
+      if (!window.CSS) window.CSS = {};
+      if (!window.CSS.escape) {
+        window.CSS.escape = function (value) {
+          return String(value || "").replace(/[^a-zA-Z0-9_-]/g, function (ch) {
+            var hex = ch.charCodeAt(0).toString(16).toUpperCase();
+            return "\\" + hex + " ";
+          });
+        };
+      }
+      function isShowValue(v) {
+        var t = String(v == null ? "" : v).trim().toLowerCase();
+        if (!t) return true;
+        if (t === "false" || t === "0" || t === "no" || t === "hide") return false;
+        return true;
+      }
       function setListDebug(entity, rowsCount, dbgCount, envName) {
         if (entity !== "publications" && entity !== "presentations") return;
         var label = entity;
@@ -439,7 +483,7 @@
         if (!row) return "";
         switch (entity) {
           case "members":
-            return [row.last_name, row.first_name].filter(Boolean).join(", ") || row.id;
+            return [row.title, row.last_name, row.first_name].filter(Boolean).join(" ").trim() || row.id;
           case "publications":
             return row.title || row.id;
           case "presentations":
@@ -457,7 +501,7 @@
         if (!row) return "";
         switch (entity) {
           case "members":
-            return [row.specialization, row.course].filter(Boolean).join(" • ");
+            return [row.specialization, row.occupation, row.course].filter(Boolean).join(" • ");
           case "publications":
             return row.publishing_date ? String(row.publishing_date) : (row.field_of_study || "");
           case "presentations":
@@ -676,10 +720,12 @@
           case "members":
             return {
               id: "",
+              title: "",
               last_name: "",
               first_name: "",
               image: "",
               specialization: "",
+              occupation: "",
               course: "",
               graduation_ay: "",
               educational_attainment: "",
@@ -688,7 +734,17 @@
               bionotes: "",
               email: "",
               linkedin: "",
-              type: "member"
+              type: "member",
+              show_specialization: "true",
+              show_occupation: "true",
+              show_course: "true",
+              show_graduation_ay: "true",
+              show_educational_attainment: "true",
+              show_member_since: "true",
+              show_associated_institutes: "true",
+              show_bionotes: "true",
+              show_email: "true",
+              show_linkedin: "true"
               // status hidden / auto
             };
           case "publications":
@@ -748,7 +804,9 @@
       }
 
       function renderMembersEditor(row) {
-        var memberTypes = (S.bootstrap && S.bootstrap.memberTypeValues) ? S.bootstrap.memberTypeValues : ["member", "alumni"];
+        var memberTypes = (S.bootstrap && S.bootstrap.memberTypeValues) ? S.bootstrap.memberTypeValues.slice() : ["member", "alumni", "adviser"];
+        var hasAdviser = memberTypes.some(function (v) { return String(v).toLowerCase() === "adviser"; });
+        if (!hasAdviser) memberTypes.push("adviser");
         var typeOptionsArr = [];
         for (var i = 0; i < memberTypes.length; i++) {
           var v = memberTypes[i];
@@ -758,15 +816,28 @@
         var typeOptions = typeOptionsArr.join("");
 
         var html = [];
-        html.push('<div class="grid2">');
+        html.push('<div class="grid3">');
+        html.push('  <div class="field"><label>Title</label><input data-k="title" value="' + esc(row.title) + '" placeholder="Dr., Engr., Atty." /></div>');
         html.push('  <div class="field"><label>Last name</label><input data-k="last_name" value="' + esc(row.last_name) + '" /></div>');
         html.push('  <div class="field"><label>First name</label><input data-k="first_name" value="' + esc(row.first_name) + '" /></div>');
         html.push("</div>");
         html.push('<div class="grid2">');
         html.push('  <div class="field"><label>Type</label><select data-k="type">' + typeOptions + "</select></div>");
-        html.push('  <div class="field"><label>Email</label><input data-k="email" value="' + esc(row.email) + '" /></div>');
+        html.push('  <div class="field"><label>Email</label>');
+        html.push('    <div class="fieldRow">');
+        html.push('      <input data-k="email" value="' + esc(row.email) + '" />');
+        html.push('      <button type="button" class="btn small showToggle" data-show-k="show_email"></button>');
+        html.push("    </div>");
+        html.push('    <input type="hidden" data-k="show_email" value="' + esc(row.show_email) + '" />');
+        html.push("  </div>");
         html.push("</div>");
-        html.push('<div class="field"><label>LinkedIn URL</label><input data-k="linkedin" value="' + esc(row.linkedin) + '" placeholder="https://www.linkedin.com/in/username" /></div>');
+        html.push('<div class="field"><label>LinkedIn URL</label>');
+        html.push('  <div class="fieldRow">');
+        html.push('    <input data-k="linkedin" value="' + esc(row.linkedin) + '" placeholder="https://www.linkedin.com/in/username" />');
+        html.push('    <button type="button" class="btn small showToggle" data-show-k="show_linkedin"></button>');
+        html.push("  </div>");
+        html.push('  <input type="hidden" data-k="show_linkedin" value="' + esc(row.show_linkedin) + '" />');
+        html.push("</div>");
         html.push('<div class="field"><label>Image</label>');
         html.push('  <div class="fileRow">');
         html.push('    <div class="thumb" id="memberThumb">' + (row.image ? '<img src="' + esc(row.image) + '" />' : "") + "</div>");
@@ -776,17 +847,67 @@
         html.push('  <input type="hidden" data-k="image" value="' + esc(row.image) + '" />');
         html.push("</div>");
         html.push('<div class="grid2">');
-        html.push('  <div class="field"><label>Specialization</label><input data-k="specialization" value="' + esc(row.specialization) + '" /></div>');
-        html.push('  <div class="field"><label>Course</label><input data-k="course" value="' + esc(row.course) + '" /></div>');
+        html.push('  <div class="field"><label>Specialization</label>');
+        html.push('    <div class="fieldRow">');
+        html.push('      <input data-k="specialization" value="' + esc(row.specialization) + '" />');
+        html.push('      <button type="button" class="btn small showToggle" data-show-k="show_specialization"></button>');
+        html.push("    </div>");
+        html.push('    <input type="hidden" data-k="show_specialization" value="' + esc(row.show_specialization) + '" />');
+        html.push("  </div>");
+        html.push('  <div class="field"><label>Occupation</label>');
+        html.push('    <div class="fieldRow">');
+        html.push('      <input data-k="occupation" value="' + esc(row.occupation) + '" />');
+        html.push('      <button type="button" class="btn small showToggle" data-show-k="show_occupation"></button>');
+        html.push("    </div>");
+        html.push('    <input type="hidden" data-k="show_occupation" value="' + esc(row.show_occupation) + '" />');
+        html.push("  </div>");
+        html.push('  <div class="field"><label>Course</label>');
+        html.push('    <div class="fieldRow">');
+        html.push('      <input data-k="course" value="' + esc(row.course) + '" />');
+        html.push('      <button type="button" class="btn small showToggle" data-show-k="show_course"></button>');
+        html.push("    </div>");
+        html.push('    <input type="hidden" data-k="show_course" value="' + esc(row.show_course) + '" />');
+        html.push("  </div>");
         html.push("</div>");
         html.push('<div class="grid3">');
-        html.push('  <div class="field"><label>Graduation AY</label><input data-k="graduation_ay" value="' + esc(row.graduation_ay) + '" /></div>');
-        html.push('  <div class="field"><label>Educational attainment</label><input data-k="educational_attainment" value="' + esc(row.educational_attainment) + '" /></div>');
-        html.push('  <div class="field"><label>Member since</label><input data-k="member_since" value="' + esc(row.member_since) + '" /></div>');
+        html.push('  <div class="field"><label>Graduation AY</label>');
+        html.push('    <div class="fieldRow">');
+        html.push('      <input data-k="graduation_ay" value="' + esc(row.graduation_ay) + '" />');
+        html.push('      <button type="button" class="btn small showToggle" data-show-k="show_graduation_ay"></button>');
+        html.push("    </div>");
+        html.push('    <input type="hidden" data-k="show_graduation_ay" value="' + esc(row.show_graduation_ay) + '" />');
+        html.push("  </div>");
+        html.push('  <div class="field"><label>Educational attainment</label>');
+        html.push('    <div class="fieldRow">');
+        html.push('      <input data-k="educational_attainment" value="' + esc(row.educational_attainment) + '" />');
+        html.push('      <button type="button" class="btn small showToggle" data-show-k="show_educational_attainment"></button>');
+        html.push("    </div>");
+        html.push('    <input type="hidden" data-k="show_educational_attainment" value="' + esc(row.show_educational_attainment) + '" />');
+        html.push("  </div>");
+        html.push('  <div class="field"><label>Member since</label>');
+        html.push('    <div class="fieldRow">');
+        html.push('      <input data-k="member_since" value="' + esc(row.member_since) + '" />');
+        html.push('      <button type="button" class="btn small showToggle" data-show-k="show_member_since"></button>');
+        html.push("    </div>");
+        html.push('    <input type="hidden" data-k="show_member_since" value="' + esc(row.show_member_since) + '" />');
+        html.push("  </div>");
         html.push("</div>");
-        html.push('<div class="field"><label>Associated institutes</label><input data-k="associated_institutes" value="' + esc(row.associated_institutes) + '" /></div>');
-        html.push('<div class="field"><label>Bio</label><textarea data-k="bionotes">' + esc(row.bionotes) + "</textarea></div>");
+        html.push('<div class="field"><label>Associated institutes</label>');
+        html.push('  <div class="fieldRow">');
+        html.push('    <input data-k="associated_institutes" value="' + esc(row.associated_institutes) + '" />');
+        html.push('    <button type="button" class="btn small showToggle" data-show-k="show_associated_institutes"></button>');
+        html.push("  </div>");
+        html.push('  <input type="hidden" data-k="show_associated_institutes" value="' + esc(row.show_associated_institutes) + '" />');
+        html.push("</div>");
+        html.push('<div class="field"><label>Bio</label>');
+        html.push('  <div class="fieldRow">');
+        html.push('    <textarea data-k="bionotes">' + esc(row.bionotes) + "</textarea>");
+        html.push('    <button type="button" class="btn small showToggle" data-show-k="show_bionotes"></button>');
+        html.push("  </div>");
+        html.push('  <input type="hidden" data-k="show_bionotes" value="' + esc(row.show_bionotes) + '" />');
+        html.push("</div>");
         EL.editor.innerHTML = html.join("");
+        wireShowToggles();
 
         document.getElementById("memberUploadBtn").addEventListener("click", function () {
           var fileEl = document.getElementById("memberImageFile");
@@ -806,7 +927,21 @@
               var upData = getData(res) || {};
               setField("image", upData.url);
               document.getElementById("memberThumb").innerHTML = '<img src="' + esc(upData.url) + '" />';
-              toast("Uploaded");
+              syncDraft();
+              if (S.activeRow && S.activeRow.id) {
+                run("communityUpsert", ["members", { id: S.activeRow.id, image: upData.url }], function (saveRes) {
+                  if (!isOk(saveRes)) {
+                    toast(errMsg(saveRes && saveRes.error, "Saved image failed"));
+                    return;
+                  }
+                  toast("Uploaded");
+                }, function (err2) {
+                  console.error(err2);
+                  toast(errMsg(err2, "Saved image failed"));
+                });
+              } else {
+                toast("Uploaded (save to apply)");
+              }
             }, function (err) {
               console.error(err);
               toast(errMsg(err, "Upload failed"));
@@ -1538,6 +1673,30 @@
       function setField(k, v) {
         var el = EL.editor.querySelector('[data-k="' + CSS.escape(k) + '"]');
         if (el) el.value = (v == null ? "" : v);
+      }
+      function wireShowToggles() {
+        qsa(EL.editor, ".showToggle").forEach(function (btn) {
+          var key = btn.getAttribute("data-show-k");
+          if (!key) return;
+          var hidden = EL.editor.querySelector('[data-k="' + CSS.escape(key) + '"]');
+          var eyeOpenSvg = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M1.5 12s4-7 10.5-7 10.5 7 10.5 7-4 7-10.5 7S1.5 12 1.5 12z"/><circle cx="12" cy="12" r="3.2"/></svg>';
+          var eyeClosedSvg = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M2 12s3.5 6.5 10 6.5c2 0 3.8-.5 5.3-1.3"/><path d="M22 12s-3.5-6.5-10-6.5c-2 0-3.8.5-5.3 1.3"/><path d="M4 4l16 16"/><path d="M9.5 9.5a3.2 3.2 0 0 0 5 5"/></svg>';
+          var update = function () {
+            var current = hidden ? hidden.value : "";
+            var on = isShowValue(current);
+            btn.innerHTML = on ? eyeOpenSvg : eyeClosedSvg;
+            if (btn.classList) btn.classList.toggle("is-off", !on);
+          };
+          update();
+          btn.addEventListener("click", function (ev) {
+            ev.preventDefault();
+            var current = hidden ? hidden.value : "";
+            var on = isShowValue(current);
+            if (hidden) hidden.value = on ? "false" : "true";
+            update();
+            syncDraft();
+          });
+        });
       }
       function collectFields() {
         var obj = {};

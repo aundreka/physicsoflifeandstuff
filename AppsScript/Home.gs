@@ -4,7 +4,7 @@
 const CONFIG = {
   HOME_SHEET: "home",
   GALLERY_SHEET: "home_gallery",
-  DRIVE_FOLDER_ID: "1UhyYSQpaiC_FBPz-SdUwbv4_FNlr4fto",
+  DRIVE_FOLDER_ID: "1ME7dRWDXbHDHrKZzBWmEbIlwy2PFjFGg",
   HOME_HEADER: { key: "key", value: "value" },
   GALLERY_HEADERS: { src: "src", alt: "alt", sort: "sort", status: "status" },
   APPROVED_STATUS: "approved",
@@ -19,7 +19,7 @@ const CONFIG = {
 const ABOUT_CFG = {
   HTML_FILE: "CMS", // unified html file name
 
-  IMAGE_FOLDER_ID: "1PqXGCLw3MIagXAU3HudbfNyu1LO2MtDP",
+  IMAGE_FOLDER_ID: "1ahY-zs3FtjMs8cS3sUH1QNeRd3uA2skW",
 
   SHEETS: {
     about_bullets: { id: "id", fields: ["text"], sort: "sort", status: "status" },

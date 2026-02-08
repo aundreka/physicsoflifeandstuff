@@ -21,13 +21,13 @@ const COMMUNITY_CONFIG = {
 
   // From your provided links
   FOLDERS: {
-    MEMBER_IMAGES: "1BYf3k9WRlWaVg-YED8bPbmlAcW4jGnMY",
-    AWARD_IMAGES: "1bGWk_D4f-4go1xASFBJ0KYnCvCwruJsY",
-    CERTIFICATE_IMAGES: "1-1027kJEH6I3p9L0JkBFq4sNK3uyYPOu",
+    MEMBER_IMAGES: "1NZLyH7gcFQAVg9dn8DlgBsAvPEyUfYzQ",
+    AWARD_IMAGES: "1AhAIbC_4f7bj3GC5yIPtsr9RWheXd-GB",
+    CERTIFICATE_IMAGES: "1f2rJD6z5-fZwuvVfBtsz4oT9uA-Y3LzJ",
   },
 
   DEFAULT_STATUS: "approved",
-  MEMBER_TYPE_VALUES: ["member", "alumni"],
+  MEMBER_TYPE_VALUES: ["member", "alumni", "adviser"],
 };
 
 /** === PUBLIC API (called from HTML via google.script.run) === */
@@ -38,7 +38,7 @@ const COMMUNITY_CONFIG = {
 function communityBootstrap() {
   const members = _getSheetRecords(COMMUNITY_CONFIG.SHEETS.MEMBERS).map((m) => ({
     id: m.id,
-    label: [m.last_name, m.first_name].filter(Boolean).join(", ") || m.id,
+    label: [m.title, m.last_name, m.first_name].filter(Boolean).join(" ").trim() || m.id,
     type: m.type || "",
     status: m.status || "",
   }));
@@ -126,11 +126,11 @@ function communityUpsert(table, record) {
   // Force approved on create when status column exists (and never require UI to show status)
   if (meta.hasStatus && isCreate) clean.status = COMMUNITY_CONFIG.DEFAULT_STATUS;
 
-  // Special: members.type should be dropdown (member/alumni) - normalize lowercase
+  // Special: members.type should be dropdown (member/alumni/adviser) - normalize lowercase
   if (table === COMMUNITY_CONFIG.SHEETS.MEMBERS && typeof clean.type === "string") {
     clean.type = clean.type.trim().toLowerCase();
     if (clean.type && COMMUNITY_CONFIG.MEMBER_TYPE_VALUES.indexOf(clean.type) === -1) {
-      throw new Error('members.type must be "member" or "alumni".');
+      throw new Error('members.type must be "member", "alumni", or "adviser".');
     }
   }
 
@@ -267,7 +267,7 @@ function communityDebugList(table, sampleRows) {
 }
 
 /**
- * Upload member/alumni image.
+ * Upload member/alumni/adviser image.
  * - Folder: MEMBER_IMAGES
  * - Filename: Lastname_Firstname
  * - Returns: {url, fileId, name}
@@ -320,7 +320,7 @@ function uploadCertificateImage(base64Data, mimeType, lastName, firstName) {
 function listMemberOptions() {
   const members = _getSheetRecords(COMMUNITY_CONFIG.SHEETS.MEMBERS).map((m) => ({
     id: m.id,
-    label: [m.last_name, m.first_name].filter(Boolean).join(", ") || m.id,
+    label: [m.title, m.last_name, m.first_name].filter(Boolean).join(" ").trim() || m.id,
   }));
   return { ok: true, data: members };
 }

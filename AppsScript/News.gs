@@ -19,8 +19,8 @@ const NEWS_CFG = {
     MEMBERS: "members",
   },
   DRIVE_FOLDERS: {
-    COVER: "1I9gZPCJ-xrNf3pUj_qKixTv0EHQ4Yp4y",
-    BLOCK: "19Zr_7lhf1gAWnOHY2vq10QmOneSGpM4m",
+    COVER: "1mipWZfKAPew8qG33sjDlq3YFec64gBI6",
+    BLOCK: "1N_j4edIIb29CluH_4vcTC5nM8KZAlxQ-",
   },
   FILE_PREFIX: {
     COVER: "cover_",

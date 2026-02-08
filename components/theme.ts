@@ -4,7 +4,7 @@ export const THEME = {
   pageBg: "#0A1026",
 
   // Light section palette (Apple-ish)
-  lightBg: "#F5F5F7",
+  lightBg: "#FFFFFF",
   lightSurface: "#FFFFFF",
   lightText: "#0B1220",
   lightMuted: "rgba(11,18,32,0.66)",

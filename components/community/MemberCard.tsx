@@ -7,12 +7,21 @@ import Avatar from "@/components/community/Avatar";
 import TypeBadge from "@/components/community/TypeBadge";
 
 function fullName(member: Member): string {
-  return [member.first_name, member.last_name].filter(Boolean).join(" ").trim();
+  return [member.title, member.first_name, member.last_name].filter(Boolean).join(" ").trim();
+}
+
+function truncateText(value: string, maxChars: number): string {
+  const text = (value || "").trim();
+  if (!text) return "";
+  if (text.length <= maxChars) return text;
+  const cut = Math.max(0, maxChars - 3);
+  return text.slice(0, cut).trimEnd() + "...";
 }
 
 export default function MemberCard({ member }: { member: Member }) {
   const name = fullName(member) || "Unnamed";
-  const subtitle = member.specialization || member.course || "";
+  const subtitle = truncateText(member.specialization || member.course || "", 90);
+  const institutes = truncateText(member.associated_institutes || "", 80);
 
   return (
     <Link href={`/community/${member.id}`} style={{ textDecoration: "none", color: "inherit" }}>
@@ -25,11 +34,12 @@ export default function MemberCard({ member }: { member: Member }) {
           display: "grid",
           gap: 14,
           boxShadow: "0 14px 34px rgba(11,18,32,0.08)",
+          overflow: "hidden",
         }}
       >
-        <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 16, alignItems: "center", minWidth: 0 }}>
           <Avatar src={member.image} alt={name} size={92} />
-          <div style={{ minWidth: 0 }}>
+          <div style={{ minWidth: 0, flex: 1, overflow: "hidden" }}>
             <TypeBadge type={member.type} />
             <h3
               style={{
@@ -57,7 +67,7 @@ export default function MemberCard({ member }: { member: Member }) {
                 {subtitle}
               </p>
             ) : null}
-            {member.associated_institutes ? (
+            {institutes ? (
               <p
                 style={{
                   marginTop: 6,
@@ -68,7 +78,7 @@ export default function MemberCard({ member }: { member: Member }) {
                   textOverflow: "ellipsis",
                 }}
               >
-                {member.associated_institutes}
+                {institutes}
               </p>
             ) : null}
           </div>

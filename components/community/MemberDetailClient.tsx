@@ -10,8 +10,16 @@ import { THEME } from "@/components/theme";
 import { buildMemberDetail, type MemberDetail } from "@/lib/communityContent";
 import { getCommunityTablesClient } from "@/lib/communityContentClient";
 
-function fullName(first: string, last: string): string {
-  return [first, last].filter(Boolean).join(" ").trim();
+function fullName(title: string, first: string, last: string): string {
+  return [title, first, last].filter(Boolean).join(" ").trim();
+}
+
+function truncateText(value: string, maxChars: number): string {
+  const text = (value || "").trim();
+  if (!text) return "";
+  if (text.length <= maxChars) return text;
+  const cut = Math.max(0, maxChars - 3);
+  return text.slice(0, cut).trimEnd() + "...";
 }
 
 export default function MemberDetailClient() {
@@ -19,6 +27,17 @@ export default function MemberDetailClient() {
   const id = typeof params?.id === "string" ? params.id : "";
 
   const [detail, setDetail] = useState<MemberDetail | null | undefined>(undefined);
+  const [avatarSize, setAvatarSize] = useState(190);
+
+  useEffect(() => {
+    function updateAvatarSize() {
+      if (typeof window === "undefined") return;
+      setAvatarSize(window.innerWidth < 640 ? 140 : 190);
+    }
+    updateAvatarSize();
+    window.addEventListener("resize", updateAvatarSize);
+    return () => window.removeEventListener("resize", updateAvatarSize);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -46,14 +65,19 @@ export default function MemberDetailClient() {
   const content = useMemo(() => {
     if (!detail) return null;
     const { member, awards, certificates, publications } = detail;
-    const name = fullName(member.first_name, member.last_name) || "Unnamed";
-    const subtitle = member.specialization || member.course || "";
+    const name = fullName(member.title, member.first_name, member.last_name) || "Unnamed";
+    const subtitle = truncateText(
+      (member.show_specialization ? member.specialization : "") ||
+        (member.show_occupation ? member.occupation : "") ||
+        (member.show_course ? member.course : ""),
+      120
+    );
     return { member, awards, certificates, publications, name, subtitle };
   }, [detail]);
 
   if (detail === undefined) {
     return (
-      <div className="homeLight">
+      <div className="homeLight" style={{ background: "#ffffff" }}>
         <section className="homeSection" style={{ paddingTop: 56 }}>
           <div className="homeContainer">
             <p className="lead">Loading...</p>
@@ -80,23 +104,13 @@ export default function MemberDetailClient() {
 
   const { member, awards, certificates, publications, name, subtitle } = content;
 
-  const chips = [member.specialization, member.course, member.associated_institutes]
-    .map((v) => (v || "").trim())
-    .filter(Boolean)
-    .slice(0, 3);
-
-  const quickFacts: Array<{ label: string; value: string }> = [
-    { label: "Member Since", value: member.member_since },
-    { label: "Graduation AY", value: member.graduation_ay },
-    { label: "Educational Attainment", value: member.educational_attainment },
-    { label: "Status", value: member.status },
-  ];
-
   const profileFields: Array<{ label: string; value: string }> = [
-    { label: "Specialization", value: member.specialization },
-    { label: "Course", value: member.course },
-    { label: "Associated Institutes", value: member.associated_institutes },
-  ];
+    member.show_educational_attainment ? { label: "Highest Educational Attainment", value: member.educational_attainment } : null,
+    member.show_graduation_ay ? { label: "Graduation AY", value: member.graduation_ay } : null,
+    member.show_occupation ? { label: "Occupation", value: member.occupation } : null,
+    member.show_course ? { label: "Course", value: member.course } : null,
+    member.show_associated_institutes ? { label: "Associated Institutes", value: member.associated_institutes } : null,
+  ].filter(Boolean) as Array<{ label: string; value: string }>;
 
   return (
     <div
@@ -116,12 +130,13 @@ export default function MemberDetailClient() {
             <Link className="textLink" href="/community">Back to Community</Link>
 
             <div
+              className="memberHero"
               style={{
                 marginTop: 18,
                 borderRadius: 24,
                 overflow: "hidden",
                 border: "1px solid rgba(11,18,32,0.12)",
-                background: "linear-gradient(135deg, rgba(10,16,38,0.92), rgba(10,16,38,0.6))",
+                background: "linear-gradient(135deg, rgba(24,34,64,0.86), rgba(58,66,94,0.62))",
                 color: "white",
                 position: "relative",
               }}
@@ -135,23 +150,34 @@ export default function MemberDetailClient() {
                     "radial-gradient(circle at 15% 20%, rgba(255,255,255,0.12), transparent 55%), radial-gradient(circle at 85% 10%, rgba(255,255,255,0.08), transparent 50%)",
                 }}
               />
-              <div style={{ position: "relative", padding: "28px 28px 40px" }}>
-                <div style={{ display: "flex", gap: 24, alignItems: "center", flexWrap: "wrap" }}>
+              <div className="memberHeroInner" style={{ position: "relative", padding: "28px 28px 40px" }}>
+                <div className="memberHeroGrid" style={{ display: "flex", gap: 24, alignItems: "center", flexWrap: "nowrap" }}>
                   <div
+                    className="memberAvatarWrap"
                     style={{
-                      background: "rgba(255,255,255,0.12)",
-                      padding: 6,
-                      borderRadius: 22,
-                      border: "1px solid rgba(255,255,255,0.2)",
+                      display: "flex",
+                      alignItems: "stretch",
                     }}
                   >
-                    <Avatar src={member.image} alt={name} size={120} square />
+                    <Avatar src={member.image} alt={name} size={avatarSize} square borderless />
                   </div>
-                  <div style={{ minWidth: 240 }}>
-                    <TypeBadge type={member.type} />
-                    <h1
+                  <div className="memberHeroText" style={{ minWidth: 240, display: "flex", flexDirection: "column" }}>
+                    <span
+                      className="memberHeroType"
                       style={{
-                        margin: "12px 0 6px",
+                        display: "block",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.24em",
+                        fontSize: 12,
+                        color: "rgba(255,255,255,0.8)",
+                      }}
+                    >
+                      {member.type}
+                    </span>
+                    <h1
+                      className="memberHeroName"
+                      style={{
+                        margin: "8px 0 6px",
                         fontSize: "clamp(28px, 3.6vw, 44px)",
                         letterSpacing: "-0.02em",
                       }}
@@ -161,18 +187,37 @@ export default function MemberDetailClient() {
                     {subtitle ? (
                       <p style={{ margin: 0, color: "rgba(255,255,255,0.82)" }}>{subtitle}</p>
                     ) : null}
-                    {member.email || member.linkedin ? (
-                      <div style={{ marginTop: 10, display: "flex", gap: 10, alignItems: "center" }}>
-                        {member.email ? (
+                    {(member.show_linkedin && member.linkedin) || (member.show_email && member.email) || (member.show_member_since && member.member_since) ? (
+                      <div style={{ marginTop: 10, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                        {member.show_email && member.email ? (
                           <a
-                            className="textLink"
-                            style={{ color: "rgba(255,255,255,0.9)" }}
                             href={`mailto:${member.email}`}
+                            aria-label="Email"
+                            title="Email"
+                            style={{
+                              width: 36,
+                              height: 36,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              borderRadius: 10,
+                              border: "1px solid rgba(255,255,255,0.25)",
+                              background: "rgba(255,255,255,0.12)",
+                            }}
                           >
-                            {member.email}
+                            <svg
+                              viewBox="0 0 24 24"
+                              width="18"
+                              height="18"
+                              aria-hidden="true"
+                              focusable="false"
+                              style={{ display: "block", fill: "white" }}
+                            >
+                              <path d="M3 5h18c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V7c0-1.1.9-2 2-2zm0 2v.01L12 12l9-4.99V7H3zm0 12h18V9.35l-9 5-9-5V19z" />
+                            </svg>
                           </a>
                         ) : null}
-                        {member.linkedin ? (
+                        {member.show_linkedin && member.linkedin ? (
                           <a
                             href={member.linkedin}
                             target="_blank"
@@ -202,13 +247,8 @@ export default function MemberDetailClient() {
                             </svg>
                           </a>
                         ) : null}
-                      </div>
-                    ) : null}
-                    {chips.length ? (
-                      <div style={{ marginTop: 12, display: "flex", gap: 8, flexWrap: "wrap" }}>
-                        {chips.map((chip) => (
+                        {member.show_member_since && member.member_since ? (
                           <span
-                            key={chip}
                             style={{
                               padding: "6px 12px",
                               borderRadius: 999,
@@ -218,9 +258,9 @@ export default function MemberDetailClient() {
                               color: "rgba(255,255,255,0.9)",
                             }}
                           >
-                            {chip}
+                            Member Since {member.member_since}
                           </span>
-                        ))}
+                        ) : null}
                       </div>
                     ) : null}
                   </div>
@@ -229,6 +269,7 @@ export default function MemberDetailClient() {
             </div>
 
             <div
+              className="memberLayout"
               style={{
                 marginTop: 28,
                 display: "flex",
@@ -237,28 +278,31 @@ export default function MemberDetailClient() {
                 alignItems: "flex-start",
               }}
             >
-              <div style={{ display: "grid", gap: 24, flex: "1 1 560px", minWidth: 0 }}>
-                <section
-                  style={{
-                    background: "white",
-                    borderRadius: 18,
-                    padding: "18px",
-                    border: "1px solid rgba(11,18,32,0.1)",
-                  }}
-                >
-                  <h2 style={{ marginBottom: 10 }}>About</h2>
-                  {member.bionotes ? (
-                    <p style={{ margin: 0, lineHeight: 1.7, whiteSpace: "pre-line" }}>
-                      {member.bionotes}
-                    </p>
-                  ) : (
-                    <p className="lead">No bio available.</p>
-                  )}
-                </section>
+              <div className="memberMain" style={{ display: "grid", gap: 24, flex: "1 1 560px", minWidth: 0 }}>
+                {member.show_bionotes ? (
+                  <section
+                    className="memberCard"
+                    style={{
+                      background: "#fcfcff",
+                      borderRadius: 18,
+                      padding: "18px",
+                      border: "1px solid rgba(11,18,32,0.1)",
+                    }}
+                  >
+                    <h2 style={{ marginBottom: 10 }}>About</h2>
+                    {member.bionotes ? (
+                      <p style={{ margin: 0, lineHeight: 1.7, whiteSpace: "pre-line", textAlign: "justify" }}>
+                        {member.bionotes}
+                      </p>
+                    ) : (
+                      <p className="lead">No bio available.</p>
+                    )}
+                  </section>
+                ) : null}
 
-                <section>
-                  <h2 style={{ marginBottom: 10 }}>Publications</h2>
-                  {publications.length ? (
+                {publications.length ? (
+                  <section className="memberSection">
+                    <h2 style={{ marginBottom: 10 }}>Publications</h2>
                     <div style={{ display: "grid", gap: 12 }}>
                       {publications.map((pub) => (
                         <Link
@@ -291,14 +335,12 @@ export default function MemberDetailClient() {
                         </Link>
                       ))}
                     </div>
-                  ) : (
-                    <p className="lead">No publications listed yet.</p>
-                  )}
-                </section>
+                  </section>
+                ) : null}
 
-                <section>
-                  <h2 style={{ marginBottom: 10 }}>Awards</h2>
-                  {awards.length ? (
+                {awards.length ? (
+                  <section className="memberSection">
+                    <h2 style={{ marginBottom: 10 }}>Awards</h2>
                     <div style={{ display: "grid", gap: 12 }}>
                       {awards.map((award) => (
                         <article
@@ -353,14 +395,12 @@ export default function MemberDetailClient() {
                         </article>
                       ))}
                     </div>
-                  ) : (
-                    <p className="lead">No awards listed yet.</p>
-                  )}
-                </section>
+                  </section>
+                ) : null}
 
-                <section>
-                  <h2 style={{ marginBottom: 10 }}>Certificates</h2>
-                  {certificates.length ? (
+                {certificates.length ? (
+                  <section className="memberSection">
+                    <h2 style={{ marginBottom: 10 }}>Certificates</h2>
                     <div style={{ display: "grid", gap: 12 }}>
                       {certificates.map((cert) => (
                         <article
@@ -415,16 +455,15 @@ export default function MemberDetailClient() {
                         </article>
                       ))}
                     </div>
-                  ) : (
-                    <p className="lead">No certificates listed yet.</p>
-                  )}
-                </section>
+                  </section>
+                ) : null}
               </div>
 
-              <aside style={{ display: "grid", gap: 18, flex: "1 1 280px", minWidth: 0 }}>
+              <aside className="memberAside" style={{ display: "grid", gap: 18, flex: "1 1 280px", minWidth: 0 }}>
                 <section
+                  className="memberCard"
                   style={{
-                    background: "white",
+                    background: "#fcfcff",
                     borderRadius: 18,
                     padding: "16px",
                     border: "1px solid rgba(11,18,32,0.1)",
@@ -440,54 +479,59 @@ export default function MemberDetailClient() {
                         </span>
                       </div>
                     ))}
+                    {!profileFields.length ? (
+                      <p className="lead" style={{ margin: 0 }}>No profile details listed.</p>
+                    ) : null}
                   </div>
                 </section>
 
-                <section
-                  style={{
-                    background: "white",
-                    borderRadius: 18,
-                    padding: "16px",
-                    border: "1px solid rgba(11,18,32,0.1)",
-                  }}
-                >
-                  <h3 style={{ margin: "0 0 10px" }}>Quick Facts</h3>
-                  <div style={{ display: "grid", gap: 10 }}>
-                    {quickFacts.map((fact) => (
-                      <div key={fact.label} style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-                        <span style={{ fontSize: 12, color: "rgba(11,18,32,0.5)" }}>{fact.label}</span>
-                        <span style={{ fontSize: 13, color: "rgba(11,18,32,0.8)", textAlign: "right" }}>
-                          {fact.value || "--"}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-
-                <section
-                  style={{
-                    background: "white",
-                    borderRadius: 18,
-                    padding: "16px",
-                    border: "1px solid rgba(11,18,32,0.1)",
-                  }}
-                >
-                  <h3 style={{ margin: "0 0 10px" }}>Contact</h3>
-                  {member.email ? (
-                    <p style={{ margin: 0 }}>
-                      <a className="textLink" href={`mailto:${member.email}`}>
-                        {member.email}
-                      </a>
-                    </p>
-                  ) : (
-                    <p className="lead">No contact details listed.</p>
-                  )}
-                </section>
               </aside>
             </div>
           </div>
         </section>
       </div>
+      <style jsx>{`
+        @media (max-width: 720px) {
+          .memberHero {
+            border-radius: 18px;
+          }
+          .memberHeroInner {
+            padding: 20px 18px 26px;
+          }
+          .memberHeroGrid {
+            gap: 16px;
+            flex-wrap: wrap;
+          }
+          .memberHeroText {
+            min-width: 0;
+          }
+          .memberHeroName {
+            font-size: 26px;
+          }
+          .memberLayout {
+            gap: 16px;
+            margin-top: 20px;
+          }
+          .memberMain {
+            gap: 16px;
+          }
+          .memberAside {
+            gap: 14px;
+          }
+          .memberCard {
+            padding: 12px !important;
+            border-radius: 14px !important;
+          }
+          .memberSection h2 {
+            font-size: 18px;
+          }
+          .memberSection p,
+          .memberCard p,
+          .memberCard span {
+            font-size: 13px;
+          }
+        }
+      `}</style>
     </div>
   );
 }
