@@ -468,3 +468,55 @@ function aboutReplaceImage(payload) {
 
   return { ok: true, src: srcUrl, filename };
 }
+
+/** =========================
+ *  ABOUT: ADD IMAGE (new row)
+ *  ========================= */
+function aboutAddImage(payload) {
+  const { base64, contentType, alt } = payload || {};
+  if (!base64) throw new Error("Missing image payload.");
+
+  const sheetName = "about_images";
+  const cfg = ABOUT_CFG.SHEETS[sheetName];
+  const sh = _getSheet_(sheetName);
+  const { map } = _getHeaderMap_(sh);
+  _requireCols_(map, [cfg.id, cfg.sort, cfg.status, ...cfg.fields]);
+
+  const folder = DriveApp.getFolderById(ABOUT_CFG.IMAGE_FOLDER_ID);
+  const bytes = Utilities.base64Decode(base64);
+  const ct = contentType || "image/png";
+
+  const stamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyyMMdd_HHmmss");
+  const ext = (ct.includes("png") ? "png" : ct.includes("jpeg") ? "jpg" : ct.includes("webp") ? "webp" : "img");
+  const filename = `about_${stamp}.${ext}`;
+
+  const file = folder.createFile(Utilities.newBlob(bytes, ct, filename));
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  const srcUrl = _makeUcViewUrl_(file.getId());
+
+  const idCol = map[_n_(cfg.id)];
+  const sortCol = map[_n_(cfg.sort)];
+  const statusCol = map[_n_(cfg.status)];
+  const srcCol = map[_n_("src")];
+  const altCol = map[_n_("alt")];
+
+  const lastRow = sh.getLastRow();
+  const nextRow = lastRow + 1;
+
+  const idValue = "about_img_" + stamp;
+  const nextSort = lastRow < 2 ? 1 : lastRow;
+
+  const lock = LockService.getDocumentLock();
+  lock.waitLock(30000);
+  try {
+    sh.getRange(Number(nextRow), idCol).setValue(idValue);
+    sh.getRange(Number(nextRow), srcCol).setValue(srcUrl);
+    sh.getRange(Number(nextRow), altCol).setValue(alt == null ? "" : String(alt));
+    sh.getRange(Number(nextRow), sortCol).setValue(nextSort);
+    sh.getRange(Number(nextRow), statusCol).setValue(CONFIG.APPROVED_STATUS);
+  } finally {
+    lock.releaseLock();
+  }
+
+  return { ok: true, id: idValue, src: srcUrl, rowIndex: nextRow, sort: nextSort };
+}

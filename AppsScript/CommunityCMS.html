@@ -687,6 +687,7 @@
               associated_institutes: "",
               bionotes: "",
               email: "",
+              linkedin: "",
               type: "member"
               // status hidden / auto
             };
@@ -765,6 +766,7 @@
         html.push('  <div class="field"><label>Type</label><select data-k="type">' + typeOptions + "</select></div>");
         html.push('  <div class="field"><label>Email</label><input data-k="email" value="' + esc(row.email) + '" /></div>');
         html.push("</div>");
+        html.push('<div class="field"><label>LinkedIn URL</label><input data-k="linkedin" value="' + esc(row.linkedin) + '" placeholder="https://www.linkedin.com/in/username" /></div>');
         html.push('<div class="field"><label>Image</label>');
         html.push('  <div class="fileRow">');
         html.push('    <div class="thumb" id="memberThumb">' + (row.image ? '<img src="' + esc(row.image) + '" />' : "") + "</div>");

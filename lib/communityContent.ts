@@ -25,6 +25,7 @@ export type Member = {
   associated_institutes: string;
   bionotes: string;
   email: string;
+  linkedin: string;
   type: MemberType | ""; // tolerate blanks
   status: string;
 };
@@ -217,6 +218,7 @@ function mapMember(o: Record<string, string>): Member {
     associated_institutes: getField(o, ["associated_institutes", "associated institutes", "institutes"]),
     bionotes: getField(o, ["bionotes", "bio", "biography"]),
     email: getField(o, ["email", "e-mail"]),
+    linkedin: getField(o, ["linkedin", "linked_in", "linkedin_url", "linked in", "linkedin url"]),
     type: safeMemberType(getField(o, ["type"])),
     status: getField(o, ["status"]),
   };

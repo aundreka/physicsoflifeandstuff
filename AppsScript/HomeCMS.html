@@ -38,9 +38,7 @@
         padding:8px 10px;border-radius:10px;cursor:pointer;font-size:12px
       }
       .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-            .btn.primary.upload{background:var(--accent);border-color:var(--accent);color:#fff; flex-shrink:0;
-  white-space:nowrap;}
-
+      .btn.primary.upload{background:var(--accent);border-color:var(--accent);color:#fff;flex-shrink:0;white-space:nowrap}
       .btn:disabled{opacity:.55;cursor:not-allowed}
       .toast{
         margin-top:10px;padding:10px;border-radius:12px;border:1px solid var(--line);
@@ -73,35 +71,46 @@
       textarea{min-height:64px;resize:vertical}
       .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
       .danger{border-color:rgba(220,38,38,.35);color:rgb(220,38,38)}
-.fileRow{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  flex:1;
-  min-width:0;          /* 🔑 allows shrinking */
-  flex-wrap:nowrap;     /* prevent pushing button */
-}
-.fileRow input[type="file"]{
-  max-width:100%;
-  flex:1;
-}
+      .fileRow{
+        display:flex;
+        gap:8px;
+        align-items:center;
+        flex:1;
+        min-width:0;
+        flex-wrap:wrap;
+      }
+      .fileRow input[type="file"]{
+        max-width:100%;
+        flex:1;
+      }
+      .fileRow input[type="text"]{
+        flex:1;
+        min-width:180px;
+      }
+      .imgPreview{
+        width:100%;
+        border:1px solid var(--line);
+        border-radius:12px;
+        overflow:hidden;
+        background:#f1f5f9;
+      }
+      .imgPreview img{
+        width:100%;
+        display:block;
+        object-fit:cover;
+        max-height:200px;
+      }
+      @media (max-width: 420px){
+        .row{
+          flex-direction:column;
+          align-items:stretch;
+          gap:8px;
+        }
 
-.fileRow input[type="text"]{
-  flex:1;
-  min-width:120px;
-}
-@media (max-width: 420px){
-  .row{
-    flex-direction:column;
-    align-items:stretch;
-    gap:8px;
-  }
-
-  .btn.primary.upload{
-    width:100%;
-  }
-}
-
+        .btn.primary.upload{
+          width:100%;
+        }
+      }
     </style>
   </head>
 
@@ -145,6 +154,13 @@
             <option value="about_links">Links</option>
           </select>
           <button class="btn primary" id="saveAboutOrderBtn" onclick="saveAboutOrder()" disabled>Save order</button>
+        </div>
+        <div class="row" id="aboutImageAdd" style="margin-top:10px; display:none;">
+          <div class="fileRow" style="flex:1">
+            <input id="aboutNewFile" type="file" accept="image/*" />
+            <input id="aboutNewAlt" type="text" placeholder="Alt text" />
+          </div>
+          <button class="btn primary upload" id="aboutAddBtn" onclick="addAboutImage()">Upload</button>
         </div>
         <div class="list" id="aboutList"></div>
       </div>
@@ -205,7 +221,7 @@
       /** ================= HOME ================= */
       function loadHome(){
         clearToast();
-        showToast("Loading…");
+        showToast("Loading...");
         document.getElementById("saveHomeBtn").disabled = true;
         google.script.run
           .withSuccessHandler((res) => {
@@ -254,7 +270,7 @@
         });
 
         document.getElementById("saveHomeBtn").disabled = true;
-        showToast("Saving…");
+        showToast("Saving...");
         google.script.run
           .withSuccessHandler(() => {
             document.getElementById("saveHomeBtn").disabled = false;
@@ -268,10 +284,10 @@
           .saveHomeEntries(updates);
       }
 
-      /** ================= GALLERY (NO PREVIEWS) ================= */
+      /** ================= GALLERY ================= */
       function loadGallery(){
         clearToast();
-        showToast("Loading…");
+        showToast("Loading...");
         google.script.run
           .withSuccessHandler((res) => {
             galleryData = res || [];
@@ -297,7 +313,7 @@
           card.innerHTML = `
             <div class="meta">
               <span class="pill">row ${escapeHtml(String(item.rowIndex))}</span>
-              <span class="handle">⋮⋮</span>
+              <span class="handle">::</span>
             </div>
 
             <label>Src</label>
@@ -332,7 +348,7 @@
 
       function archiveItem(rowIndex){
         if(!confirm("Archive this image?")) return;
-        showToast("Archiving…");
+        showToast("Archiving...");
         google.script.run
           .withSuccessHandler(() => { showToast("Archived.", "ok"); loadGallery(); })
           .withFailureHandler((err) => showToast((err?.message || String(err)), "err"))
@@ -348,7 +364,7 @@
 
         const btn = document.getElementById("addBtn");
         btn.disabled = true;
-        showToast("Uploading…");
+        showToast("Uploading...");
 
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -406,7 +422,7 @@
             const newOrder = Array.from(parent.querySelectorAll(".card"))
               .map(c => Number(c.dataset.rowIndex));
 
-            showToast("Saving order…");
+            showToast("Saving order...");
             google.script.run
               .withSuccessHandler(() => { showToast("Saved.", "ok"); loadGallery(); })
               .withFailureHandler((err) => showToast((err?.message || String(err)), "err"))
@@ -415,14 +431,17 @@
         });
       }
 
-      /** ================= ABOUT (NO IMAGE PREVIEWS) ================= */
+      /** ================= ABOUT ================= */
       function loadAbout(){
         clearToast();
         aboutDirtyOrder = false;
         document.getElementById("saveAboutOrderBtn").disabled = true;
 
         const sheetName = document.getElementById("aboutSheetSel").value;
-        showToast("Loading…");
+        const addRow = document.getElementById("aboutImageAdd");
+        if (addRow) addRow.style.display = sheetName === "about_images" ? "" : "none";
+
+        showToast("Loading...");
         google.script.run
           .withSuccessHandler((res) => {
             aboutItems = (res && res.items) ? res.items : [];
@@ -449,12 +468,14 @@
           let body = `
             <div class="meta">
               <span class="pill">${escapeHtml(it.id)}</span>
-              <span class="handle">⋮⋮</span>
+              <span class="handle">::</span>
             </div>
           `;
 
           if(sheetName === "about_images"){
             body += `
+              <label>Preview</label>
+              <div class="imgPreview">${it.src ? `<img src="${escapeAttr(it.src)}" alt="${escapeAttr(it.alt || "")}" />` : ""}</div>
               <label>Src</label>
               <input type="text" value="${escapeAttr(it.src || "")}" readonly />
               <label>Alt</label>
@@ -501,7 +522,7 @@
               if(!f) return showToast("Choose a file.", "err");
 
               btn.disabled = true;
-              showToast("Uploading…");
+              showToast("Uploading...");
 
               const reader = new FileReader();
               reader.onload = (e) => {
@@ -531,6 +552,39 @@
         });
 
         wireAboutDnD();
+      }
+
+      function addAboutImage(){
+        clearToast();
+        const f = document.getElementById("aboutNewFile").files?.[0];
+        const alt = (document.getElementById("aboutNewAlt").value || "").trim();
+        if(!f) return showToast("Choose a file.", "err");
+
+        const btn = document.getElementById("aboutAddBtn");
+        btn.disabled = true;
+        showToast("Uploading...");
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const dataUrl = e.target.result;
+          const base64 = dataUrl.split(",")[1];
+
+          google.script.run
+            .withSuccessHandler(() => {
+              btn.disabled = false;
+              document.getElementById("aboutNewFile").value = "";
+              document.getElementById("aboutNewAlt").value = "";
+              showToast("Added.", "ok");
+              loadAbout();
+            })
+            .withFailureHandler((err) => {
+              btn.disabled = false;
+              showToast((err?.message || String(err)), "err");
+            })
+            .aboutAddImage({ base64, contentType: f.type, alt });
+        };
+        reader.onerror = () => { btn.disabled = false; showToast("Read failed.", "err"); };
+        reader.readAsDataURL(f);
       }
 
       function wireAboutDnD(){
@@ -576,7 +630,7 @@
           .map(c => Number(c.dataset.rowIndex));
 
         document.getElementById("saveAboutOrderBtn").disabled = true;
-        showToast("Saving…");
+        showToast("Saving...");
 
         google.script.run
           .withSuccessHandler(() => {

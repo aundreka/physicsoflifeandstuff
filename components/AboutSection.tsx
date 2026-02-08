@@ -71,92 +71,25 @@ export default function AboutSection({
             ))}
           </div>
         ) : null}
-
-        {/* Contact */}
-        <div className="contactBlock">
-          <div className="eyebrow">{liveContent.contact.eyebrow}</div>
-
-          {liveContent.contact.email ? (
-            <div className="contactRow">
-              <div className="contactLabel">
-                {liveContent.contact.emailLabel}
-              </div>
-              <a
-                className="contactValue"
-                href={`mailto:${liveContent.contact.email}`}
-              >
-                {liveContent.contact.email}
-              </a>
-            </div>
-          ) : null}
-
-          {liveContent.contact.location ? (
-            <div className="contactRow">
-              <div className="contactLabel">
-                {liveContent.contact.locationLabel}
-              </div>
-              <div className="contactValue">
-                {liveContent.contact.location}
-              </div>
-            </div>
-          ) : null}
-
-          {liveContent.contact.address ? (
-            <div className="contactRow">
-              <div className="contactLabel">
-                {liveContent.contact.addressLabel}
-              </div>
-              <div className="contactValue">
-                {liveContent.contact.address}
-              </div>
-            </div>
-          ) : null}
-
-          {liveContent.contact.links?.length ? (
-            <div className="contactLinks">
-              {liveContent.contact.links.map((l) => (
-                <a
-                  key={l.label}
-                  className="contactLink"
-                  href={l.href}
-                >
-                  {l.label} <span aria-hidden="true">↗</span>
-                </a>
-              ))}
-            </div>
-          ) : null}
-        </div>
       </div>
 
       {/* Right */}
       <div className="imageGrid">
         {images[0] ? (
           <figure className="figure figureWide imageWide">
-            <img
-              src={images[0].src}
-              alt={images[0].alt || ""}
-              loading="lazy"
-            />
+            <img src={images[0].src} alt={images[0].alt || ""} loading="lazy" />
           </figure>
         ) : null}
 
         {images[1] ? (
           <figure className="figure figureSmall">
-            <img
-              src={images[1].src}
-              alt={images[1].alt || ""}
-              loading="lazy"
-            />
+            <img src={images[1].src} alt={images[1].alt || ""} loading="lazy" />
           </figure>
         ) : null}
 
         {images[2] ? (
           <figure className="figure figureSmall">
-            <img
-              src={images[2].src}
-              alt={images[2].alt || ""}
-              loading="lazy"
-            />
+            <img src={images[2].src} alt={images[2].alt || ""} loading="lazy" />
           </figure>
         ) : null}
 
