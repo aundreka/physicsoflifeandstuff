@@ -42,7 +42,7 @@ export type NewsListItem = Pick<
   "slug" | "title" | "publishedAt" | "tags" | "hero" | "dek" | "author"
 >;
 
-const SHEET_ID = process.env.SHEETS_ID!;
+const SHEET_ID = process.env.SHEETS_ID ?? process.env.NEXT_PUBLIC_SHEETS_ID ?? "";
 const REVALIDATE_SECONDS = Number(process.env.SHEETS_REVALIDATE ?? 300);
 
 function toCleanString(value: unknown): string | null {
@@ -149,7 +149,7 @@ function normalizeGalleryItems(
 }
 
 export async function getAllNews(): Promise<NewsListItem[]> {
-  if (!SHEET_ID) throw new Error("Missing env var SHEETS_ID");
+  if (!SHEET_ID) throw new Error("Missing env var SHEETS_ID or NEXT_PUBLIC_SHEETS_ID");
 
   const rows = rowsToObjects(
     await fetchSheetRows(SHEET_ID, "news_articles", REVALIDATE_SECONDS)
@@ -181,7 +181,7 @@ export async function getAllNews(): Promise<NewsListItem[]> {
 }
 
 export async function getNewsBySlug(slug: string): Promise<NewsArticle | null> {
-  if (!SHEET_ID) throw new Error("Missing env var SHEETS_ID");
+  if (!SHEET_ID) throw new Error("Missing env var SHEETS_ID or NEXT_PUBLIC_SHEETS_ID");
 
   const articles = rowsToObjects(
     await fetchSheetRows(SHEET_ID, "news_articles", REVALIDATE_SECONDS)

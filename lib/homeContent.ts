@@ -41,7 +41,7 @@ export type HomeContent = {
   };
 };
 
-const SHEET_ID = process.env.SHEETS_ID!;
+const SHEET_ID = process.env.SHEETS_ID ?? process.env.NEXT_PUBLIC_SHEETS_ID ?? "";
 const REVALIDATE_SECONDS = Number(process.env.SHEETS_REVALIDATE ?? 300);
 
 function metaToRecord(metaRows: Record<string, string>[]) {
@@ -55,7 +55,36 @@ function metaToRecord(metaRows: Record<string, string>[]) {
 }
 
 export async function getHomeContent(): Promise<HomeContent> {
-  if (!SHEET_ID) throw new Error("Missing env var SHEETS_ID");
+  if (!SHEET_ID) {
+    return {
+      news: {
+        eyebrow: "News",
+        title: "",
+        subtitle: "",
+        viewAllLabel: "View all",
+        gallery: { eyebrow: "Gallery", subtitle: "", images: [] },
+      },
+      about: {
+        eyebrow: "About the group",
+        title: "",
+        subtitle: "",
+        bullets: [],
+        stats: [],
+        images: [],
+        focusBlocks: [],
+        contact: {
+          eyebrow: "Contact",
+          emailLabel: "Email",
+          email: "",
+          locationLabel: "Location",
+          location: "",
+          addressLabel: "Address",
+          address: "",
+          links: [],
+        },
+      },
+    };
+  }
 
   const metaSheet = await fetchSheetRows(SHEET_ID, "home", REVALIDATE_SECONDS);
   const metaRows = rowsToObjects(metaSheet);

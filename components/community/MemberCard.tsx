@@ -4,6 +4,7 @@
 import Link from "next/link";
 import type { Member } from "@/lib/communityContent";
 import Avatar from "@/components/community/Avatar";
+import TypeBadge from "@/components/community/TypeBadge";
 
 function fullName(member: Member): string {
   return [member.first_name, member.last_name].filter(Boolean).join(" ").trim();
@@ -14,44 +15,39 @@ export default function MemberCard({ member }: { member: Member }) {
   const subtitle = member.specialization || member.course || "";
 
   return (
-    <Link
-      href={`/community/${member.id}`}
+    <article
       style={{
-        textDecoration: "none",
-        color: "inherit",
+        border: "1px solid rgba(11,18,32,0.1)",
+        borderRadius: 20,
+        padding: "18px",
+        background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.92))",
+        display: "grid",
+        gap: 14,
+        boxShadow: "0 14px 34px rgba(11,18,32,0.08)",
       }}
     >
-      <article
-        style={{
-          border: "1px solid rgba(11,18,32,0.12)",
-          borderRadius: 18,
-          padding: "16px",
-          background: "white",
-          display: "flex",
-          gap: 14,
-          alignItems: "center",
-          transition: "transform 160ms ease, box-shadow 160ms ease",
-          boxShadow: "0 10px 24px rgba(11,18,32,0.06)",
-        }}
-      >
-        <Avatar src={member.image} alt={name} size={64} />
+      <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+        <Avatar src={member.image} alt={name} size={92} />
         <div style={{ minWidth: 0 }}>
+          <TypeBadge type={member.type} />
           <h3
             style={{
-              margin: 0,
-              fontSize: 16,
+              margin: "8px 0 4px",
+              fontSize: 17,
               letterSpacing: "-0.01em",
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
             }}
           >
-            {name}
+            <Link href={`/community/${member.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+              {name}
+            </Link>
           </h3>
           {subtitle ? (
             <p
               style={{
-                marginTop: 6,
+                margin: 0,
                 fontSize: 13,
                 color: "rgba(11,18,32,0.6)",
                 whiteSpace: "nowrap",
@@ -62,8 +58,51 @@ export default function MemberCard({ member }: { member: Member }) {
               {subtitle}
             </p>
           ) : null}
+          {member.associated_institutes ? (
+            <p
+              style={{
+                marginTop: 6,
+                fontSize: 12.5,
+                color: "rgba(11,18,32,0.55)",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {member.associated_institutes}
+            </p>
+          ) : null}
         </div>
-      </article>
-    </Link>
+      </div>
+
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        {member.member_since ? (
+          <span
+            style={{
+              padding: "4px 10px",
+              borderRadius: 999,
+              background: "rgba(11,18,32,0.06)",
+              fontSize: 12,
+              color: "rgba(11,18,32,0.65)",
+            }}
+          >
+            Member since {member.member_since}
+          </span>
+        ) : null}
+        {member.graduation_ay ? (
+          <span
+            style={{
+              padding: "4px 10px",
+              borderRadius: 999,
+              background: "rgba(11,18,32,0.06)",
+              fontSize: 12,
+              color: "rgba(11,18,32,0.65)",
+            }}
+          >
+            Grad AY {member.graduation_ay}
+          </span>
+        ) : null}
+      </div>
+    </article>
   );
 }

@@ -14,8 +14,8 @@ export default function MemberGrid({ members }: MemberGridProps) {
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-        gap: 18,
+        gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+        gap: 20,
       }}
     >
       {members.map((member) => (
