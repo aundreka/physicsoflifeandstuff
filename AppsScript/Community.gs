@@ -30,6 +30,9 @@ const COMMUNITY_CONFIG = {
   MEMBER_TYPE_VALUES: ["member", "alumni", "adviser"],
 };
 
+// Debug: capture last bulk upsert payload
+let COMMUNITY_LAST_BULK_UPSERT = null;
+
 /** === PUBLIC API (called from HTML via google.script.run) === */
 
 /**
@@ -47,6 +50,8 @@ function communityBootstrap() {
     id: p.id,
     label: p.title || p.id,
     status: p.status || "",
+    journal: p.journal || "",
+    publisher: p.publisher || "",
   }));
 
   const presentations = _getSheetRecords(COMMUNITY_CONFIG.SHEETS.PRESENTATIONS).map((p) => ({
@@ -110,6 +115,10 @@ function communityUpsert(table, record) {
   const meta = _getSheetMeta_(sheet);
 
   // Normalize keys to match headers exactly (we only write known headers)
+  const recordNormalized = {};
+  Object.keys(record || {}).forEach((k) => {
+    recordNormalized[_normalizeHeaderKey_(k)] = k;
+  });
   const clean = {};
   meta.headers.forEach((h) => {
     if (h in record) {
@@ -118,13 +127,29 @@ function communityUpsert(table, record) {
     }
     const lower = String(h).trim().toLowerCase();
     if (lower in record) clean[h] = record[lower];
+    else {
+      const norm = _normalizeHeaderKey_(h);
+      if (norm in recordNormalized) clean[h] = record[recordNormalized[norm]];
+    }
   });
+
+  // Ensure we track id even if header uses different casing (e.g., "ID")
+  if (!clean.id) {
+    const idHeader = meta.headers[meta.idCol - 1];
+    if (idHeader && Object.prototype.hasOwnProperty.call(clean, idHeader)) {
+      clean.id = clean[idHeader];
+    }
+  }
 
   const isCreate = !clean.id;
   if (isCreate) clean.id = _nextSequentialId_(sheet, meta);
 
   // Force approved on create when status column exists (and never require UI to show status)
   if (meta.hasStatus && isCreate) clean.status = COMMUNITY_CONFIG.DEFAULT_STATUS;
+
+  // Always mirror the id value into the exact id header column
+  const idHeader = meta.headers[meta.idCol - 1];
+  if (idHeader) clean[idHeader] = clean.id;
 
   // Special: members.type should be dropdown (member/alumni/adviser) - normalize lowercase
   if (table === COMMUNITY_CONFIG.SHEETS.MEMBERS && typeof clean.type === "string") {
@@ -176,6 +201,12 @@ function communityDelete(table, id) {
  */
 function communityBulkUpsert(items) {
   items = items || [];
+  COMMUNITY_LAST_BULK_UPSERT = {
+    ts: new Date().toISOString(),
+    type: "bulk",
+    count: items.length,
+    items: JSON.parse(JSON.stringify(items || []))
+  };
   const saved = [];
   const errors = [];
   for (let i = 0; i < items.length; i++) {
@@ -189,6 +220,28 @@ function communityBulkUpsert(items) {
     }
   }
   return { ok: errors.length === 0, data: { saved, errors } };
+}
+
+/**
+ * Debug: returns last communityBulkUpsert payload.
+ */
+function communityDebugLastBulkUpsert() {
+  if (!COMMUNITY_LAST_BULK_UPSERT) {
+    return { ok: false, error: { message: "No bulk upsert captured yet." } };
+  }
+  return { ok: true, data: COMMUNITY_LAST_BULK_UPSERT };
+}
+
+/**
+ * Debug: capture last bulk upsert payload from client.
+ */
+function communityDebugCapture(payload) {
+  COMMUNITY_LAST_BULK_UPSERT = {
+    ts: new Date().toISOString(),
+    type: "capture",
+    payload: JSON.parse(JSON.stringify(payload || {}))
+  };
+  return { ok: true, data: { captured: true } };
 }
 
 /**
@@ -483,8 +536,11 @@ function _rowToObj_(headers, row) {
   const o = {};
   headers.forEach((h, i) => {
     const norm = _normalizeHeader_(h);
-    const key = norm.toLowerCase() === "id" ? "id" : norm;
-    o[key] = row[i];
+    const isId = norm.toLowerCase() === "id";
+    const rawKey = isId ? "id" : norm;
+    const normKey = isId ? "id" : _normalizeHeaderKey_(norm);
+    o[rawKey] = row[i];
+    if (normKey !== rawKey) o[normKey] = row[i];
   });
   return o;
 }
@@ -503,8 +559,9 @@ function _findRowIndexById_(sheet, meta, id) {
   const startRow = meta.headerRow + 1;
   if (lastRow < startRow) return 0;
 
-  const ids = sheet.getRange(startRow, meta.idCol, lastRow - startRow + 1, 1).getValues().map((r) => r[0]);
-  const idx = ids.indexOf(id);
+  const idStr = String(id);
+  const ids = sheet.getRange(startRow, meta.idCol, lastRow - startRow + 1, 1).getValues().map((r) => String(r[0] || ""));
+  const idx = ids.indexOf(idStr);
   return idx === -1 ? 0 : idx + startRow; // convert to sheet row
 }
 
@@ -521,6 +578,9 @@ function _getRecordById_(sheetName, id) {
 function _upsertRow_(sheet, meta, obj) {
   const rowIndex = _findRowIndexById_(sheet, meta, obj.id);
   const values = meta.headers.map((h) => (h in obj ? obj[h] : ""));
+  if (meta && meta.idCol) {
+    values[meta.idCol - 1] = obj.id;
+  }
 
   if (rowIndex) {
     sheet.getRange(rowIndex, 1, 1, meta.headers.length).setValues([values]);
@@ -595,8 +655,9 @@ function _existsId_(sheetName, id) {
   const lastRow = sheet.getLastRow();
   const startRow = meta.headerRow + 1;
   if (lastRow < startRow) return false;
-  const ids = sheet.getRange(startRow, meta.idCol, lastRow - startRow + 1, 1).getValues().map((r) => r[0]);
-  return ids.indexOf(id) !== -1;
+  const idStr = String(id);
+  const ids = sheet.getRange(startRow, meta.idCol, lastRow - startRow + 1, 1).getValues().map((r) => String(r[0] || ""));
+  return ids.indexOf(idStr) !== -1;
 }
 
 /** === DRIVE HELPERS === */
@@ -733,4 +794,15 @@ function _normalizeHeader_(h) {
     .replace(/\u00A0/g, " ")
     .replace(/^\uFEFF/, "")
     .trim();
+}
+
+function _normalizeHeaderKey_(h) {
+  return String(h || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .replace(/\u00A0/g, " ")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "");
 }

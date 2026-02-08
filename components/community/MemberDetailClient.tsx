@@ -7,7 +7,7 @@ import { useParams } from "next/navigation";
 import Avatar from "@/components/community/Avatar";
 import TypeBadge from "@/components/community/TypeBadge";
 import { THEME } from "@/components/theme";
-import { buildMemberDetail, type MemberDetail } from "@/lib/communityContent";
+import { buildMemberDetail, getMemberSlug, getPublicationSlug, type MemberDetail } from "@/lib/communityContent";
 import { getCommunityTablesClient } from "@/lib/communityContentClient";
 
 function fullName(title: string, first: string, last: string): string {
@@ -103,6 +103,7 @@ export default function MemberDetailClient() {
   }
 
   const { member, awards, certificates, publications, name, subtitle } = content;
+  const memberSlug = getMemberSlug(member);
 
   const profileFields: Array<{ label: string; value: string }> = [
     member.show_educational_attainment ? { label: "Highest Educational Attainment", value: member.educational_attainment } : null,
@@ -307,7 +308,7 @@ export default function MemberDetailClient() {
                       {publications.map((pub) => (
                         <Link
                           key={pub.id}
-                          href={`/publications/${pub.id}?from=${member.id}`}
+                          href={`/publications/${getPublicationSlug(pub)}?from=${memberSlug}`}
                           style={{ textDecoration: "none", color: "inherit" }}
                         >
                           <article

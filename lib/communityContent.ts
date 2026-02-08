@@ -46,8 +46,9 @@ export type Publication = {
   id: string;
   title: string;
   publishing_date: string;
-  description: string;
   field_of_study: string;
+  journal: string;
+  publisher: string;
   abstract: string;
   institute: string;
   status: string;
@@ -155,6 +156,14 @@ function lower(v: any): string {
   return s(v).toLowerCase();
 }
 
+function slugify(value: string): string {
+  var t = lower(value);
+  if (!t) return "";
+  var normalized = t.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
+  var slug = normalized.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return slug;
+}
+
 function normalizeKey(key: string): string {
   return lower(key)
     .replace(/\s+/g, "_")
@@ -259,14 +268,15 @@ function mapMember(o: Record<string, string>): Member {
 
 function mapPublication(o: Record<string, string>): Publication {
   return {
-    id: s(o.id),
-    title: s(o.title),
-    publishing_date: s(o.publishing_date),
-    description: s(o.description),
-    field_of_study: s(o.field_of_study),
-    abstract: s(o.abstract),
-    institute: s(o.institute),
-    status: s(o.status),
+    id: getField(o, ["id"]),
+    title: getField(o, ["title"]),
+    publishing_date: getField(o, ["publishing_date", "publishing date", "date"]),
+    field_of_study: getField(o, ["field_of_study", "field of study", "field"]),
+    journal: getField(o, ["journal"]),
+    publisher: getField(o, ["publisher"]),
+    abstract: getField(o, ["abstract"]),
+    institute: getField(o, ["institute", "institution"]),
+    status: getField(o, ["status"]),
   };
 }
 
@@ -457,10 +467,43 @@ export function getMemberById(tables: CommunityTables, id: string): Member | nul
   return null;
 }
 
+export function getMemberSlug(member: Member): string {
+  var base = [member.last_name, member.first_name].filter(Boolean).join(" ");
+  return slugify(base) || lower(member.id);
+}
+
+export function getMemberBySlugOrId(tables: CommunityTables, slugOrId: string): Member | null {
+  var target = s(slugOrId);
+  if (!target) return null;
+  var lowerTarget = lower(target);
+  for (var i = 0; i < tables.members.length; i++) {
+    var m = tables.members[i];
+    if (m.id === target) return m;
+    if (getMemberSlug(m) === lowerTarget) return m;
+  }
+  return null;
+}
+
 export function getPublicationById(tables: CommunityTables, id: string): Publication | null {
   var target = s(id);
   for (var i = 0; i < tables.publications.length; i++) {
     if (tables.publications[i].id === target) return tables.publications[i];
+  }
+  return null;
+}
+
+export function getPublicationSlug(publication: Publication): string {
+  return slugify(publication.title) || lower(publication.id);
+}
+
+export function getPublicationBySlugOrId(tables: CommunityTables, slugOrId: string): Publication | null {
+  var target = s(slugOrId);
+  if (!target) return null;
+  var lowerTarget = lower(target);
+  for (var i = 0; i < tables.publications.length; i++) {
+    var p = tables.publications[i];
+    if (p.id === target) return p;
+    if (getPublicationSlug(p) === lowerTarget) return p;
   }
   return null;
 }
@@ -582,10 +625,10 @@ export function getMemberCertificates(tables: CommunityTables, memberId: string)
  * Convenience: fully joined member detail.
  */
 export function buildMemberDetail(tables: CommunityTables, memberId: string): MemberDetail | null {
-  var member = getMemberById(tables, memberId);
+  var member = getMemberBySlugOrId(tables, memberId);
   if (!member) return null;
 
-  var pubs = getMemberPublications(tables, memberId);
+  var pubs = getMemberPublications(tables, member.id);
   var pubsWithAuthors: Array<Publication & { authors: Member[] }> = [];
 
   for (var i = 0; i < pubs.length; i++) {
@@ -599,8 +642,8 @@ export function buildMemberDetail(tables: CommunityTables, memberId: string): Me
   return {
     member: member,
     publications: pubsWithAuthors,
-    awards: getMemberAwards(tables, memberId),
-    certificates: getMemberCertificates(tables, memberId),
+    awards: getMemberAwards(tables, member.id),
+    certificates: getMemberCertificates(tables, member.id),
   };
 }
 
@@ -608,12 +651,12 @@ export function buildMemberDetail(tables: CommunityTables, memberId: string): Me
  * Convenience: fully joined publication detail.
  */
 export function buildPublicationDetail(tables: CommunityTables, publicationId: string): PublicationDetail | null {
-  var publication = getPublicationById(tables, publicationId);
+  var publication = getPublicationBySlugOrId(tables, publicationId);
   if (!publication) return null;
 
   return {
     publication: publication,
-    authors: getPublicationAuthorsOrdered(tables, publicationId),
-    links: getPublicationLinks(tables, publicationId),
+    authors: getPublicationAuthorsOrdered(tables, publication.id),
+    links: getPublicationLinks(tables, publication.id),
   };
 }

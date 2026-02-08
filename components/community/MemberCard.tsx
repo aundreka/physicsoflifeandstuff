@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import type { Member } from "@/lib/communityContent";
+import { getMemberSlug, type Member } from "@/lib/communityContent";
 import Avatar from "@/components/community/Avatar";
 import TypeBadge from "@/components/community/TypeBadge";
 
@@ -23,8 +23,10 @@ export default function MemberCard({ member }: { member: Member }) {
   const subtitle = truncateText(member.specialization || member.course || "", 90);
   const institutes = truncateText(member.associated_institutes || "", 80);
 
+  const slug = getMemberSlug(member);
+
   return (
-    <Link href={`/community/${member.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+    <Link href={`/community/${slug}`} style={{ textDecoration: "none", color: "inherit" }}>
       <article
         style={{
           border: "1px solid rgba(11,18,32,0.1)",

@@ -10,6 +10,7 @@ type AuthorRef = {
 
 export type PublicationListItem = {
   id: string;
+  slug: string;
   title: string;
   publishing_date: string;
   field_of_study: string;
@@ -188,7 +189,7 @@ export default function PublicationFilters({ items }: PublicationFiltersProps) {
       <div className="pubList">
         {filtered.length ? (
           filtered.map((item) => (
-            <Link key={item.id} href={`/publications/${item.id}`} className="pubCardLink">
+            <Link key={item.id} href={`/publications/${item.slug || item.id}`} className="pubCardLink">
               <article className="pubCard">
                 <div className="pubCardHeader">
                   <h3 className="pubCardTitle">{item.title}</h3>

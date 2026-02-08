@@ -10,6 +10,7 @@ import PublicationFilters, {
 import { THEME } from "@/components/theme";
 import {
   getPublicationAuthorsOrdered,
+  getPublicationSlug,
   type CommunityTables,
 } from "@/lib/communityContent";
 import { getCommunityTablesClient } from "@/lib/communityContentClient";
@@ -33,6 +34,7 @@ function buildPublicationList(tables: CommunityTables): PublicationListItem[] {
 
     return {
       id: pub.id,
+      slug: getPublicationSlug(pub),
       title: pub.title,
       publishing_date: pub.publishing_date,
       field_of_study: pub.field_of_study,

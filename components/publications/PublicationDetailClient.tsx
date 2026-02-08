@@ -7,7 +7,8 @@ import { useParams, useSearchParams } from "next/navigation";
 import { THEME } from "@/components/theme";
 import {
   buildPublicationDetail,
-  getMemberById,
+  getMemberBySlugOrId,
+  getMemberSlug,
   type PublicationDetail,
 } from "@/lib/communityContent";
 import { getCommunityTablesClient } from "@/lib/communityContentClient";
@@ -65,8 +66,8 @@ export default function PublicationDetailClient() {
         setDetail(d ?? null);
 
         const fromId = (searchParams?.get("from") ?? "").trim();
-        const fromMember = fromId ? getMemberById(tables, fromId) : null;
-        setBackHref(fromMember ? `/community/${fromId}` : "/community");
+        const fromMember = fromId ? getMemberBySlugOrId(tables, fromId) : null;
+        setBackHref(fromMember ? `/community/${getMemberSlug(fromMember)}` : "/community");
       })
       .catch((err) => {
         console.warn("[publications] detail fetch failed", err);
@@ -151,11 +152,22 @@ export default function PublicationDetailClient() {
             <div className="pubDetailGrid">
               <section className="pubDetailPanel">
                 <div className="pubDetailBlock">
-                  <h2>Overview</h2>
-                  {publication.description ? (
-                    <p className="pubDetailBody">{publication.description}</p>
+                  <h2>Publication Info</h2>
+                  {publication.journal || publication.publisher ? (
+                    <div className="pubDetailBody">
+                      {publication.journal ? (
+                        <p>
+                          <strong>Journal:</strong> {publication.journal}
+                        </p>
+                      ) : null}
+                      {publication.publisher ? (
+                        <p>
+                          <strong>Publisher:</strong> {publication.publisher}
+                        </p>
+                      ) : null}
+                    </div>
                   ) : (
-                    <p className="pubDetailBody pubDetailMuted">No description available.</p>
+                    <p className="pubDetailBody pubDetailMuted">No journal or publisher listed.</p>
                   )}
                 </div>
                 <div className="pubDetailBlock">
@@ -176,7 +188,7 @@ export default function PublicationDetailClient() {
                       {authors.map((author) => (
                         <Link
                           key={author.member.id}
-                          href={`/community/${author.member.id}`}
+                          href={`/community/${getMemberSlug(author.member)}`}
                           className="pubDetailAuthor"
                         >
                           {fullName(author.member.first_name, author.member.last_name)}
