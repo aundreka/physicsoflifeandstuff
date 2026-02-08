@@ -1,6 +1,6 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: 'https://plust.org',
+  siteUrl: 'https://plsust.org',
   generateRobotsTxt: true,
   sitemapSize: 7000,
   changefreq: 'weekly',
