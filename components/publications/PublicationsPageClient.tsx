@@ -50,16 +50,14 @@ export default function PublicationsPageClient({
       />
 
       <div className="homeLight">
-        <div className="homeContainer">
-          <Breadcrumbs
-            items={[
-              { label: "Home", href: "/" },
-              { label: "Publications" },
-            ]}
-          />
-        </div>
         <section id="publications" className="homeSection pubListSection">
           <div className="homeContainer pubListContainer">
+            <Breadcrumbs
+              items={[
+                { label: "Home", href: "/" },
+                { label: "Publications" },
+              ]}
+            />
             <SectionHeading title="All Publications" subtitle="Lorem ipsum eme eme." />
             <PublicationFilters items={items} />
           </div>

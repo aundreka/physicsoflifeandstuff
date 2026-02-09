@@ -55,16 +55,14 @@ export default function CommunityPageClient({
       <CommunityHero title="Community" subtitle="Advisers, members, and alumni of the group." />
 
       <div className="homeLight">
-        <div className="homeContainer">
-          <Breadcrumbs
-            items={[
-              { label: "Home", href: "/" },
-              { label: "Community" },
-            ]}
-          />
-        </div>
         <section id="advisers" className="homeSection" style={{ borderTop: "none" }}>
           <div className="homeContainer">
+            <Breadcrumbs
+              items={[
+                { label: "Home", href: "/" },
+                { label: "Community" },
+              ]}
+            />
             <SectionHeading title="Advisers" />
             {admins.length ? <MemberGrid members={admins} /> : <p className="lead">No advisers listed yet.</p>}
           </div>
