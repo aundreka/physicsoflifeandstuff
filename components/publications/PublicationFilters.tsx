@@ -39,9 +39,29 @@ function formatDate(value: string): string {
 }
 
 function uniqueSorted(values: string[]): string[] {
-  return Array.from(new Set(values.filter(Boolean))).sort((a, b) =>
-    a.localeCompare(b)
-  );
+  const map = new Map<string, string>();
+  values.forEach((value) => {
+    const trimmed = value?.trim();
+    if (!trimmed) return;
+    const key = trimmed.toLowerCase();
+    if (!map.has(key)) map.set(key, trimmed);
+  });
+  return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
+}
+
+function uniqueItems(items: PublicationListItem[]): PublicationListItem[] {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const key = [item.id, item.slug, item.title, item.publishing_date]
+      .filter(Boolean)
+      .join("|")
+      .toLowerCase()
+      .trim();
+    if (!key) return true;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 export default function PublicationFilters({ items }: PublicationFiltersProps) {
@@ -50,38 +70,71 @@ export default function PublicationFilters({ items }: PublicationFiltersProps) {
   const [institute, setInstitute] = useState("");
   const [journal, setJournal] = useState("");
   const [publisher, setPublisher] = useState("");
-  const [year, setYear] = useState("");
+  const [yearStart, setYearStart] = useState("");
+  const [yearEnd, setYearEnd] = useState("");
+
+  const uniqueItemsList = useMemo(() => uniqueItems(items), [items]);
 
   const fields = useMemo(
-    () => uniqueSorted(items.map((i) => i.field_of_study)),
-    [items]
+    () => uniqueSorted(uniqueItemsList.map((i) => i.field_of_study)),
+    [uniqueItemsList]
   );
   const institutes = useMemo(
-    () => uniqueSorted(items.map((i) => i.institute)),
-    [items]
+    () => uniqueSorted(uniqueItemsList.map((i) => i.institute)),
+    [uniqueItemsList]
   );
   const years = useMemo(
-    () => uniqueSorted(items.map((i) => i.year)).sort((a, b) => b.localeCompare(a)),
-    [items]
+    () =>
+      uniqueSorted(uniqueItemsList.map((i) => i.year)).sort(
+        (a, b) => Number(b) - Number(a)
+      ),
+    [uniqueItemsList]
   );
   const journals = useMemo(
-    () => uniqueSorted(items.map((i) => i.journal)),
-    [items]
+    () => uniqueSorted(uniqueItemsList.map((i) => i.journal)),
+    [uniqueItemsList]
   );
   const publishers = useMemo(
-    () => uniqueSorted(items.map((i) => i.publisher)),
-    [items]
+    () => uniqueSorted(uniqueItemsList.map((i) => i.publisher)),
+    [uniqueItemsList]
   );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return items
+    const start = yearStart ? Number(yearStart) : null;
+    const end = yearEnd ? Number(yearEnd) : null;
+    const minYear =
+      start !== null && end !== null ? Math.min(start, end) : start ?? null;
+    const maxYear =
+      start !== null && end !== null ? Math.max(start, end) : end ?? null;
+    return uniqueItemsList
       .filter((item) => {
-        if (field && item.field_of_study !== field) return false;
-        if (institute && item.institute !== institute) return false;
-        if (journal && item.journal !== journal) return false;
-        if (publisher && item.publisher !== publisher) return false;
-        if (year && item.year !== year) return false;
+        if (
+          field &&
+          (item.field_of_study || "").toLowerCase() !== field.toLowerCase()
+        )
+          return false;
+        if (
+          institute &&
+          (item.institute || "").toLowerCase() !== institute.toLowerCase()
+        )
+          return false;
+        if (
+          journal &&
+          (item.journal || "").toLowerCase() !== journal.toLowerCase()
+        )
+          return false;
+        if (
+          publisher &&
+          (item.publisher || "").toLowerCase() !== publisher.toLowerCase()
+        )
+          return false;
+        if (minYear !== null || maxYear !== null) {
+          const itemYear = Number(item.year);
+          if (Number.isNaN(itemYear)) return false;
+          if (minYear !== null && itemYear < minYear) return false;
+          if (maxYear !== null && itemYear > maxYear) return false;
+        }
 
         if (!q) return true;
         const haystack = [
@@ -99,7 +152,7 @@ export default function PublicationFilters({ items }: PublicationFiltersProps) {
         return haystack.includes(q);
       })
       .sort((a, b) => parseDateKey(b.publishing_date) - parseDateKey(a.publishing_date));
-  }, [items, query, field, institute, journal, publisher, year]);
+  }, [uniqueItemsList, query, field, institute, journal, publisher, yearStart, yearEnd]);
 
   return (
     <div className="pubFilters">
@@ -179,19 +232,35 @@ export default function PublicationFilters({ items }: PublicationFiltersProps) {
         </label>
 
         <label className="pubFiltersLabel pubFiltersLabel--year">
-          <span className="eyebrow">Year</span>
-          <select
-            value={year}
-            onChange={(e) => setYear(e.target.value)}
-            className="pubFiltersSelect"
-          >
-            <option value="">All years</option>
-            {years.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
+          <span className="eyebrow">Year range</span>
+          <div className="pubFiltersRange">
+            <select
+              value={yearStart}
+              onChange={(e) => setYearStart(e.target.value)}
+              className="pubFiltersSelect"
+              aria-label="Start year"
+            >
+              <option value="">From</option>
+              {years.map((y) => (
+                <option key={`start-${y}`} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+            <select
+              value={yearEnd}
+              onChange={(e) => setYearEnd(e.target.value)}
+              className="pubFiltersSelect"
+              aria-label="End year"
+            >
+              <option value="">To</option>
+              {years.map((y) => (
+                <option key={`end-${y}`} value={y}>
+                  {y}
+                </option>
+              ))}
+            </select>
+          </div>
         </label>
 
         <button
@@ -202,7 +271,8 @@ export default function PublicationFilters({ items }: PublicationFiltersProps) {
             setInstitute("");
             setJournal("");
             setPublisher("");
-            setYear("");
+            setYearStart("");
+            setYearEnd("");
           }}
           className="pubFiltersClear"
         >

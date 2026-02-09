@@ -49,10 +49,17 @@ export async function generateMetadata({
     "News and updates from the Physics of Life and Stuff group.";
   const image = article.hero?.image || DEFAULT_OG_IMAGE;
   const url = `/news/${article.slug}`;
+  const keywords = [
+    article.title,
+    ...(article.tags ?? []),
+    article.author?.name,
+    SITE_NAME,
+  ].filter((v): v is string => Boolean(v));
 
   return {
     title,
     description,
+    keywords,
     alternates: { canonical: url },
     openGraph: {
       title,
@@ -100,6 +107,7 @@ export default async function NewsDetailPage({
         author: article.author?.name
           ? { "@type": "Person", name: article.author.name }
           : undefined,
+        keywords: (article.tags ?? []).join(", ") || undefined,
         image: article.hero?.image || DEFAULT_OG_IMAGE,
         mainEntityOfPage: `${SITE_URL}/news/${article.slug}`,
       }

@@ -92,10 +92,19 @@ export async function generateMetadata({
   const slug = getPublicationSlug(publication);
   const url = `/publications/${slug}`;
   const image = DEFAULT_OG_IMAGE;
+  const keywords = [
+    publication.title,
+    publication.field_of_study,
+    publication.journal,
+    publication.publisher,
+    publication.institute,
+    SITE_NAME,
+  ].filter(Boolean);
 
   return {
     title,
     description,
+    keywords,
     alternates: { canonical: url },
     openGraph: {
       title,
@@ -139,20 +148,30 @@ export default async function PublicationDetailPage({
   const slug = getPublicationSlug(pub);
   const isoDate = toIsoDate(pub.publishing_date);
   const authorList = detail.authors
-    .map((a) => a.member)
-    .filter(Boolean)
-    .map((m) => ({
-      "@type": "Person",
-      name: [m?.first_name, m?.last_name].filter(Boolean).join(" ").trim(),
-    }));
+    .map((a) => {
+      if (a.member) {
+        return {
+          "@type": "Person",
+          name: [a.member.first_name, a.member.last_name].filter(Boolean).join(" ").trim(),
+        };
+      }
+      if (a.author_name) {
+        return { "@type": "Person", name: a.author_name };
+      }
+      return null;
+    })
+    .filter(Boolean);
 
   const articleLd = {
     "@context": "https://schema.org",
     "@type": "ScholarlyArticle",
     headline: pub.title,
     name: pub.title,
+    abstract: pub.abstract || undefined,
     datePublished: isoDate,
     author: authorList.length ? authorList : undefined,
+    keywords: [pub.field_of_study, pub.journal, pub.publisher].filter(Boolean).join(", ") || undefined,
+    about: pub.field_of_study || undefined,
     publisher: pub.publisher
       ? { "@type": "Organization", name: pub.publisher }
       : undefined,

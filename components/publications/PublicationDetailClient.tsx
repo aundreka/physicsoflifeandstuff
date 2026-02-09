@@ -12,6 +12,7 @@ import {
   type PublicationDetail,
 } from "@/lib/communityContent";
 import { getCommunityTablesClient } from "@/lib/communityContentClient";
+import { SITE_NAME } from "@/lib/site";
 
 function fullName(first: string, last: string): string {
   return [first, last].filter(Boolean).join(" ").trim();
@@ -93,6 +94,12 @@ export default function PublicationDetailClient({
   const content = useMemo(() => {
     if (!detail) return null;
     return detail;
+  }, [detail]);
+
+  useEffect(() => {
+    const title = detail?.publication?.title;
+    if (!title) return;
+    document.title = `${title} | ${SITE_NAME}`;
   }, [detail]);
 
   if (detail === undefined) {

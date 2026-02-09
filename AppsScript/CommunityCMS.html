@@ -1421,6 +1421,10 @@
 
           var recs = (S.all.award_recipients || []).filter(function (x) { return String(x.award_id) === String(row.id); });
           var memberId = recs.length ? recs[0].person_id : "";
+          if (!memberId) {
+            var pendingRec = pendingFromDom("awards").award_recipients || [];
+            memberId = pendingRec.length ? pendingRec[0].person_id : "";
+          }
           if (!memberId) return toast("Add a recipient first");
 
           toast("Uploading...");
@@ -1437,7 +1441,21 @@
                 var upData = getData(up) || {};
                 setField("image", upData.url);
                 document.getElementById("awardThumb").innerHTML = '<img src="' + esc(upData.url) + '" />';
-                toast("Uploaded");
+                syncDraft();
+                if (S.activeRow && S.activeRow.id) {
+                  run("communityUpsert", ["awards", { id: S.activeRow.id, image: upData.url }], function (saveRes) {
+                    if (!isOk(saveRes)) {
+                      toast(errMsg(saveRes && saveRes.error, "Saved image failed"));
+                      return;
+                    }
+                    toast("Uploaded");
+                  }, function (err2) {
+                    console.error(err2);
+                    toast(errMsg(err2, "Saved image failed"));
+                  });
+                } else {
+                  toast("Uploaded (save to apply)");
+                }
               }, function (err) {
                 console.error(err);
                 toast(errMsg(err, "Upload failed"));
@@ -1560,6 +1578,10 @@
 
           var holders = (S.all.certificate_holders || []).filter(function (x) { return String(x.certificate_id) === String(row.id); });
           var memberId = holders.length ? holders[0].person_id : "";
+          if (!memberId) {
+            var pendingHold = pendingFromDom("certificates").certificate_holders || [];
+            memberId = pendingHold.length ? pendingHold[0].person_id : "";
+          }
           if (!memberId) return toast("Add a holder first");
 
           toast("Uploading...");
@@ -1576,7 +1598,21 @@
                 var upData = getData(up) || {};
                 setField("image", upData.url);
                 document.getElementById("certThumb").innerHTML = '<img src="' + esc(upData.url) + '" />';
-                toast("Uploaded");
+                syncDraft();
+                if (S.activeRow && S.activeRow.id) {
+                  run("communityUpsert", ["certificates", { id: S.activeRow.id, image: upData.url }], function (saveRes) {
+                    if (!isOk(saveRes)) {
+                      toast(errMsg(saveRes && saveRes.error, "Saved image failed"));
+                      return;
+                    }
+                    toast("Uploaded");
+                  }, function (err2) {
+                    console.error(err2);
+                    toast(errMsg(err2, "Saved image failed"));
+                  });
+                } else {
+                  toast("Uploaded (save to apply)");
+                }
               }, function (err) {
                 console.error(err);
                 toast(errMsg(err, "Upload failed"));

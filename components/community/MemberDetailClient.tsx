@@ -9,6 +9,7 @@ import TypeBadge from "@/components/community/TypeBadge";
 import { THEME } from "@/components/theme";
 import { buildMemberDetail, getMemberSlug, getPublicationSlug, type MemberDetail } from "@/lib/communityContent";
 import { getCommunityTablesClient } from "@/lib/communityContentClient";
+import { SITE_NAME } from "@/lib/site";
 
 function fullName(title: string, first: string, last: string): string {
   return [title, first, last].filter(Boolean).join(" ").trim();
@@ -78,6 +79,11 @@ export default function MemberDetailClient({
     );
     return { member, awards, certificates, publications, name, subtitle };
   }, [detail]);
+
+  useEffect(() => {
+    if (!content?.name) return;
+    document.title = `${content.name} | ${SITE_NAME}`;
+  }, [content?.name]);
 
   if (detail === undefined) {
     return (
@@ -351,19 +357,11 @@ export default function MemberDetailClient({
                 {awards.length ? (
                   <section className="memberSection">
                     <h2 style={{ marginBottom: 10 }}>Awards</h2>
-                    <div style={{ display: "grid", gap: 12 }}>
+                    <div className="badgeList">
                       {awards.map((award) => (
                         <article
                           key={award.id}
-                          style={{
-                            display: "flex",
-                            gap: 14,
-                            alignItems: "center",
-                            padding: "12px 14px",
-                            border: "1px solid rgba(11,18,32,0.12)",
-                            borderRadius: 14,
-                            background: "white",
-                          }}
+                          className="badgeItem"
                         >
                           {award.image ? (
                             <img
@@ -371,27 +369,15 @@ export default function MemberDetailClient({
                               alt={award.award}
                               width={56}
                               height={56}
-                              style={{
-                                width: 56,
-                                height: 56,
-                                objectFit: "cover",
-                                borderRadius: 10,
-                                border: "1px solid rgba(11,18,32,0.12)",
-                              }}
+                              className="badgeIcon"
                             />
                           ) : (
                             <div
-                              style={{
-                                width: 56,
-                                height: 56,
-                                borderRadius: 10,
-                                background: "rgba(11,18,32,0.08)",
-                                border: "1px solid rgba(11,18,32,0.12)",
-                              }}
+                              className="badgeIcon badgeIconPlaceholder"
                               aria-hidden="true"
                             />
                           )}
-                          <div>
+                          <div className="badgeText">
                             <h3 style={{ margin: 0, fontSize: 16 }}>{award.award}</h3>
                             <p style={{ margin: "6px 0 0", color: "rgba(11,18,32,0.6)" }}>
                               {award.awarded_by}
@@ -411,19 +397,11 @@ export default function MemberDetailClient({
                 {certificates.length ? (
                   <section className="memberSection">
                     <h2 style={{ marginBottom: 10 }}>Certificates</h2>
-                    <div style={{ display: "grid", gap: 12 }}>
+                    <div className="badgeList">
                       {certificates.map((cert) => (
                         <article
                           key={cert.id}
-                          style={{
-                            display: "flex",
-                            gap: 14,
-                            alignItems: "center",
-                            padding: "12px 14px",
-                            border: "1px solid rgba(11,18,32,0.12)",
-                            borderRadius: 14,
-                            background: "white",
-                          }}
+                          className="badgeItem"
                         >
                           {cert.image ? (
                             <img
@@ -431,27 +409,15 @@ export default function MemberDetailClient({
                               alt={cert.certificate}
                               width={56}
                               height={56}
-                              style={{
-                                width: 56,
-                                height: 56,
-                                objectFit: "cover",
-                                borderRadius: 10,
-                                border: "1px solid rgba(11,18,32,0.12)",
-                              }}
+                              className="badgeIcon"
                             />
                           ) : (
                             <div
-                              style={{
-                                width: 56,
-                                height: 56,
-                                borderRadius: 10,
-                                background: "rgba(11,18,32,0.08)",
-                                border: "1px solid rgba(11,18,32,0.12)",
-                              }}
+                              className="badgeIcon badgeIconPlaceholder"
                               aria-hidden="true"
                             />
                           )}
-                          <div>
+                          <div className="badgeText">
                             <h3 style={{ margin: 0, fontSize: 16 }}>{cert.certificate}</h3>
                             <p style={{ margin: "6px 0 0", color: "rgba(11,18,32,0.6)" }}>
                               {cert.certified_by}
@@ -501,6 +467,36 @@ export default function MemberDetailClient({
         </section>
       </div>
       <style jsx>{`
+        .badgeList {
+          display: grid;
+          gap: 12px;
+        }
+        .badgeItem {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding: 6px 0;
+        }
+        .badgeIcon {
+          width: 56px;
+          height: 56px;
+          border-radius: 999px;
+          object-fit: cover;
+          border: 1px solid rgba(11,18,32,0.12);
+          background: #fff;
+          flex: 0 0 auto;
+        }
+        .badgeIconPlaceholder {
+          background: rgba(11,18,32,0.08);
+          border: 1px solid rgba(11,18,32,0.12);
+        }
+        .badgeText {
+          min-width: 0;
+        }
+        .badgeText h3,
+        .badgeText p {
+          overflow-wrap: anywhere;
+        }
         @media (max-width: 720px) {
           .memberHero {
             border-radius: 18px;
@@ -511,27 +507,37 @@ export default function MemberDetailClient({
           .memberHeroGrid {
             gap: 16px;
             flex-wrap: wrap;
-            align-items: flex-start;
+            align-items: center;
+            flex-direction: column;
           }
           .memberHeroText {
             min-width: 0;
+            width: 100%;
+            text-align: left;
           }
           .memberHeroName {
             font-size: 20px;
             line-height: 1.2;
             overflow-wrap: anywhere;
             word-break: break-word;
+            max-width: 100%;
           }
           .memberHeroType {
             font-size: 10px;
             letter-spacing: 0.22em;
+            max-width: 100%;
           }
           .memberHeroSubtitle {
             font-size: 13px;
             line-height: 1.4;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            max-width: 100%;
           }
           .memberHeroActions {
             gap: 8px;
+            width: 100%;
+            flex-wrap: wrap;
           }
           .memberHeroIcon {
             width: 30px !important;
@@ -545,6 +551,10 @@ export default function MemberDetailClient({
           .memberHeroBadge {
             padding: 4px 10px !important;
             font-size: 11px !important;
+            max-width: 100%;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            white-space: normal;
           }
           .memberLayout {
             gap: 16px;
@@ -567,6 +577,13 @@ export default function MemberDetailClient({
           .memberCard p,
           .memberCard span {
             font-size: 13px;
+          }
+          .badgeItem {
+            gap: 12px;
+          }
+          .badgeIcon {
+            width: 48px;
+            height: 48px;
           }
         }
       `}</style>

@@ -76,10 +76,19 @@ export async function generateMetadata({
   const slug = getMemberSlug(member);
   const url = `/community/${slug}`;
   const image = member.image || DEFAULT_OG_IMAGE;
+  const keywords = [
+    name,
+    member.specialization,
+    member.occupation,
+    member.course,
+    member.associated_institutes,
+    SITE_NAME,
+  ].filter(Boolean);
 
   return {
     title: name,
     description,
+    keywords,
     alternates: { canonical: url },
     openGraph: {
       title: name,
@@ -123,6 +132,7 @@ export default async function MemberPage({
     url: `${SITE_URL}/community/${slug}`,
     image: member.image || undefined,
     jobTitle: member.occupation || undefined,
+    knowsAbout: member.show_specialization ? member.specialization || undefined : undefined,
     affiliation: {
       "@type": "Organization",
       name: SITE_NAME,

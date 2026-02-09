@@ -6,6 +6,7 @@ import type { NewsArticle, NewsListItem } from "@/lib/newsContent";
 import { getSimilarArticles } from "@/lib/newsContent";
 import { getAllNewsClient, getNewsBySlugClient } from "@/lib/newsContentClient";
 import NewsArticleView from "@/components/news/NewsArticleView";
+import { SITE_NAME } from "@/lib/site";
 
 export default function NewsDetailClient({
   slug,
@@ -69,6 +70,11 @@ export default function NewsDetailClient({
     if (!article) return [];
     return getSimilarArticles(items, article, 5);
   }, [items, article]);
+
+  useEffect(() => {
+    if (!article?.title) return;
+    document.title = `${article.title} | ${SITE_NAME}`;
+  }, [article]);
 
   if (!resolvedSlug) {
     return (
