@@ -7,7 +7,6 @@ import {
 import { getCommunityTables } from "@/lib/communityContent";
 import { DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from "@/lib/site";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 
 export const revalidate = 300;
 
@@ -107,10 +106,7 @@ export default async function MemberPage({
   const tables = await getTables();
   const detail = buildMemberDetail(tables, params.id);
   if (!detail) {
-    if (tables.members.length === 0) {
-      return <MemberDetailClient />;
-    }
-    notFound();
+    return <MemberDetailClient />;
   }
 
   const member = detail.member;

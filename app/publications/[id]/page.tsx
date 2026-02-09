@@ -9,7 +9,7 @@ import {
 import { getCommunityTables } from "@/lib/communityContent";
 import { DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from "@/lib/site";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 export const revalidate = 300;
 
@@ -124,10 +124,11 @@ export default async function PublicationDetailPage({
   const tables = await getTables();
   const detail = buildPublicationDetail(tables, params.id);
   if (!detail) {
-    if (tables.publications.length === 0) {
-      return <PublicationDetailClient />;
-    }
-    notFound();
+    return (
+      <Suspense fallback={null}>
+        <PublicationDetailClient />
+      </Suspense>
+    );
   }
 
   const fromId = (searchParams?.from ?? "").trim();
@@ -167,7 +168,9 @@ export default async function PublicationDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleLd) }}
       />
-      <PublicationDetailClient initialDetail={detail} initialBackHref={backHref} />
+      <Suspense fallback={null}>
+        <PublicationDetailClient initialDetail={detail} initialBackHref={backHref} />
+      </Suspense>
     </>
   );
 }
