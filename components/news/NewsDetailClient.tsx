@@ -12,10 +12,11 @@ export default function NewsDetailClient({
   initialArticle = undefined,
   initialItems = [],
 }: {
-  slug: string;
+  slug?: string;
   initialArticle?: NewsArticle | null;
   initialItems?: NewsListItem[];
 }) {
+  const [resolvedSlug, setResolvedSlug] = useState<string>(slug || "");
   const [article, setArticle] = useState<NewsArticle | null | undefined>(
     initialArticle
   );
@@ -23,7 +24,15 @@ export default function NewsDetailClient({
 
   useEffect(() => {
     let cancelled = false;
-    if (!slug) {
+    if (!resolvedSlug && typeof window !== "undefined") {
+      const path = window.location.pathname || "";
+      const fromPath = path.startsWith("/news/") ? path.slice("/news/".length) : "";
+      const search = new URLSearchParams(window.location.search);
+      const fromQuery = (search.get("slug") ?? "").trim();
+      const nextSlug = (fromPath || fromQuery).trim();
+      if (nextSlug) setResolvedSlug(nextSlug);
+    }
+    if (!resolvedSlug) {
       setArticle(null);
       return () => {
         cancelled = true;
@@ -34,7 +43,7 @@ export default function NewsDetailClient({
       setArticle(undefined);
     }
 
-    getNewsBySlugClient(slug)
+    getNewsBySlugClient(resolvedSlug)
       .then((fresh) => {
         if (!cancelled) setArticle(fresh);
       })
@@ -54,14 +63,14 @@ export default function NewsDetailClient({
     return () => {
       cancelled = true;
     };
-  }, [slug]);
+  }, [resolvedSlug]);
 
   const similar = useMemo(() => {
     if (!article) return [];
     return getSimilarArticles(items, article, 5);
   }, [items, article]);
 
-  if (!slug) {
+  if (!resolvedSlug) {
     return (
       <main className="newsPageWhite">
         <div className="newsWrap">
