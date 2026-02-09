@@ -19,6 +19,7 @@ export default function NewsPageClient({
 
   const [items, setItems] = useState<NewsListItem[]>(initialItems);
   const [article, setArticle] = useState<NewsArticle | null | undefined>(undefined);
+  const [loadedSlug, setLoadedSlug] = useState<string>("");
 
   useEffect(() => {
     let cancelled = false;
@@ -36,20 +37,22 @@ export default function NewsPageClient({
 
   useEffect(() => {
     let cancelled = false;
-    if (!slug) {
-      setArticle(null);
-      return () => {
-        cancelled = true;
-      };
-    }
-    setArticle(undefined);
+    if (!slug) return () => {
+      cancelled = true;
+    };
     getNewsBySlugClient(slug)
       .then((fresh) => {
-        if (!cancelled) setArticle(fresh);
+        if (!cancelled) {
+          setArticle(fresh);
+          setLoadedSlug(slug);
+        }
       })
       .catch((err) => {
         console.warn("[news] client article fetch failed", err);
-        if (!cancelled) setArticle(null);
+        if (!cancelled) {
+          setArticle(null);
+          setLoadedSlug(slug);
+        }
       });
     return () => {
       cancelled = true;
@@ -69,7 +72,9 @@ export default function NewsPageClient({
     );
   }
 
-  if (article === undefined) {
+  const isLoading = article === undefined || loadedSlug !== slug;
+
+  if (isLoading) {
     return (
       <main className="newsPageWhite">
         <div className="newsWrap">

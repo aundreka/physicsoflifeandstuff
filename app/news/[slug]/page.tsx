@@ -1,8 +1,7 @@
 import NewsDetailClient from "@/components/news/NewsDetailClient";
-import { getAllNews, getNewsBySlug, getSimilarArticles, type NewsArticle, type NewsListItem } from "@/lib/newsContent";
+import { getAllNews, getNewsBySlug, type NewsArticle, type NewsListItem } from "@/lib/newsContent";
 import { DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from "@/lib/site";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 
 export const revalidate = 300;
 
@@ -93,8 +92,6 @@ export default async function NewsDetailPage({
   } catch (err) {
     console.warn("[news] detail fetch failed", err);
   }
-
-  const similar = article ? getSimilarArticles(items, article, 5) : [];
 
   const jsonLd = article
     ? {

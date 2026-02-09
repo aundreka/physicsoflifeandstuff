@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import CommunityHero from "@/components/community/CommunityHero";
 import MemberGrid from "@/components/community/MemberGrid";
 import SectionHeading from "@/components/community/SectionHeading";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { THEME } from "@/components/theme";
 import { splitMembersByType, type Member } from "@/lib/communityContent";
 import { getCommunityTablesClient } from "@/lib/communityContentClient";
@@ -40,21 +41,28 @@ export default function CommunityPageClient({
     };
   }, []);
 
+  type CSSVars = React.CSSProperties & Record<`--${string}`, string>;
+  const styleVars: CSSVars = {
+    "--hero-bg": THEME.pageBg,
+    "--light-bg": THEME.lightBg,
+    "--light-text": THEME.lightText,
+    "--light-muted": THEME.lightMuted,
+    "--hairline": THEME.hairline,
+  };
+
   return (
-    <div
-      style={
-        {
-          ["--hero-bg" as any]: THEME.pageBg,
-          ["--light-bg" as any]: THEME.lightBg,
-          ["--light-text" as any]: THEME.lightText,
-          ["--light-muted" as any]: THEME.lightMuted,
-          ["--hairline" as any]: THEME.hairline,
-        } as React.CSSProperties
-      }
-    >
+    <div style={styleVars}>
       <CommunityHero title="Community" subtitle="Advisers, members, and alumni of the group." />
 
       <div className="homeLight">
+        <div className="homeContainer">
+          <Breadcrumbs
+            items={[
+              { label: "Home", href: "/" },
+              { label: "Community" },
+            ]}
+          />
+        </div>
         <section id="advisers" className="homeSection" style={{ borderTop: "none" }}>
           <div className="homeContainer">
             <SectionHeading title="Advisers" />

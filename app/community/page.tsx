@@ -2,7 +2,7 @@ import CommunityPageClient from "@/components/community/CommunityPageClient";
 import { splitMembersByType, type CommunityTables } from "@/lib/communityContent";
 import { getCommunityTables } from "@/lib/communityContent";
 import type { Metadata } from "next";
-import { SITE_NAME } from "@/lib/site";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const revalidate = 300;
 
@@ -55,10 +55,36 @@ export default async function CommunityPage() {
   }
   const split = splitMembersByType(tables.members);
   return (
-    <CommunityPageClient
-      initialAdmins={split.admins}
-      initialMembers={split.members}
-      initialAlumni={split.alumni}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        // Breadcrumb JSON-LD for sitelinks and rich results context.
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Home",
+                item: `${SITE_URL}/`,
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: "Community",
+                item: `${SITE_URL}/community`,
+              },
+            ],
+          }),
+        }}
+      />
+      <CommunityPageClient
+        initialAdmins={split.admins}
+        initialMembers={split.members}
+        initialAlumni={split.alumni}
+      />
+    </>
   );
 }

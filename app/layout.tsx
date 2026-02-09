@@ -71,6 +71,44 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const siteNavJsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": `${SITE_URL}/#website`,
+        url: SITE_URL,
+        name: SITE_NAME,
+        description:
+          "Official website of the Physics of Life and Stuff UST Research Club. Announcements, projects, resources, and opportunities for our organization's research.",
+      },
+      {
+        "@type": "SiteNavigationElement",
+        "@id": `${SITE_URL}/#nav-news`,
+        name: "News",
+        description:
+          "Updates, publications, events, and highlights from the Physics of Life and Stuff group.",
+        url: `${SITE_URL}/news`,
+      },
+      {
+        "@type": "SiteNavigationElement",
+        "@id": `${SITE_URL}/#nav-community`,
+        name: "Community",
+        description:
+          "Meet our members, alumni, and collaborators, and explore the Physics of Life and Stuff community.",
+        url: `${SITE_URL}/community`,
+      },
+      {
+        "@type": "SiteNavigationElement",
+        "@id": `${SITE_URL}/#nav-publications`,
+        name: "Publications",
+        description:
+          "Peer-reviewed publications and research outputs from the Physics of Life and Stuff group.",
+        url: `${SITE_URL}/publications`,
+      },
+    ],
+  };
+
   return (
     <html lang="en">
       <body
@@ -83,6 +121,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           background: "#070C1B",
         }}
       >
+        <script
+          type="application/ld+json"
+          // JSON-LD for site navigation and sitelinks context.
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteNavJsonLd) }}
+        />
         <Suspense fallback={null}>
           <RedirectHandler />
         </Suspense>

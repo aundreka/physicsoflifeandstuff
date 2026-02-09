@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import Avatar from "@/components/community/Avatar";
-import TypeBadge from "@/components/community/TypeBadge";
 import { THEME } from "@/components/theme";
 import { buildMemberDetail, getMemberSlug, getPublicationSlug, type MemberDetail } from "@/lib/communityContent";
 import { getCommunityTablesClient } from "@/lib/communityContentClient";
@@ -46,12 +45,9 @@ export default function MemberDetailClient({
 
   useEffect(() => {
     let cancelled = false;
-    if (!id) {
-      setDetail(null);
-      return () => {
-        cancelled = true;
-      };
-    }
+    if (!id) return () => {
+      cancelled = true;
+    };
     getCommunityTablesClient()
       .then((tables) => {
         if (cancelled) return;
@@ -97,6 +93,21 @@ export default function MemberDetailClient({
     );
   }
 
+  if (!id) {
+    return (
+      <div className="homeLight">
+        <section className="homeSection" style={{ paddingTop: 56 }}>
+          <div className="homeContainer">
+            <p className="lead">Member not found.</p>
+            <p style={{ marginTop: 12 }}>
+              <Link className="textLink" href="/community">Back to Community</Link>
+            </p>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
   if (!content) {
     return (
       <div className="homeLight">
@@ -114,6 +125,14 @@ export default function MemberDetailClient({
 
   const { member, awards, certificates, publications, name, subtitle } = content;
   const memberSlug = getMemberSlug(member);
+  type CSSVars = React.CSSProperties & Record<`--${string}`, string>;
+  const styleVars: CSSVars = {
+    "--hero-bg": THEME.pageBg,
+    "--light-bg": THEME.lightBg,
+    "--light-text": THEME.lightText,
+    "--light-muted": THEME.lightMuted,
+    "--hairline": THEME.hairline,
+  };
 
   const profileFields: Array<{ label: string; value: string }> = [
     member.show_educational_attainment ? { label: "Highest Educational Attainment", value: member.educational_attainment } : null,
@@ -124,17 +143,7 @@ export default function MemberDetailClient({
   ].filter(Boolean) as Array<{ label: string; value: string }>;
 
   return (
-    <div
-      style={
-        {
-          ["--hero-bg" as any]: THEME.pageBg,
-          ["--light-bg" as any]: THEME.lightBg,
-          ["--light-text" as any]: THEME.lightText,
-          ["--light-muted" as any]: THEME.lightMuted,
-          ["--hairline" as any]: THEME.hairline,
-        } as React.CSSProperties
-      }
-    >
+    <div style={styleVars}>
       <div className="homeLight">
         <section className="homeSection" style={{ paddingTop: 32 }}>
           <div className="homeContainer">

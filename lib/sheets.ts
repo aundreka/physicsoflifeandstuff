@@ -4,7 +4,7 @@
 type GViz = {
   table: {
     cols: Array<{ label: string }>;
-    rows: Array<{ c: Array<{ v?: any } | null> }>;
+    rows: Array<{ c: Array<{ v?: unknown } | null> }>;
   };
 };
 

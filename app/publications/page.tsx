@@ -2,7 +2,7 @@ import PublicationsPageClient from "@/components/publications/PublicationsPageCl
 import { getCommunityTables, type CommunityTables } from "@/lib/communityContent";
 import { buildPublicationList } from "@/lib/publicationsContent";
 import type { Metadata } from "next";
-import { SITE_NAME } from "@/lib/site";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 
 export const revalidate = 300;
 
@@ -53,5 +53,33 @@ export default async function PublicationsPage() {
   }
 
   const items = buildPublicationList(tables);
-  return <PublicationsPageClient initialItems={items} />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        // Breadcrumb JSON-LD for sitelinks and rich results context.
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Home",
+                item: `${SITE_URL}/`,
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: "Publications",
+                item: `${SITE_URL}/publications`,
+              },
+            ],
+          }),
+        }}
+      />
+      <PublicationsPageClient initialItems={items} />
+    </>
+  );
 }

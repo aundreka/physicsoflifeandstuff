@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
@@ -37,33 +38,33 @@ export default function Header() {
     color: "rgba(255,255,255,0.92)",
   }}
 >
-  <a href="/" className="brand">
+  <Link href="/" className="brand">
     <Image src="/logo.svg" alt="Logo" width={44} height={44} priority />
     <span className="siteTitle">
       <strong style={{ letterSpacing: "0.02em" }}>Physics of Life and Stuff</strong>
     </span>
-  </a>
+  </Link>
 
   <div className="desktopNav">
-    <a className="navLink" href="/news">News</a>
-    <a className="navLink" href="/#about">About</a>
+    <Link className="navLink" href="/news">News</Link>
+    <Link className="navLink" href="/#about">About</Link>
 
     <div className="navDropdown">
-      <a
+      <Link
         href="/community"
         className="navLink navDropdownTrigger"
         aria-haspopup="true"
       >
         Community
         <span className="navDropdownChevron" aria-hidden="true">▾</span>
-      </a>
+      </Link>
       <div className="navDropdownMenu" role="menu">
-        <a className="navDropdownItem" href="/community#members" role="menuitem">Members</a>
-        <a className="navDropdownItem" href="/community#alumni" role="menuitem">Alumni</a>
+        <Link className="navDropdownItem" href="/community#members" role="menuitem">Members</Link>
+        <Link className="navDropdownItem" href="/community#alumni" role="menuitem">Alumni</Link>
       </div>
     </div>
 
-    <a className="navLink" href="/publications">Publications</a>
+    <Link className="navLink" href="/publications">Publications</Link>
   </div>
 
 <button
@@ -151,36 +152,36 @@ export default function Header() {
                 ✕
               </button>
             </div>
-            <a className="mobileLink" href="/news" onClick={() => setOpen(false)}>
+            <Link className="mobileLink" href="/news" onClick={() => setOpen(false)}>
               News
-            </a>
-            <a className="mobileLink" href="/#about" onClick={() => setOpen(false)}>
+            </Link>
+            <Link className="mobileLink" href="/#about" onClick={() => setOpen(false)}>
               About
-            </a>
+            </Link>
             <div className="mobileMenuGroup">
-              <a className="mobileLink" href="/community" onClick={() => setOpen(false)}>
+              <Link className="mobileLink" href="/community" onClick={() => setOpen(false)}>
                 Community
-              </a>
+              </Link>
               <div className="mobileDropdownMenu">
-                <a
+                <Link
                   className="mobileDropdownItem"
                   href="/community/#members"
                   onClick={() => setOpen(false)}
                 >
                   Members
-                </a>
-                <a
+                </Link>
+                <Link
                   className="mobileDropdownItem"
                   href="/community/#alumni"
                   onClick={() => setOpen(false)}
                 >
                   Alumni
-                </a>
+                </Link>
               </div>
             </div>
-            <a className="mobileLink" href="/publications" onClick={() => setOpen(false)}>
+            <Link className="mobileLink" href="/publications" onClick={() => setOpen(false)}>
               Publications
-            </a>
+            </Link>
 
 
             <div style={{ flex: 1 }} />

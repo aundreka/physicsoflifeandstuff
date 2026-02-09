@@ -64,9 +64,12 @@ export default function HeroOrb() {
   const wrapRef = useRef<HTMLDivElement | null>(null);
 
   // Avoid hydration mismatch from Math.random() during render
-  const seedRef = useRef<number>(Math.random() * 10_000);
+  const seedRef = useRef<number | null>(null);
 
   useEffect(() => {
+    if (seedRef.current === null) {
+      seedRef.current = Math.random() * 10_000;
+    }
     const canvas = canvasRef.current!;
     const wrap = wrapRef.current!;
     const ctx = canvas.getContext("2d", { alpha: true })!;
@@ -107,7 +110,7 @@ export default function HeroOrb() {
     wrap.addEventListener("pointerleave", onLeave);
 
     // Pre-generate star dust points
-    const seed = seedRef.current;
+    const seed = seedRef.current ?? 0;
     const dust = Array.from({ length: 180 }, (_, i) => {
       const a = (i * 137.5 + seed) % 360;
       const r = Math.random();

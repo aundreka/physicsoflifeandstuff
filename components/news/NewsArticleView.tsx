@@ -4,6 +4,7 @@
 import type { NewsArticle, NewsBlock, NewsListItem } from "@/lib/newsContent";
 import { estimateReadingTime, formatDate } from "@/lib/newsContent";
 import SimilarArticles from "@/components/news/SimilarArticles";
+import Link from "next/link";
 
 function toIsoDate(iso?: string | number | Date | null): string | undefined {
   if (iso == null) return undefined;
@@ -227,11 +228,13 @@ export default function NewsArticleView({
   return (
     <main className="newsPageWhite">
       <div className="newsWrap">
-<div className="articleTopNav">
-  <div className="articleTopNavInner">
-    <a className="articleBack" href="/news">← Back to News</a>
-  </div>
-</div>
+      <div className="articleTopNav">
+        <div className="articleTopNavInner">
+          <Link className="articleBack" href="/news">
+            ← Back to News
+          </Link>
+        </div>
+      </div>
 
 
         <div className="articleLayout">

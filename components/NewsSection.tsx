@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import GalleryCarousel from "@/components/GalleryCarousel";
 import type { HomeContent } from "@/lib/homeContent";
 import { formatDate, type NewsListItem } from "@/lib/newsContent";
@@ -31,11 +32,6 @@ export default function NewsSection({
 }) {
   const [liveMeta, setLiveMeta] = useState(meta);
   const [liveItems, setLiveItems] = useState(items);
-
-  useEffect(() => {
-    setLiveMeta(meta);
-    setLiveItems(items);
-  }, [meta, items]);
 
   useEffect(() => {
     let cancelled = false;
@@ -72,9 +68,9 @@ export default function NewsSection({
             {liveMeta.title}
           </h2>
 
-          <a className="textLink" href="/news">
+          <Link className="textLink" href="/news">
             {liveMeta.viewAllLabel} <span aria-hidden="true">→</span>
-          </a>
+          </Link>
         </div>
 
         <p className="lead" style={{ marginTop: 12 }}>
@@ -83,7 +79,7 @@ export default function NewsSection({
       </div>
 
       <div className="newsGridPro">
-        <a className="newsFeatured" href={`/news/${encodeURIComponent(featured.slug)}`}>
+        <Link className="newsFeatured" href={`/news/${encodeURIComponent(featured.slug)}`}>
           <div className="newsFeaturedMedia">
             {/* fallback alt to title to be nicer than "" */}
             <img src={featuredImg} alt={featured.title} loading="lazy" />
@@ -99,14 +95,14 @@ export default function NewsSection({
               Read more <span aria-hidden="true">→</span>
             </div>
           </div>
-        </a>
+        </Link>
 
         <div className="newsList">
           {rest.map((n) => {
             const tag = n.tags?.[0];
             const img = n.hero?.image ?? "";
             return (
-              <a key={n.slug} className="newsItem" href={`/news/${encodeURIComponent(n.slug)}`}>
+              <Link key={n.slug} className="newsItem" href={`/news/${encodeURIComponent(n.slug)}`}>
                 <div className="newsItemMedia">
                   <img src={img} alt={n.title} loading="lazy" />
                 </div>
@@ -116,7 +112,7 @@ export default function NewsSection({
                   <div className="newsItemTitle">{n.title}</div>
                   {n.dek ? <div className="newsItemExcerpt">{n.dek}</div> : null}
                 </div>
-              </a>
+              </Link>
             );
           })}
         </div>

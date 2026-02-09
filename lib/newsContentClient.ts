@@ -25,6 +25,10 @@ function warnMalformed(kind: string, context: string, detail: unknown) {
   console.warn(`[news] malformed ${kind} in ${context}`, detail);
 }
 
+function normalizeEmbedProvider(value: unknown): "iframe" | undefined {
+  return value === "iframe" ? "iframe" : undefined;
+}
+
 function normalizeListItems(raw: unknown, context: string): string[] {
   if (!Array.isArray(raw)) {
     if (raw) warnMalformed("list data", context, raw);
@@ -178,7 +182,7 @@ export async function getNewsBySlugClient(slug: string): Promise<NewsArticle | n
       return {
         type,
         title: b.title || undefined,
-        provider: (b.provider as any) || "iframe",
+        provider: normalizeEmbedProvider(b.provider) ?? "iframe",
         url: b.url,
       };
 

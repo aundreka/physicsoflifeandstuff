@@ -17,19 +17,17 @@ export default async function HomeLayout() {
   const allNews = await getAllNews();
 
   const latestThree = allNews.slice(0, 3);
+  type CSSVars = React.CSSProperties & Record<`--${string}`, string>;
+  const styleVars: CSSVars = {
+    "--hero-bg": THEME.pageBg,
+    "--light-bg": THEME.lightBg,
+    "--light-text": THEME.lightText,
+    "--light-muted": THEME.lightMuted,
+    "--hairline": THEME.hairline,
+  };
 
   return (
-    <div
-      style={
-        {
-          ["--hero-bg" as any]: THEME.pageBg,
-          ["--light-bg" as any]: THEME.lightBg,
-          ["--light-text" as any]: THEME.lightText,
-          ["--light-muted" as any]: THEME.lightMuted,
-          ["--hairline" as any]: THEME.hairline,
-        } as React.CSSProperties
-      }
-    >
+    <div style={styleVars}>
       <Hero />
 
       <div className="heroToLightWave" aria-hidden="true">

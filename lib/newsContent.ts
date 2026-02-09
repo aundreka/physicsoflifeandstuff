@@ -59,6 +59,10 @@ function warnMalformed(kind: string, context: string, detail: unknown) {
   console.warn(`[news] malformed ${kind} in ${context}`, detail);
 }
 
+function normalizeEmbedProvider(value: unknown): "iframe" | undefined {
+  return value === "iframe" ? "iframe" : undefined;
+}
+
 function normalizeListItems(raw: unknown, context: string): string[] {
   if (!Array.isArray(raw)) {
     if (raw) warnMalformed("list data", context, raw);
@@ -219,7 +223,7 @@ export async function getNewsBySlug(slug: string): Promise<NewsArticle | null> {
       return {
         type,
         title: b.title || undefined,
-        provider: (b.provider as any) || "iframe",
+        provider: normalizeEmbedProvider(b.provider) ?? "iframe",
         url: b.url,
       };
 
@@ -345,8 +349,7 @@ export function formatDate(iso?: string | number | Date | null): string {
 
 export function estimateReadingTime(article: NewsArticle): string {
   const words = (article.content ?? [])
-    .filter((b) => b.type === "paragraph" || b.type === "quote")
-    .map((b: any) => b.text || "")
+    .flatMap((b) => (b.type === "paragraph" || b.type === "quote" ? [b.text] : []))
     .join(" ")
     .trim()
     .split(/\s+/)

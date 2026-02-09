@@ -64,12 +64,9 @@ export default function PublicationDetailClient({
 
   useEffect(() => {
     let cancelled = false;
-    if (!id) {
-      setDetail(null);
-      return () => {
-        cancelled = true;
-      };
-    }
+    if (!id) return () => {
+      cancelled = true;
+    };
 
     getCommunityTablesClient()
       .then((tables) => {
@@ -102,6 +99,21 @@ export default function PublicationDetailClient({
     document.title = `${title} | ${SITE_NAME}`;
   }, [detail]);
 
+  if (!id) {
+    return (
+      <div className="homeLight">
+        <section className="homeSection pubDetailSection">
+          <div className="homeContainer pubDetail">
+            <p className="lead">Publication not found.</p>
+            <p style={{ marginTop: 12 }}>
+              <Link className="textLink" href="/publications">Back to Publications</Link>
+            </p>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
   if (detail === undefined) {
     return (
       <div className="homeLight">
@@ -130,19 +142,17 @@ export default function PublicationDetailClient({
   }
 
   const { publication, authors, links } = content;
+  type CSSVars = React.CSSProperties & Record<`--${string}`, string>;
+  const styleVars: CSSVars = {
+    "--hero-bg": THEME.pageBg,
+    "--light-bg": THEME.lightBg,
+    "--light-text": THEME.lightText,
+    "--light-muted": THEME.lightMuted,
+    "--hairline": THEME.hairline,
+  };
 
   return (
-    <div
-      style={
-        {
-          ["--hero-bg" as any]: THEME.pageBg,
-          ["--light-bg" as any]: THEME.lightBg,
-          ["--light-text" as any]: THEME.lightText,
-          ["--light-muted" as any]: THEME.lightMuted,
-          ["--hairline" as any]: THEME.hairline,
-        } as React.CSSProperties
-      }
-    >
+    <div style={styleVars}>
       <div className="homeLight">
         <section className="homeSection pubDetailSection">
           <div className="homeContainer pubDetail">

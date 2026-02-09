@@ -4,6 +4,7 @@
 import { useMemo, useState } from "react";
 import type { NewsListItem } from "@/lib/newsContent";
 import { formatDate } from "@/lib/newsContent";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 export default function NewsIndex({
   items,
@@ -174,6 +175,12 @@ export default function NewsIndex({
         </aside>
 
         <div className="newsContent">
+          <Breadcrumbs
+            items={[
+              { label: "Home", href: "/" },
+              { label: "News" },
+            ]}
+          />
           <div className="newsPageTop">
             <div className="newsMastRow">
               <div className="newsMast">Newsroom</div>

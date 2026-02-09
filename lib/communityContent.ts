@@ -154,19 +154,19 @@ export type PublicationDetail = {
   links: PublicationLink[];
 };
 
-function s(v: any): string {
+function s(v: unknown): string {
   return (v == null ? "" : String(v)).trim();
 }
 
-function lower(v: any): string {
+function lower(v: unknown): string {
   return s(v).toLowerCase();
 }
 
 function slugify(value: string): string {
-  var t = lower(value);
+  const t = lower(value);
   if (!t) return "";
-  var normalized = t.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
-  var slug = normalized.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  const normalized = t.normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
+  const slug = normalized.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   return slug;
 }
 
@@ -177,8 +177,8 @@ function normalizeKey(key: string): string {
 }
 
 function normalizeRow(o: Record<string, string>): Record<string, string> {
-  var out: Record<string, string> = {};
-  for (var k in o) {
+  const out: Record<string, string> = {};
+  for (const k in o) {
     if (!Object.prototype.hasOwnProperty.call(o, k)) continue;
     out[normalizeKey(k)] = o[k];
   }
@@ -186,16 +186,16 @@ function normalizeRow(o: Record<string, string>): Record<string, string> {
 }
 
 function getField(o: Record<string, string>, keys: string[]): string {
-  var normalized = normalizeRow(o);
-  for (var i = 0; i < keys.length; i++) {
-    var v = normalized[normalizeKey(keys[i])];
+  const normalized = normalizeRow(o);
+  for (let i = 0; i < keys.length; i++) {
+    const v = normalized[normalizeKey(keys[i])];
     if (v != null && String(v).trim() !== "") return s(v);
   }
   return "";
 }
 
 function safeMemberType(v: string): MemberType | "" {
-  var t = lower(v);
+  const t = lower(v);
   if (t === "adviser") return "adviser";
   if (t === "admin") return "adviser";
   if (t === "member" || t === "alumni") return t as MemberType;
@@ -203,20 +203,20 @@ function safeMemberType(v: string): MemberType | "" {
 }
 
 function showFlag(v: string): boolean {
-  var t = lower(v);
+  const t = lower(v);
   if (!t) return true;
   if (t === "false" || t === "0" || t === "no" || t === "hide") return false;
   return true;
 }
 
 function byLastFirst(a: Member, b: Member): number {
-  var al = lower(a.last_name);
-  var bl = lower(b.last_name);
+  const al = lower(a.last_name);
+  const bl = lower(b.last_name);
   if (al < bl) return -1;
   if (al > bl) return 1;
 
-  var af = lower(a.first_name);
-  var bf = lower(b.first_name);
+  const af = lower(a.first_name);
+  const bf = lower(b.first_name);
   if (af < bf) return -1;
   if (af > bf) return 1;
   return 0;
@@ -225,7 +225,7 @@ function byLastFirst(a: Member, b: Member): number {
 function parseDateKey(v: string): number {
   // Accepts "YYYY-MM-DD" or any Date.parse-able string.
   // Returns numeric key for sorting desc; invalid -> 0.
-  var t = Date.parse(v);
+  const t = Date.parse(v);
   return isNaN(t) ? 0 : t;
 }
 
@@ -400,7 +400,7 @@ export async function getCommunityTables(opts: {
   ];
 
   const results: Array<Record<string, string>[]> = [];
-  for (var i = 0; i < tabs.length; i++) {
+  for (let i = 0; i < tabs.length; i++) {
     results.push(await fetchTabObjects(sheetId, tabs[i], revalidateSeconds));
   }
 
@@ -447,12 +447,12 @@ export function splitMembersByType(members: Member[]): {
   members: Member[];
   alumni: Member[];
 } {
-  var admins: Member[] = [];
-  var mems: Member[] = [];
-  var alumni: Member[] = [];
+  const admins: Member[] = [];
+  const mems: Member[] = [];
+  const alumni: Member[] = [];
 
-  for (var i = 0; i < members.length; i++) {
-    var m = members[i];
+  for (let i = 0; i < members.length; i++) {
+    const m = members[i];
     if (m.type === "adviser") admins.push(m);
     else if (m.type === "alumni") alumni.push(m);
     else mems.push(m);
@@ -466,24 +466,24 @@ export function splitMembersByType(members: Member[]): {
 }
 
 export function getMemberById(tables: CommunityTables, id: string): Member | null {
-  var target = s(id);
-  for (var i = 0; i < tables.members.length; i++) {
+  const target = s(id);
+  for (let i = 0; i < tables.members.length; i++) {
     if (tables.members[i].id === target) return tables.members[i];
   }
   return null;
 }
 
 export function getMemberSlug(member: Member): string {
-  var base = [member.last_name, member.first_name].filter(Boolean).join(" ");
+  const base = [member.last_name, member.first_name].filter(Boolean).join(" ");
   return slugify(base) || lower(member.id);
 }
 
 export function getMemberBySlugOrId(tables: CommunityTables, slugOrId: string): Member | null {
-  var target = s(slugOrId);
+  const target = s(slugOrId);
   if (!target) return null;
-  var lowerTarget = lower(target);
-  for (var i = 0; i < tables.members.length; i++) {
-    var m = tables.members[i];
+  const lowerTarget = lower(target);
+  for (let i = 0; i < tables.members.length; i++) {
+    const m = tables.members[i];
     if (m.id === target) return m;
     if (getMemberSlug(m) === lowerTarget) return m;
   }
@@ -491,8 +491,8 @@ export function getMemberBySlugOrId(tables: CommunityTables, slugOrId: string): 
 }
 
 export function getPublicationById(tables: CommunityTables, id: string): Publication | null {
-  var target = s(id);
-  for (var i = 0; i < tables.publications.length; i++) {
+  const target = s(id);
+  for (let i = 0; i < tables.publications.length; i++) {
     if (tables.publications[i].id === target) return tables.publications[i];
   }
   return null;
@@ -503,11 +503,11 @@ export function getPublicationSlug(publication: Publication): string {
 }
 
 export function getPublicationBySlugOrId(tables: CommunityTables, slugOrId: string): Publication | null {
-  var target = s(slugOrId);
+  const target = s(slugOrId);
   if (!target) return null;
-  var lowerTarget = lower(target);
-  for (var i = 0; i < tables.publications.length; i++) {
-    var p = tables.publications[i];
+  const lowerTarget = lower(target);
+  for (let i = 0; i < tables.publications.length; i++) {
+    const p = tables.publications[i];
     if (p.id === target) return p;
     if (getPublicationSlug(p) === lowerTarget) return p;
   }
@@ -515,10 +515,10 @@ export function getPublicationBySlugOrId(tables: CommunityTables, slugOrId: stri
 }
 
 export function getPublicationLinks(tables: CommunityTables, publicationId: string): PublicationLink[] {
-  var pid = s(publicationId);
-  var out: PublicationLink[] = [];
-  for (var i = 0; i < tables.publication_links.length; i++) {
-    var l = tables.publication_links[i];
+  const pid = s(publicationId);
+  const out: PublicationLink[] = [];
+  for (let i = 0; i < tables.publication_links.length; i++) {
+    const l = tables.publication_links[i];
     if (l.publication_id === pid) out.push(l);
   }
   out.sort(function (a, b) {
@@ -531,17 +531,17 @@ export function getPublicationAuthorsOrdered(
   tables: CommunityTables,
   publicationId: string
 ): Array<{ id: string; member?: Member; author_name?: string; author_order: number }> {
-  var pid = s(publicationId);
+  const pid = s(publicationId);
 
   // Build member map
-  var memberById: Record<string, Member> = {};
-  for (var i = 0; i < tables.members.length; i++) {
+  const memberById: Record<string, Member> = {};
+  for (let i = 0; i < tables.members.length; i++) {
     memberById[tables.members[i].id] = tables.members[i];
   }
 
-  var rels: PublicationAuthor[] = [];
-  for (var j = 0; j < tables.publication_authors.length; j++) {
-    var r = tables.publication_authors[j];
+  const rels: PublicationAuthor[] = [];
+  for (let j = 0; j < tables.publication_authors.length; j++) {
+    const r = tables.publication_authors[j];
     if (r.publication_id === pid) rels.push(r);
   }
 
@@ -549,11 +549,11 @@ export function getPublicationAuthorsOrdered(
     return toNumber(a.author_order, 0) - toNumber(b.author_order, 0);
   });
 
-  var out: Array<{ id: string; member?: Member; author_name?: string; author_order: number }> = [];
-  for (var k = 0; k < rels.length; k++) {
-    var rel = rels[k];
-    var m = memberById[rel.person_id];
-    var name = s(rel.author_name);
+  const out: Array<{ id: string; member?: Member; author_name?: string; author_order: number }> = [];
+  for (let k = 0; k < rels.length; k++) {
+    const rel = rels[k];
+    const m = memberById[rel.person_id];
+    const name = s(rel.author_name);
     if (m) {
       out.push({ id: rel.id, member: m, author_order: toNumber(rel.author_order, 0) });
     } else if (name) {
@@ -567,17 +567,17 @@ export function getMemberPublications(
   tables: CommunityTables,
   memberId: string
 ): Publication[] {
-  var mid = s(memberId);
-  var pubIds: Record<string, boolean> = {};
+  const mid = s(memberId);
+  const pubIds: Record<string, boolean> = {};
 
-  for (var i = 0; i < tables.publication_authors.length; i++) {
-    var pa = tables.publication_authors[i];
+  for (let i = 0; i < tables.publication_authors.length; i++) {
+    const pa = tables.publication_authors[i];
     if (pa.person_id === mid && pa.publication_id) pubIds[pa.publication_id] = true;
   }
 
-  var out: Publication[] = [];
-  for (var j = 0; j < tables.publications.length; j++) {
-    var p = tables.publications[j];
+  const out: Publication[] = [];
+  for (let j = 0; j < tables.publications.length; j++) {
+    const p = tables.publications[j];
     if (pubIds[p.id]) out.push(p);
   }
 
@@ -589,17 +589,17 @@ export function getMemberPublications(
 }
 
 export function getMemberAwards(tables: CommunityTables, memberId: string): Award[] {
-  var mid = s(memberId);
-  var awardIds: Record<string, boolean> = {};
+  const mid = s(memberId);
+  const awardIds: Record<string, boolean> = {};
 
-  for (var i = 0; i < tables.award_recipients.length; i++) {
-    var ar = tables.award_recipients[i];
+  for (let i = 0; i < tables.award_recipients.length; i++) {
+    const ar = tables.award_recipients[i];
     if (ar.person_id === mid && ar.award_id) awardIds[ar.award_id] = true;
   }
 
-  var out: Award[] = [];
-  for (var j = 0; j < tables.awards.length; j++) {
-    var a = tables.awards[j];
+  const out: Award[] = [];
+  for (let j = 0; j < tables.awards.length; j++) {
+    const a = tables.awards[j];
     if (awardIds[a.id]) out.push(a);
   }
 
@@ -611,17 +611,17 @@ export function getMemberAwards(tables: CommunityTables, memberId: string): Awar
 }
 
 export function getMemberCertificates(tables: CommunityTables, memberId: string): Certificate[] {
-  var mid = s(memberId);
-  var certIds: Record<string, boolean> = {};
+  const mid = s(memberId);
+  const certIds: Record<string, boolean> = {};
 
-  for (var i = 0; i < tables.certificate_holders.length; i++) {
-    var ch = tables.certificate_holders[i];
+  for (let i = 0; i < tables.certificate_holders.length; i++) {
+    const ch = tables.certificate_holders[i];
     if (ch.person_id === mid && ch.certificate_id) certIds[ch.certificate_id] = true;
   }
 
-  var out: Certificate[] = [];
-  for (var j = 0; j < tables.certificates.length; j++) {
-    var c = tables.certificates[j];
+  const out: Certificate[] = [];
+  for (let j = 0; j < tables.certificates.length; j++) {
+    const c = tables.certificates[j];
     if (certIds[c.id]) out.push(c);
   }
 
@@ -636,17 +636,17 @@ export function getMemberCertificates(tables: CommunityTables, memberId: string)
  * Convenience: fully joined member detail.
  */
 export function buildMemberDetail(tables: CommunityTables, memberId: string): MemberDetail | null {
-  var member = getMemberBySlugOrId(tables, memberId);
+  const member = getMemberBySlugOrId(tables, memberId);
   if (!member) return null;
 
-  var pubs = getMemberPublications(tables, member.id);
-  var pubsWithAuthors: Array<Publication & { authors: Member[] }> = [];
+  const pubs = getMemberPublications(tables, member.id);
+  const pubsWithAuthors: Array<Publication & { authors: Member[] }> = [];
 
-  for (var i = 0; i < pubs.length; i++) {
-    var p = pubs[i];
-    var authorPairs = getPublicationAuthorsOrdered(tables, p.id);
-    var authorMembers: Member[] = [];
-    for (var j = 0; j < authorPairs.length; j++) {
+  for (let i = 0; i < pubs.length; i++) {
+    const p = pubs[i];
+    const authorPairs = getPublicationAuthorsOrdered(tables, p.id);
+    const authorMembers: Member[] = [];
+    for (let j = 0; j < authorPairs.length; j++) {
       if (authorPairs[j].member) authorMembers.push(authorPairs[j].member as Member);
     }
     pubsWithAuthors.push(Object.assign({}, p, { authors: authorMembers }));
@@ -664,7 +664,7 @@ export function buildMemberDetail(tables: CommunityTables, memberId: string): Me
  * Convenience: fully joined publication detail.
  */
 export function buildPublicationDetail(tables: CommunityTables, publicationId: string): PublicationDetail | null {
-  var publication = getPublicationBySlugOrId(tables, publicationId);
+  const publication = getPublicationBySlugOrId(tables, publicationId);
   if (!publication) return null;
 
   return {
