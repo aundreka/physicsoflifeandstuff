@@ -15,7 +15,8 @@ export type PublicationListItem = {
   publishing_date: string;
   field_of_study: string;
   institute: string;
-  description: string;
+  journal: string;
+  publisher: string;
   abstract: string;
   year: string;
   authors: AuthorRef[];
@@ -65,8 +66,9 @@ export default function PublicationFilters({ items }: PublicationFiltersProps) {
   const [query, setQuery] = useState("");
   const [field, setField] = useState("");
   const [institute, setInstitute] = useState("");
+  const [journal, setJournal] = useState("");
+  const [publisher, setPublisher] = useState("");
   const [year, setYear] = useState("");
-  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const fields = useMemo(
     () => uniqueSorted(items.map((i) => i.field_of_study)),
@@ -80,6 +82,14 @@ export default function PublicationFilters({ items }: PublicationFiltersProps) {
     () => uniqueSorted(items.map((i) => i.year)).sort((a, b) => b.localeCompare(a)),
     [items]
   );
+  const journals = useMemo(
+    () => uniqueSorted(items.map((i) => i.journal)),
+    [items]
+  );
+  const publishers = useMemo(
+    () => uniqueSorted(items.map((i) => i.publisher)),
+    [items]
+  );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -87,12 +97,15 @@ export default function PublicationFilters({ items }: PublicationFiltersProps) {
       .filter((item) => {
         if (field && item.field_of_study !== field) return false;
         if (institute && item.institute !== institute) return false;
+        if (journal && item.journal !== journal) return false;
+        if (publisher && item.publisher !== publisher) return false;
         if (year && item.year !== year) return false;
 
         if (!q) return true;
         const haystack = [
           item.title,
-          item.description,
+          item.journal,
+          item.publisher,
           item.abstract,
           item.field_of_study,
           item.institute,
@@ -104,17 +117,12 @@ export default function PublicationFilters({ items }: PublicationFiltersProps) {
         return haystack.includes(q);
       })
       .sort((a, b) => parseDateKey(b.publishing_date) - parseDateKey(a.publishing_date));
-  }, [items, query, field, institute, year]);
+  }, [items, query, field, institute, journal, publisher, year]);
 
   return (
     <div className="pubFilters">
-
-
-      <div
-        id="pub-filters-panel"
-        className={`pubFiltersBar ${filtersOpen ? "is-open" : ""}`}
-      >
-        <label className="pubFiltersLabel">
+      <div id="pub-filters-panel" className="pubFiltersBar">
+        <label className="pubFiltersLabel pubFiltersLabel--search">
           <span className="eyebrow">Search</span>
           <input
             value={query}
@@ -157,6 +165,38 @@ export default function PublicationFilters({ items }: PublicationFiltersProps) {
         </label>
 
         <label className="pubFiltersLabel">
+          <span className="eyebrow">Journal</span>
+          <select
+            value={journal}
+            onChange={(e) => setJournal(e.target.value)}
+            className="pubFiltersSelect"
+          >
+            <option value="">All journals</option>
+            {journals.map((f) => (
+              <option key={f} value={f}>
+                {f}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="pubFiltersLabel">
+          <span className="eyebrow">Publisher</span>
+          <select
+            value={publisher}
+            onChange={(e) => setPublisher(e.target.value)}
+            className="pubFiltersSelect"
+          >
+            <option value="">All publishers</option>
+            {publishers.map((f) => (
+              <option key={f} value={f}>
+                {f}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="pubFiltersLabel">
           <span className="eyebrow">Year</span>
           <select
             value={year}
@@ -178,6 +218,8 @@ export default function PublicationFilters({ items }: PublicationFiltersProps) {
             setQuery("");
             setField("");
             setInstitute("");
+            setJournal("");
+            setPublisher("");
             setYear("");
           }}
           className="pubFiltersClear"

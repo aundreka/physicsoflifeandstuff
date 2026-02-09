@@ -10,8 +10,6 @@ const COMMUNITY_CONFIG = {
     PUBLICATIONS: "publications",
     PUBLICATION_LINKS: "publication_links",
     PUBLICATION_AUTHORS: "publication_authors",
-    PRESENTATIONS: "presentations",
-    PRESENTATION_AUTHORS: "presentation_authors",
     AWARDS: "awards",
     AWARD_RECIPIENTS: "award_recipients",
     AWARD_PUBLICATIONS: "award_publications",
@@ -54,12 +52,6 @@ function communityBootstrap() {
     publisher: p.publisher || "",
   }));
 
-  const presentations = _getSheetRecords(COMMUNITY_CONFIG.SHEETS.PRESENTATIONS).map((p) => ({
-    id: p.id,
-    label: p.title || p.id,
-    status: p.status || "",
-  }));
-
   const awards = _getSheetRecords(COMMUNITY_CONFIG.SHEETS.AWARDS).map((a) => ({
     id: a.id,
     label: a.award || a.id,
@@ -78,7 +70,6 @@ function communityBootstrap() {
       memberTypeValues: COMMUNITY_CONFIG.MEMBER_TYPE_VALUES.slice(),
       members,
       publications,
-      presentations,
       awards,
       certificates,
     },
@@ -608,15 +599,6 @@ function _validateLinks_(table, record) {
   if (table === COMMUNITY_CONFIG.SHEETS.PUBLICATION_LINKS) {
     if (has("publication_id") && !_existsId_(COMMUNITY_CONFIG.SHEETS.PUBLICATIONS, record.publication_id)) {
       throw new Error("publication_links.publication_id does not exist in publications.");
-    }
-  }
-
-  if (table === COMMUNITY_CONFIG.SHEETS.PRESENTATION_AUTHORS) {
-    if (has("presentation_id") && !_existsId_(COMMUNITY_CONFIG.SHEETS.PRESENTATIONS, record.presentation_id)) {
-      throw new Error("presentation_authors.presentation_id does not exist in presentations.");
-    }
-    if (has("person_id") && !_existsId_(COMMUNITY_CONFIG.SHEETS.MEMBERS, record.person_id)) {
-      throw new Error("presentation_authors.person_id does not exist in members.");
     }
   }
 
