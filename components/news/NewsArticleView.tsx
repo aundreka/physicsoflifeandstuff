@@ -5,6 +5,7 @@ import type { NewsArticle, NewsBlock, NewsListItem } from "@/lib/newsContent";
 import { estimateReadingTime, formatDate } from "@/lib/newsContent";
 import SimilarArticles from "@/components/news/SimilarArticles";
 import Link from "next/link";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 function toIsoDate(iso?: string | number | Date | null): string | undefined {
   if (iso == null) return undefined;
@@ -228,6 +229,13 @@ export default function NewsArticleView({
   return (
     <main className="newsPageWhite">
       <div className="newsWrap">
+        <Breadcrumbs
+          items={[
+            { label: "Home", href: "/" },
+            { label: "News", href: "/news" },
+            { label: article.title },
+          ]}
+        />
       <div className="articleTopNav">
         <div className="articleTopNavInner">
           <Link className="articleBack" href="/news">
