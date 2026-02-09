@@ -4,60 +4,17 @@
 import { useEffect, useState } from "react";
 import CommunityHero from "@/components/community/CommunityHero";
 import SectionHeading from "@/components/community/SectionHeading";
-import PublicationFilters, {
-  type PublicationListItem,
-} from "@/components/publications/PublicationFilters";
+import PublicationFilters from "@/components/publications/PublicationFilters";
 import { THEME } from "@/components/theme";
-import {
-  getPublicationAuthorsOrdered,
-  getPublicationSlug,
-  type CommunityTables,
-} from "@/lib/communityContent";
+import { buildPublicationList, type PublicationListItem } from "@/lib/publicationsContent";
 import { getCommunityTablesClient } from "@/lib/communityContentClient";
 
-function fullName(first: string, last: string): string {
-  return [first, last].filter(Boolean).join(" ").trim();
-}
-
-function yearFromDate(value: string): string {
-  const t = Date.parse(value);
-  if (Number.isNaN(t)) return "";
-  return new Date(t).getUTCFullYear().toString();
-}
-
-function buildPublicationList(tables: CommunityTables): PublicationListItem[] {
-  return tables.publications.map((pub) => {
-    const authors = getPublicationAuthorsOrdered(tables, pub.id).map((a) => {
-      if (a.member) {
-        return {
-          id: a.member.id,
-          name: fullName(a.member.first_name, a.member.last_name),
-        };
-      }
-      return {
-        id: `external:${a.id || a.author_order}`,
-        name: `${a.author_name || "Unknown"} (external)`,
-      };
-    });
-
-    return {
-      id: pub.id,
-      slug: getPublicationSlug(pub),
-      title: pub.title,
-      publishing_date: pub.publishing_date,
-      field_of_study: pub.field_of_study,
-      institute: pub.institute,
-      journal: pub.journal,
-      publisher: pub.publisher,
-      abstract: pub.abstract,
-      year: yearFromDate(pub.publishing_date),
-      authors,
-    };
-  });
-}
-
-export default function PublicationsPageClient() {
-  const [items, setItems] = useState<PublicationListItem[]>([]);
+export default function PublicationsPageClient({
+  initialItems = [],
+}: {
+  initialItems?: PublicationListItem[];
+}) {
+  const [items, setItems] = useState<PublicationListItem[]>(initialItems);
 
   useEffect(() => {
     let cancelled = false;

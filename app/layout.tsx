@@ -5,19 +5,17 @@ import RedirectHandler from "@/components/RedirectHandler";
 import { Inter } from "next/font/google";
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
-const siteUrl = "https://plsust.org";
-const siteName = "Physics of Life and Stuff";
-
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase: new URL(SITE_URL),
 
   title: {
-    default: `${siteName}`,
-    template: `%s | ${siteName}`,
+    default: `${SITE_NAME}`,
+    template: `%s | ${SITE_NAME}`,
   },
 
   description:
@@ -41,27 +39,27 @@ export const metadata: Metadata = {
 
   openGraph: {
     type: "website",
-    url: siteUrl,
-    siteName,
-    title: siteName,
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: SITE_NAME,
     description:
       "Announcements, projects, resources, and opportunities for student research at UST.",
     images: [
       {
-        url: "/og.png", 
+        url: DEFAULT_OG_IMAGE,
         width: 1200,
         height: 630,
-        alt: `${siteName} preview image`,
+        alt: `${SITE_NAME} preview image`,
       },
     ],
   },
 
   twitter: {
     card: "summary_large_image",
-    title: siteName,
+    title: SITE_NAME,
     description:
       "Announcements, projects, resources, and opportunities for student research at UST.",
-    images: ["/og.png"],
+    images: [DEFAULT_OG_IMAGE],
   },
 
   icons: {

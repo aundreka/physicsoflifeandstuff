@@ -222,7 +222,7 @@ export default function NewsIndex({
                 <a
                   key={slug}
                   className={`newsIndexCard ${idx === 0 ? "isLead" : ""}`}
-                  href={`/news?slug=${encodeURIComponent(slug)}`}
+                  href={`/news/${encodeURIComponent(slug)}`}
                 >
                   <div className="newsIndexMedia">
                     {heroImage ? (

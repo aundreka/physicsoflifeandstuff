@@ -2,25 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-
-type AuthorRef = {
-  id: string;
-  name: string;
-};
-
-export type PublicationListItem = {
-  id: string;
-  slug: string;
-  title: string;
-  publishing_date: string;
-  field_of_study: string;
-  institute: string;
-  journal: string;
-  publisher: string;
-  abstract: string;
-  year: string;
-  authors: AuthorRef[];
-};
+import type { PublicationListItem } from "@/lib/publicationsContent";
 
 type PublicationFiltersProps = {
   items: PublicationListItem[];

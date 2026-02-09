@@ -83,7 +83,7 @@ export default function NewsSection({
       </div>
 
       <div className="newsGridPro">
-        <a className="newsFeatured" href={`/news?slug=${featured.slug}`}>
+        <a className="newsFeatured" href={`/news/${encodeURIComponent(featured.slug)}`}>
           <div className="newsFeaturedMedia">
             {/* fallback alt to title to be nicer than "" */}
             <img src={featuredImg} alt={featured.title} loading="lazy" />
@@ -106,7 +106,7 @@ export default function NewsSection({
             const tag = n.tags?.[0];
             const img = n.hero?.image ?? "";
             return (
-              <a key={n.slug} className="newsItem" href={`/news?slug=${n.slug}`}>
+              <a key={n.slug} className="newsItem" href={`/news/${encodeURIComponent(n.slug)}`}>
                 <div className="newsItemMedia">
                   <img src={img} alt={n.title} loading="lazy" />
                 </div>

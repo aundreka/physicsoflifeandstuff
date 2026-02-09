@@ -22,11 +22,15 @@ function truncateText(value: string, maxChars: number): string {
   return text.slice(0, cut).trimEnd() + "...";
 }
 
-export default function MemberDetailClient() {
+export default function MemberDetailClient({
+  initialDetail = undefined,
+}: {
+  initialDetail?: MemberDetail | null;
+}) {
   const params = useParams();
   const id = typeof params?.id === "string" ? params.id : "";
 
-  const [detail, setDetail] = useState<MemberDetail | null | undefined>(undefined);
+  const [detail, setDetail] = useState<MemberDetail | null | undefined>(initialDetail);
   const [avatarSize, setAvatarSize] = useState(190);
 
   useEffect(() => {

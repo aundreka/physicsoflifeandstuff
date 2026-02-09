@@ -20,7 +20,7 @@ export default function SimilarArticles({ items }: { items: NewsListItem[] }) {
           const heroAlt = a.title ? `${a.title} cover` : "";
 
           return (
-            <a key={slug} className="newsSideCard" href={`/news?slug=${encodeURIComponent(slug)}`}>
+            <a key={slug} className="newsSideCard" href={`/news/${encodeURIComponent(slug)}`}>
               <div className="newsSideMedia">
                 {heroImage ? (
                   <img src={heroImage} alt={heroAlt} loading="lazy" />

@@ -9,10 +9,18 @@ import { THEME } from "@/components/theme";
 import { splitMembersByType, type Member } from "@/lib/communityContent";
 import { getCommunityTablesClient } from "@/lib/communityContentClient";
 
-export default function CommunityPageClient() {
-  const [admins, setAdmins] = useState<Member[]>([]);
-  const [members, setMembers] = useState<Member[]>([]);
-  const [alumni, setAlumni] = useState<Member[]>([]);
+export default function CommunityPageClient({
+  initialAdmins = [],
+  initialMembers = [],
+  initialAlumni = [],
+}: {
+  initialAdmins?: Member[];
+  initialMembers?: Member[];
+  initialAlumni?: Member[];
+}) {
+  const [admins, setAdmins] = useState<Member[]>(initialAdmins);
+  const [members, setMembers] = useState<Member[]>(initialMembers);
+  const [alumni, setAlumni] = useState<Member[]>(initialAlumni);
 
   useEffect(() => {
     let cancelled = false;

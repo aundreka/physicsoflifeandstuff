@@ -19,7 +19,7 @@ function fullName(first: string, last: string): string {
 
 function authorLabel(author: { member?: { first_name: string; last_name: string }; author_name?: string }): string {
   if (author.member) return fullName(author.member.first_name, author.member.last_name);
-  return author.author_name ? `${author.author_name} (external)` : "";
+  return author.author_name || "";
 }
 
 function formatDate(value: string): string {
@@ -47,13 +47,19 @@ function formatDate(value: string): string {
   return value;
 }
 
-export default function PublicationDetailClient() {
+export default function PublicationDetailClient({
+  initialDetail = undefined,
+  initialBackHref = "/publications",
+}: {
+  initialDetail?: PublicationDetail | null;
+  initialBackHref?: string;
+}) {
   const params = useParams();
   const searchParams = useSearchParams();
   const id = typeof params?.id === "string" ? params.id : "";
 
-  const [detail, setDetail] = useState<PublicationDetail | null | undefined>(undefined);
-  const [backHref, setBackHref] = useState<string>("/community");
+  const [detail, setDetail] = useState<PublicationDetail | null | undefined>(initialDetail);
+  const [backHref, setBackHref] = useState<string>(initialBackHref);
 
   useEffect(() => {
     let cancelled = false;
@@ -72,7 +78,7 @@ export default function PublicationDetailClient() {
 
         const fromId = (searchParams?.get("from") ?? "").trim();
         const fromMember = fromId ? getMemberBySlugOrId(tables, fromId) : null;
-        setBackHref(fromMember ? `/community/${getMemberSlug(fromMember)}` : "/community");
+        setBackHref(fromMember ? `/community/${getMemberSlug(fromMember)}` : "/publications");
       })
       .catch((err) => {
         console.warn("[publications] detail fetch failed", err);

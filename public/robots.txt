@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://plsust.org
+
+# Sitemaps
+Sitemap: https://plsust.org/sitemap.xml
