@@ -36,7 +36,7 @@ export default function MemberDetailClient({
   useEffect(() => {
     function updateAvatarSize() {
       if (typeof window === "undefined") return;
-      setAvatarSize(window.innerWidth < 640 ? 140 : 190);
+      setAvatarSize(window.innerWidth < 640 ? 96 : 190);
     }
     updateAvatarSize();
     window.addEventListener("resize", updateAvatarSize);
@@ -190,15 +190,18 @@ export default function MemberDetailClient({
                       {name}
                     </h1>
                     {subtitle ? (
-                      <p style={{ margin: 0, color: "rgba(255,255,255,0.82)" }}>{subtitle}</p>
+                      <p className="memberHeroSubtitle" style={{ margin: 0, color: "rgba(255,255,255,0.82)" }}>
+                        {subtitle}
+                      </p>
                     ) : null}
                     {(member.show_linkedin && member.linkedin) || (member.show_email && member.email) || (member.show_member_since && member.member_since) ? (
-                      <div style={{ marginTop: 10, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                      <div className="memberHeroActions" style={{ marginTop: 10, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                         {member.show_email && member.email ? (
                           <a
                             href={`mailto:${member.email}`}
                             aria-label="Email"
                             title="Email"
+                            className="memberHeroIcon"
                             style={{
                               width: 36,
                               height: 36,
@@ -229,6 +232,7 @@ export default function MemberDetailClient({
                             rel="noreferrer"
                             aria-label="LinkedIn profile"
                             title="LinkedIn"
+                            className="memberHeroIcon"
                             style={{
                               width: 36,
                               height: 36,
@@ -254,6 +258,7 @@ export default function MemberDetailClient({
                         ) : null}
                         {member.show_member_since && member.member_since ? (
                           <span
+                            className="memberHeroBadge"
                             style={{
                               padding: "6px 12px",
                               borderRadius: 999,
@@ -506,12 +511,40 @@ export default function MemberDetailClient({
           .memberHeroGrid {
             gap: 16px;
             flex-wrap: wrap;
+            align-items: flex-start;
           }
           .memberHeroText {
             min-width: 0;
           }
           .memberHeroName {
-            font-size: 26px;
+            font-size: 20px;
+            line-height: 1.2;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+          }
+          .memberHeroType {
+            font-size: 10px;
+            letter-spacing: 0.22em;
+          }
+          .memberHeroSubtitle {
+            font-size: 13px;
+            line-height: 1.4;
+          }
+          .memberHeroActions {
+            gap: 8px;
+          }
+          .memberHeroIcon {
+            width: 30px !important;
+            height: 30px !important;
+            border-radius: 8px !important;
+          }
+          .memberHeroIcon svg {
+            width: 15px;
+            height: 15px;
+          }
+          .memberHeroBadge {
+            padding: 4px 10px !important;
+            font-size: 11px !important;
           }
           .memberLayout {
             gap: 16px;
