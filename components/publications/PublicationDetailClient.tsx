@@ -17,6 +17,11 @@ function fullName(first: string, last: string): string {
   return [first, last].filter(Boolean).join(" ").trim();
 }
 
+function authorLabel(author: { member?: { first_name: string; last_name: string }; author_name?: string }): string {
+  if (author.member) return fullName(author.member.first_name, author.member.last_name);
+  return author.author_name ? `${author.author_name} (external)` : "";
+}
+
 function formatDate(value: string): string {
   if (!value) return "";
   const match = value.match(/^Date\((\d{4}),\s*(\d{1,2}),\s*(\d{1,2})\)$/);
@@ -185,15 +190,24 @@ export default function PublicationDetailClient() {
                   <h3>Authors</h3>
                   {authors.length ? (
                     <div className="pubDetailAuthors">
-                      {authors.map((author) => (
-                        <Link
-                          key={author.member.id}
-                          href={`/community/${getMemberSlug(author.member)}`}
-                          className="pubDetailAuthor"
-                        >
-                          {fullName(author.member.first_name, author.member.last_name)}
-                        </Link>
-                      ))}
+                      {authors.map((author) => {
+                        if (author.member) {
+                          return (
+                            <Link
+                              key={author.id}
+                              href={`/community/${getMemberSlug(author.member)}`}
+                              className="pubDetailAuthor"
+                            >
+                              {fullName(author.member.first_name, author.member.last_name)}
+                            </Link>
+                          );
+                        }
+                        return (
+                          <span key={author.id} className="pubDetailAuthor pubDetailAuthor--external">
+                            {authorLabel(author) || "Unknown"}
+                          </span>
+                        );
+                      })}
                     </div>
                   ) : (
                     <p className="pubDetailMuted">No authors listed.</p>

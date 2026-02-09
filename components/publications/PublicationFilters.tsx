@@ -196,7 +196,7 @@ export default function PublicationFilters({ items }: PublicationFiltersProps) {
           </select>
         </label>
 
-        <label className="pubFiltersLabel">
+        <label className="pubFiltersLabel pubFiltersLabel--year">
           <span className="eyebrow">Year</span>
           <select
             value={year}

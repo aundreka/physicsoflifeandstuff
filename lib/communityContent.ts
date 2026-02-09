@@ -67,6 +67,7 @@ export type PublicationAuthor = {
   id: string;
   publication_id: string;
   person_id: string;
+  author_name: string;
   author_order: string; // stored as string
 };
 
@@ -144,7 +145,12 @@ export type MemberDetail = {
 
 export type PublicationDetail = {
   publication: Publication;
-  authors: Array<{ member: Member; author_order: number }>;
+  authors: Array<{
+    id: string;
+    member?: Member;
+    author_name?: string;
+    author_order: number;
+  }>;
   links: PublicationLink[];
 };
 
@@ -296,6 +302,7 @@ function mapPublicationAuthor(o: Record<string, string>): PublicationAuthor {
     id: s(o.id),
     publication_id: s(o.publication_id),
     person_id: s(o.person_id),
+    author_name: s(o.author_name),
     author_order: s(o.author_order),
   };
 }
@@ -524,7 +531,7 @@ export function getPublicationLinks(tables: CommunityTables, publicationId: stri
 export function getPublicationAuthorsOrdered(
   tables: CommunityTables,
   publicationId: string
-): Array<{ member: Member; author_order: number }> {
+): Array<{ id: string; member?: Member; author_name?: string; author_order: number }> {
   var pid = s(publicationId);
 
   // Build member map
@@ -543,11 +550,16 @@ export function getPublicationAuthorsOrdered(
     return toNumber(a.author_order, 0) - toNumber(b.author_order, 0);
   });
 
-  var out: Array<{ member: Member; author_order: number }> = [];
+  var out: Array<{ id: string; member?: Member; author_name?: string; author_order: number }> = [];
   for (var k = 0; k < rels.length; k++) {
     var rel = rels[k];
     var m = memberById[rel.person_id];
-    if (m) out.push({ member: m, author_order: toNumber(rel.author_order, 0) });
+    var name = s(rel.author_name);
+    if (m) {
+      out.push({ id: rel.id, member: m, author_order: toNumber(rel.author_order, 0) });
+    } else if (name) {
+      out.push({ id: rel.id, author_name: name, author_order: toNumber(rel.author_order, 0) });
+    }
   }
   return out;
 }
@@ -635,7 +647,9 @@ export function buildMemberDetail(tables: CommunityTables, memberId: string): Me
     var p = pubs[i];
     var authorPairs = getPublicationAuthorsOrdered(tables, p.id);
     var authorMembers: Member[] = [];
-    for (var j = 0; j < authorPairs.length; j++) authorMembers.push(authorPairs[j].member);
+    for (var j = 0; j < authorPairs.length; j++) {
+      if (authorPairs[j].member) authorMembers.push(authorPairs[j].member as Member);
+    }
     pubsWithAuthors.push(Object.assign({}, p, { authors: authorMembers }));
   }
 

@@ -27,10 +27,18 @@ function yearFromDate(value: string): string {
 
 function buildPublicationList(tables: CommunityTables): PublicationListItem[] {
   return tables.publications.map((pub) => {
-    const authors = getPublicationAuthorsOrdered(tables, pub.id).map((a) => ({
-      id: a.member.id,
-      name: fullName(a.member.first_name, a.member.last_name),
-    }));
+    const authors = getPublicationAuthorsOrdered(tables, pub.id).map((a) => {
+      if (a.member) {
+        return {
+          id: a.member.id,
+          name: fullName(a.member.first_name, a.member.last_name),
+        };
+      }
+      return {
+        id: `external:${a.id || a.author_order}`,
+        name: `${a.author_name || "Unknown"} (external)`,
+      };
+    });
 
     return {
       id: pub.id,

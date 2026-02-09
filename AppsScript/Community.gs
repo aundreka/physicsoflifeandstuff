@@ -27,9 +27,17 @@ const COMMUNITY_CONFIG = {
   DEFAULT_STATUS: "approved",
   MEMBER_TYPE_VALUES: ["member", "alumni", "adviser"],
 };
+const COMMUNITY_DATE_FIELDS = ["publishing_date", "awarded_date", "certified_date"];
 
 // Debug: capture last bulk upsert payload
 let COMMUNITY_LAST_BULK_UPSERT = null;
+// Debug: capture last single upsert payload/result
+let COMMUNITY_LAST_UPSERT = null;
+var COMMUNITY_DEBUG_KEYS = {
+  LAST_UPSERT: "community_last_upsert",
+  LAST_BULK: "community_last_bulk",
+  LAST_CAPTURE: "community_last_capture"
+};
 
 /** === PUBLIC API (called from HTML via google.script.run) === */
 
@@ -164,10 +172,23 @@ function communityUpsert(table, record) {
     toSave = merged;
   }
 
+  // Normalize date fields to "Month d yyyy"
+  _applyDateFormatting_(toSave, meta);
+
   // Special: relationships should refer to existing ids
   _validateLinks_(table, toSave);
 
   const saved = _upsertRow_(sheet, meta, toSave);
+  if (!saved || !saved.id) {
+    throw new Error("Save failed: missing id");
+  }
+  COMMUNITY_LAST_UPSERT = {
+    ts: new Date().toISOString(),
+    table,
+    record: JSON.parse(JSON.stringify(record || {})),
+    saved: JSON.parse(JSON.stringify(saved || {}))
+  };
+  _storeDebug_(COMMUNITY_DEBUG_KEYS.LAST_UPSERT, COMMUNITY_LAST_UPSERT);
   return { ok: true, data: saved };
 }
 
@@ -198,6 +219,7 @@ function communityBulkUpsert(items) {
     count: items.length,
     items: JSON.parse(JSON.stringify(items || []))
   };
+  _storeDebug_(COMMUNITY_DEBUG_KEYS.LAST_BULK, COMMUNITY_LAST_BULK_UPSERT);
   const saved = [];
   const errors = [];
   for (let i = 0; i < items.length; i++) {
@@ -224,6 +246,34 @@ function communityDebugLastBulkUpsert() {
 }
 
 /**
+ * Debug: returns last communityUpsert payload + saved result.
+ */
+function communityDebugLastUpsert() {
+  if (!COMMUNITY_LAST_UPSERT) {
+    return { ok: false, error: { message: "No upsert captured yet." } };
+  }
+  return { ok: true, data: COMMUNITY_LAST_UPSERT };
+}
+
+/**
+ * Debug: returns last communityUpsert payload + saved result (persisted).
+ */
+function communityDebugLastUpsertStored() {
+  const data = _loadDebug_(COMMUNITY_DEBUG_KEYS.LAST_UPSERT);
+  if (!data) return { ok: false, error: { message: "No upsert captured yet." } };
+  return { ok: true, data: data };
+}
+
+/**
+ * Debug: returns last communityBulkUpsert payload (persisted).
+ */
+function communityDebugLastBulkUpsertStored() {
+  const data = _loadDebug_(COMMUNITY_DEBUG_KEYS.LAST_BULK);
+  if (!data) return { ok: false, error: { message: "No bulk upsert captured yet." } };
+  return { ok: true, data: data };
+}
+
+/**
  * Debug: capture last bulk upsert payload from client.
  */
 function communityDebugCapture(payload) {
@@ -232,7 +282,25 @@ function communityDebugCapture(payload) {
     type: "capture",
     payload: JSON.parse(JSON.stringify(payload || {}))
   };
+  _storeDebug_(COMMUNITY_DEBUG_KEYS.LAST_CAPTURE, COMMUNITY_LAST_BULK_UPSERT);
   return { ok: true, data: { captured: true } };
+}
+
+function _storeDebug_(key, obj) {
+  try {
+    PropertiesService.getScriptProperties().setProperty(key, JSON.stringify(obj));
+  } catch (e) {
+    // ignore debug storage failures
+  }
+}
+
+function _loadDebug_(key) {
+  try {
+    const raw = PropertiesService.getScriptProperties().getProperty(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
 }
 
 /**
@@ -478,9 +546,11 @@ function _getSheetRecords(sheetName) {
   for (let i = 0; i < values.length; i++) {
     values[i][meta.idCol - 1] = ids[i][0];
   }
-  return values
-    .map((row) => _rowToObjWithMeta_(meta, row))
-    .filter((o) => o.id); // ignore blank rows
+  return values.map((row, idx) => {
+    const obj = _rowToObjWithMeta_(meta, row);
+    if (!obj.id) obj.id = ids[idx][0];
+    return obj;
+  });
 }
 
 function _fillMissingIds_(sheet, meta) {
@@ -569,18 +639,28 @@ function _getRecordById_(sheetName, id) {
 function _upsertRow_(sheet, meta, obj) {
   const rowIndex = _findRowIndexById_(sheet, meta, obj.id);
   const values = meta.headers.map((h) => (h in obj ? obj[h] : ""));
+  for (let i = 0; i < meta.headers.length; i++) {
+    const h = meta.headers[i];
+    if (_isDateHeader_(h)) {
+      values[i] = _formatDateValue_(values[i]);
+    }
+  }
   if (meta && meta.idCol) {
     values[meta.idCol - 1] = obj.id;
   }
 
   if (rowIndex) {
     sheet.getRange(rowIndex, 1, 1, meta.headers.length).setValues([values]);
+    _applyDateFormats_(sheet, meta, rowIndex);
   } else {
     sheet.appendRow(values);
+    _applyDateFormats_(sheet, meta, sheet.getLastRow());
   }
 
   // Return canonical saved row
-  return _getRecordById_(sheet.getName(), obj.id);
+  const saved = _getRecordById_(sheet.getName(), obj.id);
+  if (saved) return saved;
+  return obj;
 }
 
 function _validateLinks_(table, record) {
@@ -628,6 +708,75 @@ function _validateLinks_(table, record) {
       throw new Error("certificate_holders.person_id does not exist in members.");
     }
   }
+}
+
+function _applyDateFormatting_(obj, meta) {
+  if (!obj) return;
+  const dateSet = {};
+  COMMUNITY_DATE_FIELDS.forEach((k) => { dateSet[k] = true; });
+  if (meta && meta.headers && meta.headers.length) {
+    meta.headers.forEach((h) => {
+      const norm = _normalizeHeaderKey_(h);
+      if (!dateSet[norm]) return;
+      if (Object.prototype.hasOwnProperty.call(obj, h)) {
+        obj[h] = _formatDateValue_(obj[h]);
+      } else if (Object.prototype.hasOwnProperty.call(obj, norm)) {
+        obj[norm] = _formatDateValue_(obj[norm]);
+      }
+    });
+    return;
+  }
+  Object.keys(obj).forEach((k) => {
+    const norm = _normalizeHeaderKey_(k);
+    if (dateSet[norm]) obj[k] = _formatDateValue_(obj[k]);
+  });
+}
+
+function _formatDateValue_(value) {
+  if (value == null) return value;
+  if (Object.prototype.toString.call(value) === "[object Date]" && !isNaN(value.getTime())) {
+    return Utilities.formatDate(value, Session.getScriptTimeZone(), "MMMM d yyyy");
+  }
+  const s = String(value).trim();
+  if (!s) return "";
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (iso) {
+    const y = Number(iso[1]);
+    const m = Number(iso[2]);
+    const d = Number(iso[3]);
+    if (y && m && d) {
+      const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      return months[m - 1] + " " + d + " " + y;
+    }
+  }
+  if (/^[A-Za-z]+\s+\d{1,2}\s+\d{4}$/.test(s)) {
+    return s;
+  }
+  const d3 = new Date(s);
+  if (!isNaN(d3.getTime())) {
+    return Utilities.formatDate(d3, Session.getScriptTimeZone(), "MMMM d yyyy");
+  }
+  return s;
+}
+
+function _applyDateFormats_(sheet, meta, rowIndex) {
+  if (!sheet || !meta || !rowIndex) return;
+  const dateSet = {};
+  COMMUNITY_DATE_FIELDS.forEach((k) => { dateSet[k] = true; });
+  const cols = [];
+  meta.headers.forEach((h, i) => {
+    const norm = _normalizeHeaderKey_(h);
+    if (dateSet[norm]) cols.push(i + 1);
+  });
+  if (!cols.length) return;
+  for (let i = 0; i < cols.length; i++) {
+    sheet.getRange(rowIndex, cols[i], 1, 1).setNumberFormat("@");
+  }
+}
+
+function _isDateHeader_(h) {
+  const norm = _normalizeHeaderKey_(h);
+  return COMMUNITY_DATE_FIELDS.indexOf(norm) !== -1;
 }
 
 function _existsId_(sheetName, id) {

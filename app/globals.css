@@ -267,20 +267,28 @@ body {
   flex-wrap:wrap;
   align-items:end;
   gap:16px;
+  row-gap:12px;
   padding:10px 0 4px;
   border-top:1px solid rgba(12, 19, 32, 0.08);
   border-bottom:1px solid rgba(12, 19, 32, 0.08);
+  margin-bottom:18px;
 }
 .pubFiltersLabel{
   display:grid;
   gap:6px;
   color:rgba(12, 19, 32, 0.62);
   flex:1 1 160px;
-  min-width:160px;
+  min-width:140px;
+  max-width:260px;
 }
 .pubFiltersLabel--search{
   flex:2.2 1 240px;
-  min-width:220px;
+  min-width:200px;
+  max-width:420px;
+}
+.pubFiltersLabel--year{
+  flex:1.4 1 220px;
+  max-width:unset;
 }
 .pubFiltersInput,
 .pubFiltersSelect{
@@ -291,6 +299,10 @@ body {
   font-size:1rem;
   color:rgba(20, 24, 31, 0.72);
   box-shadow:0 1px 0 rgba(0, 0, 0, 0.02);
+  width:100%;
+  min-width:0;
+  -webkit-appearance:none;
+  appearance:none;
 }
 .pubFiltersInput:focus,
 .pubFiltersSelect:focus{
@@ -312,10 +324,12 @@ body {
   color:rgba(20, 24, 31, 0.68);
   align-self:end;
   min-width:120px;
+  flex:0 0 auto;
 }
 .pubList{
   display:grid;
   gap:12px;
+  margin-top:6px;
 }
 .pubCardLink{
   text-decoration:none;
@@ -445,6 +459,7 @@ body {
 .pubDetailAside{
   display:grid;
   gap:18px;
+  align-content:start;
 }
 .pubDetailCard{
   background:white;
@@ -452,6 +467,8 @@ body {
   border-radius:18px;
   padding:16px;
   box-shadow:0 14px 34px rgba(12, 19, 32, 0.08);
+  height:fit-content;
+  align-self:start;
 }
 .pubDetailCard h3{
   margin:0 0 12px;
@@ -471,6 +488,11 @@ body {
   border:1px solid rgba(12, 19, 32, 0.12);
   background:rgba(12, 19, 32, 0.02);
   font-size:0.9rem;
+}
+.pubDetailAuthor--external{
+  border-style:dashed;
+  color:rgba(12, 19, 32, 0.62);
+  background:rgba(12, 19, 32, 0.04);
 }
 .pubDetailLinks{
   display:grid;

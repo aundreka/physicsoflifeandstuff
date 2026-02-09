@@ -520,7 +520,6 @@
         }
         return "";
       }
-
       function fileToBase64(file, onSuccess, onFailure) {
         var r = new FileReader();
         r.onload = function () { if (onSuccess) onSuccess(r.result); };
@@ -1076,38 +1075,60 @@
 
         qsa(wrap, ".mini").forEach(function (rowEl) {
           var id = rowEl.getAttribute("data-id");
-          rowEl.querySelector(".pa-person").addEventListener("change", function (ev) {
-            if (String(id).indexOf("__p_") === 0) {
-              for (var i = 0; i < S.pending.publication_authors.length; i++) {
-                if (S.pending.publication_authors[i].id === id) {
-                  S.pending.publication_authors[i].person_id = ev.target.value;
-                  if (ev.target.value) S.pending.publication_authors[i].author_name = "";
+          var selEl = rowEl.querySelector(".pa-person");
+          var nameEl = rowEl.querySelector(".pa-name");
+          function syncAuthorInputs() {
+            var selVal = selEl ? selEl.value : "";
+            var nameVal = nameEl ? nameEl.value : "";
+            if (selVal && nameVal) {
+              if (nameEl) nameEl.value = "";
+              nameVal = "";
+            }
+            if (selEl) selEl.disabled = !!nameVal;
+            if (nameEl) nameEl.disabled = !!selVal;
+          }
+          syncAuthorInputs();
+          if (selEl) {
+            selEl.addEventListener("change", function (ev) {
+              var val = ev.target.value;
+              if (nameEl) nameEl.value = "";
+              syncAuthorInputs();
+              if (String(id).indexOf("__p_") === 0) {
+                for (var i = 0; i < S.pending.publication_authors.length; i++) {
+                  if (S.pending.publication_authors[i].id === id) {
+                    S.pending.publication_authors[i].person_id = val;
+                    if (val) S.pending.publication_authors[i].author_name = "";
+                  }
+                }
+                return;
+              }
+              run("communityUpsert", ["publication_authors", { id: id, person_id: val, author_name: "" }], function () {
+                loadRelatedCaches("publications");
+              }, function (err) { console.error(err); });
+            });
+          }
+          if (nameEl) {
+            nameEl.addEventListener("input", function (ev) {
+              var val = ev.target.value;
+              if (selEl) selEl.value = "";
+              syncAuthorInputs();
+              if (String(id).indexOf("__p_") === 0) {
+                for (var i = 0; i < S.pending.publication_authors.length; i++) {
+                  if (S.pending.publication_authors[i].id === id) {
+                    S.pending.publication_authors[i].author_name = val;
+                    if (val) S.pending.publication_authors[i].person_id = "";
+                  }
                 }
               }
-              return;
-            }
-            var nameEl = rowEl.querySelector(".pa-name");
-            if (nameEl) nameEl.value = "";
-            run("communityUpsert", ["publication_authors", { id: id, person_id: ev.target.value, author_name: "" }], function () {
-              loadRelatedCaches("publications");
-            }, function (err) { console.error(err); });
-          });
-          rowEl.querySelector(".pa-name").addEventListener("change", function (ev) {
-            if (String(id).indexOf("__p_") === 0) {
-              for (var i = 0; i < S.pending.publication_authors.length; i++) {
-                if (S.pending.publication_authors[i].id === id) {
-                  S.pending.publication_authors[i].author_name = ev.target.value;
-                  if (ev.target.value) S.pending.publication_authors[i].person_id = "";
-                }
-              }
-              return;
-            }
-            var selEl = rowEl.querySelector(".pa-person");
-            if (selEl) selEl.value = "";
-            run("communityUpsert", ["publication_authors", { id: id, person_id: "", author_name: ev.target.value }], function () {
-              loadRelatedCaches("publications");
-            }, function (err) { console.error(err); });
-          });
+            });
+            nameEl.addEventListener("change", function (ev) {
+              if (String(id).indexOf("__p_") === 0) return;
+              var val = ev.target.value;
+              run("communityUpsert", ["publication_authors", { id: id, person_id: "", author_name: val }], function () {
+                loadRelatedCaches("publications");
+              }, function (err) { console.error(err); });
+            });
+          }
           rowEl.querySelector(".pa-del").addEventListener("click", function () {
             if (String(id).indexOf("__p_") === 0) {
               S.pending.publication_authors = (S.pending.publication_authors || []).filter(function (x) { return x.id !== id; });
@@ -1919,4 +1940,3 @@
     </script>
   </body>
 </html>
-
