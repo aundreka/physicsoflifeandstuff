@@ -354,6 +354,34 @@ export default function MemberDetailClient({
                   </section>
                 ) : null}
 
+              </div>
+
+              <aside className="memberAside" style={{ display: "grid", gap: 18, flex: "1 1 280px", minWidth: 0 }}>
+                <section
+                  className="memberCard"
+                  style={{
+                    background: "#fcfcff",
+                    borderRadius: 18,
+                    padding: "16px",
+                    border: "1px solid rgba(11,18,32,0.1)",
+                  }}
+                >
+                  <h3 style={{ margin: "0 0 10px" }}>Profile</h3>
+                  <div style={{ display: "grid", gap: 10 }}>
+                    {profileFields.map((field) => (
+                      <div key={field.label} style={{ display: "grid", gap: 4 }}>
+                        <span style={{ fontSize: 12, color: "rgba(11,18,32,0.5)" }}>{field.label}</span>
+                        <span style={{ fontSize: 14, color: "rgba(11,18,32,0.85)" }}>
+                          {field.value || "--"}
+                        </span>
+                      </div>
+                    ))}
+                    {!profileFields.length ? (
+                      <p className="lead" style={{ margin: 0 }}>No profile details listed.</p>
+                    ) : null}
+                  </div>
+                </section>
+
                 {awards.length ? (
                   <section className="memberSection">
                     <h2 style={{ marginBottom: 10 }}>Awards</h2>
@@ -433,33 +461,6 @@ export default function MemberDetailClient({
                     </div>
                   </section>
                 ) : null}
-              </div>
-
-              <aside className="memberAside" style={{ display: "grid", gap: 18, flex: "1 1 280px", minWidth: 0 }}>
-                <section
-                  className="memberCard"
-                  style={{
-                    background: "#fcfcff",
-                    borderRadius: 18,
-                    padding: "16px",
-                    border: "1px solid rgba(11,18,32,0.1)",
-                  }}
-                >
-                  <h3 style={{ margin: "0 0 10px" }}>Profile</h3>
-                  <div style={{ display: "grid", gap: 10 }}>
-                    {profileFields.map((field) => (
-                      <div key={field.label} style={{ display: "grid", gap: 4 }}>
-                        <span style={{ fontSize: 12, color: "rgba(11,18,32,0.5)" }}>{field.label}</span>
-                        <span style={{ fontSize: 14, color: "rgba(11,18,32,0.85)" }}>
-                          {field.value || "--"}
-                        </span>
-                      </div>
-                    ))}
-                    {!profileFields.length ? (
-                      <p className="lead" style={{ margin: 0 }}>No profile details listed.</p>
-                    ) : null}
-                  </div>
-                </section>
 
               </aside>
             </div>
