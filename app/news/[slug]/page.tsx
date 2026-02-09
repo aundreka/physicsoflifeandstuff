@@ -1,4 +1,4 @@
-import NewsArticleView from "@/components/news/NewsArticleView";
+import NewsDetailClient from "@/components/news/NewsDetailClient";
 import { getAllNews, getNewsBySlug, getSimilarArticles, type NewsArticle, type NewsListItem } from "@/lib/newsContent";
 import { DEFAULT_OG_IMAGE, SITE_NAME, SITE_URL } from "@/lib/site";
 import type { Metadata } from "next";
@@ -36,8 +36,9 @@ export async function generateMetadata({
 
   if (!article) {
     return {
-      title: "Article not found",
-      robots: { index: false, follow: false },
+      title: "News",
+      description: "Updates, publications, events, and highlights from the Physics of Life and Stuff group.",
+      alternates: { canonical: `/news/${params.slug}` },
     };
   }
 
@@ -86,30 +87,37 @@ export default async function NewsDetailPage({
     console.warn("[news] detail fetch failed", err);
   }
 
-  if (!article) notFound();
-  const similar = getSimilarArticles(items, article, 5);
+  const similar = article ? getSimilarArticles(items, article, 5) : [];
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "NewsArticle",
-    headline: article.title,
-    description: article.dek || undefined,
-    datePublished: article.publishedAt || undefined,
-    dateModified: article.updatedAt || undefined,
-    author: article.author?.name
-      ? { "@type": "Person", name: article.author.name }
-      : undefined,
-    image: article.hero?.image || DEFAULT_OG_IMAGE,
-    mainEntityOfPage: `${SITE_URL}/news/${article.slug}`,
-  };
+  const jsonLd = article
+    ? {
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        headline: article.title,
+        description: article.dek || undefined,
+        datePublished: article.publishedAt || undefined,
+        dateModified: article.updatedAt || undefined,
+        author: article.author?.name
+          ? { "@type": "Person", name: article.author.name }
+          : undefined,
+        image: article.hero?.image || DEFAULT_OG_IMAGE,
+        mainEntityOfPage: `${SITE_URL}/news/${article.slug}`,
+      }
+    : null;
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      {jsonLd ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      ) : null}
+      <NewsDetailClient
+        slug={params.slug}
+        initialArticle={article}
+        initialItems={items}
       />
-      <NewsArticleView article={article} similar={similar} />
     </>
   );
 }

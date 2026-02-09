@@ -12,6 +12,26 @@ const CLIENT_CACHE_TTL_MS = Number(
   process.env.NEXT_PUBLIC_SHEETS_CACHE_TTL_MS ?? 300000
 );
 
+type ServerCacheEntry = { ts: number; data: string[][] };
+const SERVER_CACHE = new Map<string, ServerCacheEntry>();
+const SERVER_INFLIGHT = new Map<string, Promise<string[][]>>();
+
+function readServerCache(key: string, ttlMs: number): string[][] | null {
+  if (ttlMs <= 0) return null;
+  const entry = SERVER_CACHE.get(key);
+  if (!entry) return null;
+  if (Date.now() - entry.ts > ttlMs) return null;
+  return entry.data;
+}
+
+function writeServerCache(key: string, data: string[][]) {
+  SERVER_CACHE.set(key, { ts: Date.now(), data });
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function readClientCache(key: string, ttlMs: number): string[][] | null {
   if (ttlMs <= 0) return null;
   try {
@@ -62,32 +82,73 @@ export async function fetchSheetRows(
   }
 
   const isBrowser = typeof window !== "undefined";
+  const ttlMs = Math.max(0, revalidateSeconds * 1000);
+  const cacheKey = `sheets_cache:${sheetId}:${tabName}`;
+
   if (isBrowser) {
-    const cacheKey = `sheets_cache:${sheetId}:${tabName}`;
     const cached = readClientCache(cacheKey, CLIENT_CACHE_TTL_MS);
     if (cached) return cached;
+  } else {
+    const cached = readServerCache(cacheKey, ttlMs);
+    if (cached) return cached;
+    const inflight = SERVER_INFLIGHT.get(cacheKey);
+    if (inflight) return inflight;
   }
 
   const init: RequestInit = isBrowser
     ? { cache: "no-store" }
     : { next: { revalidate: revalidateSeconds } };
-  const res = await fetch(url, init);
-  if (!res.ok) throw new Error(`Failed to fetch sheet "${tabName}" (${res.status})`);
 
-  const text = await res.text();
-  const json = extractGVizJson(text);
+  const task = (async () => {
+    const maxAttempts = 3;
+    let lastError: unknown = null;
 
-  const header = json.table.cols.map((c) => (c.label ?? "").toString().trim());
-  const rows = json.table.rows.map((r) =>
-    (r.c ?? []).map((cell) => (cell?.v ?? "").toString())
-  );
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      try {
+        const res = await fetch(url, init);
+        if (!res.ok) {
+          if ((res.status === 429 || res.status === 503) && attempt < maxAttempts - 1) {
+            await sleep(300 * Math.pow(2, attempt));
+            continue;
+          }
+          throw new Error(`Failed to fetch sheet "${tabName}" (${res.status})`);
+        }
 
-  const data = [header, ...rows];
-  if (isBrowser) {
-    const cacheKey = `sheets_cache:${sheetId}:${tabName}`;
-    writeClientCache(cacheKey, data, CLIENT_CACHE_TTL_MS);
+        const text = await res.text();
+        const json = extractGVizJson(text);
+
+        const header = json.table.cols.map((c) => (c.label ?? "").toString().trim());
+        const rows = json.table.rows.map((r) =>
+          (r.c ?? []).map((cell) => (cell?.v ?? "").toString())
+        );
+
+        const data = [header, ...rows];
+        if (isBrowser) {
+          writeClientCache(cacheKey, data, CLIENT_CACHE_TTL_MS);
+        } else if (ttlMs > 0) {
+          writeServerCache(cacheKey, data);
+        }
+        return data;
+      } catch (err) {
+        lastError = err;
+        if (attempt < maxAttempts - 1) {
+          await sleep(300 * Math.pow(2, attempt));
+          continue;
+        }
+        throw err;
+      }
+    }
+    throw lastError;
+  })();
+
+  if (!isBrowser) {
+    SERVER_INFLIGHT.set(cacheKey, task);
   }
-  return data;
+  try {
+    return await task;
+  } finally {
+    if (!isBrowser) SERVER_INFLIGHT.delete(cacheKey);
+  }
 }
 
 export function rowsToObjects(rows: string[][]): Record<string, string>[] {

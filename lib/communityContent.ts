@@ -399,11 +399,10 @@ export async function getCommunityTables(opts: {
     "certificate_holders",
   ];
 
-  const results = await Promise.all(
-    tabs.map(function (t) {
-      return fetchTabObjects(sheetId, t, revalidateSeconds);
-    })
-  );
+  const results: Array<Record<string, string>[]> = [];
+  for (var i = 0; i < tabs.length; i++) {
+    results.push(await fetchTabObjects(sheetId, tabs[i], revalidateSeconds));
+  }
 
   if (results[0] && results[0].length) {
   }

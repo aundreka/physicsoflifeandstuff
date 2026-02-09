@@ -106,7 +106,12 @@ export default async function MemberPage({
 }) {
   const tables = await getTables();
   const detail = buildMemberDetail(tables, params.id);
-  if (!detail) notFound();
+  if (!detail) {
+    if (tables.members.length === 0) {
+      return <MemberDetailClient />;
+    }
+    notFound();
+  }
 
   const member = detail.member;
   const name = [member.title, member.first_name, member.last_name]

@@ -123,7 +123,12 @@ export default async function PublicationDetailPage({
 }) {
   const tables = await getTables();
   const detail = buildPublicationDetail(tables, params.id);
-  if (!detail) notFound();
+  if (!detail) {
+    if (tables.publications.length === 0) {
+      return <PublicationDetailClient />;
+    }
+    notFound();
+  }
 
   const fromId = (searchParams?.from ?? "").trim();
   const fromMember = fromId ? getMemberBySlugOrId(tables, fromId) : null;
