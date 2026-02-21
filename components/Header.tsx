@@ -4,9 +4,14 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { splitMembersByType } from "@/lib/communityContent";
+import { getCommunityTablesClient } from "@/lib/communityContentClient";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const [showAdvisers, setShowAdvisers] = useState(false);
+  const [showMembers, setShowMembers] = useState(true);
+  const [showAlumni, setShowAlumni] = useState(false);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -14,6 +19,24 @@ export default function Header() {
       document.body.style.overflow = "";
     };
   }, [open]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getCommunityTablesClient()
+      .then((tables) => {
+        if (cancelled) return;
+        const split = splitMembersByType(tables.members);
+        setShowAdvisers(split.admins.length > 0);
+        setShowMembers(split.members.length > 0);
+        setShowAlumni(split.alumni.length > 0);
+      })
+      .catch((err) => {
+        console.warn("[header] community fetch failed", err);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <header
@@ -59,8 +82,15 @@ export default function Header() {
         <span className="navDropdownChevron" aria-hidden="true">▾</span>
       </Link>
       <div className="navDropdownMenu" role="menu">
-        <Link className="navDropdownItem" href="/community#members" role="menuitem">Members</Link>
-        <Link className="navDropdownItem" href="/community#alumni" role="menuitem">Alumni</Link>
+        {showAdvisers ? (
+          <Link className="navDropdownItem" href="/community#advisers" role="menuitem">Advisers</Link>
+        ) : null}
+        {showMembers ? (
+          <Link className="navDropdownItem" href="/community#members" role="menuitem">Members</Link>
+        ) : null}
+        {showAlumni ? (
+          <Link className="navDropdownItem" href="/community#alumni" role="menuitem">Alumni</Link>
+        ) : null}
       </div>
     </div>
 
@@ -163,20 +193,33 @@ export default function Header() {
                 Community
               </Link>
               <div className="mobileDropdownMenu">
-                <Link
-                  className="mobileDropdownItem"
-                  href="/community/#members"
-                  onClick={() => setOpen(false)}
-                >
-                  Members
-                </Link>
-                <Link
-                  className="mobileDropdownItem"
-                  href="/community/#alumni"
-                  onClick={() => setOpen(false)}
-                >
-                  Alumni
-                </Link>
+                {showAdvisers ? (
+                  <Link
+                    className="mobileDropdownItem"
+                    href="/community/#advisers"
+                    onClick={() => setOpen(false)}
+                  >
+                    Advisers
+                  </Link>
+                ) : null}
+                {showMembers ? (
+                  <Link
+                    className="mobileDropdownItem"
+                    href="/community/#members"
+                    onClick={() => setOpen(false)}
+                  >
+                    Members
+                  </Link>
+                ) : null}
+                {showAlumni ? (
+                  <Link
+                    className="mobileDropdownItem"
+                    href="/community/#alumni"
+                    onClick={() => setOpen(false)}
+                  >
+                    Alumni
+                  </Link>
+                ) : null}
               </div>
             </div>
             <Link className="mobileLink" href="/publications" onClick={() => setOpen(false)}>

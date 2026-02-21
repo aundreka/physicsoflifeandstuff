@@ -31,6 +31,9 @@ export default function AboutSection({
   }, []);
 
   const images = liveContent.images ?? [];
+  const focusBlocks = (liveContent.focusBlocks ?? []).filter(
+    (b) => (b.title || "").trim() || (b.body || "").trim()
+  );
 
   return (
     <div className="aboutGrid">
@@ -38,8 +41,17 @@ export default function AboutSection({
       <div>
         <div className="eyebrow">{liveContent.eyebrow}</div>
         <h2 className="h2Title">{liveContent.title}</h2>
+        {images.length ? (
+          <div className="aboutMobileCarousel" aria-label="About images">
+            {images.map((image, i) => (
+              <figure key={`${image.src}-${i}`} className="aboutMobileSlide">
+                <img src={image.src} alt={image.alt || ""} loading="lazy" />
+              </figure>
+            ))}
+          </div>
+        ) : null}
         {liveContent.subtitle ? (
-          <p className="lead">{liveContent.subtitle}</p>
+          <p className="lead aboutSubtitle">{liveContent.subtitle}</p>
         ) : null}
 
         {liveContent.bullets?.length ? (
@@ -75,29 +87,31 @@ export default function AboutSection({
 
       {/* Right */}
       <div className="imageGrid">
-        {images[0] ? (
-          <figure className="figure figureWide imageWide">
-            <img src={images[0].src} alt={images[0].alt || ""} loading="lazy" />
-          </figure>
-        ) : null}
+        <div className="aboutDesktopImages" style={{ display: "contents" }}>
+          {images[0] ? (
+            <figure className="figure figureWide imageWide">
+              <img src={images[0].src} alt={images[0].alt || ""} loading="lazy" />
+            </figure>
+          ) : null}
 
-        {images[1] ? (
-          <figure className="figure figureSmall">
-            <img src={images[1].src} alt={images[1].alt || ""} loading="lazy" />
-          </figure>
-        ) : null}
+          {images[1] ? (
+            <figure className="figure figureSmall">
+              <img src={images[1].src} alt={images[1].alt || ""} loading="lazy" />
+            </figure>
+          ) : null}
 
-        {images[2] ? (
-          <figure className="figure figureSmall">
-            <img src={images[2].src} alt={images[2].alt || ""} loading="lazy" />
-          </figure>
-        ) : null}
+          {images[2] ? (
+            <figure className="figure figureSmall">
+              <img src={images[2].src} alt={images[2].alt || ""} loading="lazy" />
+            </figure>
+          ) : null}
+        </div>
 
-        {liveContent.focusBlocks?.length ? (
+        {focusBlocks.length ? (
           <div style={{ gridColumn: "1 / -1", marginTop: 8 }}>
             <div className="dividerList">
-              {liveContent.focusBlocks.map((b) => (
-                <div key={b.title} className="dividerItem">
+              {focusBlocks.map((b, i) => (
+                <div key={`${b.title}-${i}`} className="dividerItem">
                   <div className="dividerTitle">{b.title}</div>
                   <div className="dividerBody">{b.body}</div>
                 </div>

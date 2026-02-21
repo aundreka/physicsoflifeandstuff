@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { PublicationListItem } from "@/lib/publicationsContent";
 
@@ -72,6 +72,20 @@ export default function PublicationFilters({ items }: PublicationFiltersProps) {
   const [publisher, setPublisher] = useState("");
   const [yearStart, setYearStart] = useState("");
   const [yearEnd, setYearEnd] = useState("");
+  const [isMobileFilters, setIsMobileFilters] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(true);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 780px)");
+    const onChange = () => {
+      const mobile = media.matches;
+      setIsMobileFilters(mobile);
+      setFiltersOpen(!mobile);
+    };
+    onChange();
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, []);
 
   const uniqueItemsList = useMemo(() => uniqueItems(items), [items]);
 
@@ -156,7 +170,33 @@ export default function PublicationFilters({ items }: PublicationFiltersProps) {
 
   return (
     <div className="pubFilters">
-      <div id="pub-filters-panel" className="pubFiltersBar">
+      {isMobileFilters ? (
+        <button
+          type="button"
+          className="newsFilterToggle pubFilterToggle"
+          onClick={() => setFiltersOpen((v) => !v)}
+          aria-expanded={filtersOpen}
+          aria-controls="pub-filters-panel"
+        >
+          <span className="newsFilterToggleIcon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path
+                d="M4 5h16l-6.5 7.3v4.9l-3 1.6v-6.5L4 5z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
+          <span className="newsFilterToggleText">Filters</span>
+        </button>
+      ) : null}
+
+      <div
+        id="pub-filters-panel"
+        className={`pubFiltersBar${!isMobileFilters || filtersOpen ? " isOpen" : ""}`}
+      >
         <label className="pubFiltersLabel pubFiltersLabel--search">
           <span className="eyebrow">Search</span>
           <input

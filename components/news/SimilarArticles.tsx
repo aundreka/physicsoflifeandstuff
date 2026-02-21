@@ -31,8 +31,17 @@ export default function SimilarArticles({ items }: { items: NewsListItem[] }) {
 
               <div className="newsSideBody">
                 <div className="newsSideMeta">{formatDate(a.publishedAt)}</div>
-                <div className="newsSideTitle">{a.title}</div>
-                {a.dek ? <div className="newsSideDek">{a.dek}</div> : null}
+                <div className="newsSideTitle" style={{ fontSize: "clamp(11px, 1.1vw, 14px)", lineHeight: 1.28 }}>
+                  {a.title}
+                </div>
+                {a.dek ? (
+                  <div
+                    className="newsSideDek"
+                    style={{ fontSize: "clamp(10px, 1vw, 11px)", lineHeight: 1.42 }}
+                  >
+                    {a.dek}
+                  </div>
+                ) : null}
               </div>
             </a>
           );

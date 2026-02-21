@@ -32,11 +32,21 @@ export default function MemberDetailClient({
 
   const [detail, setDetail] = useState<MemberDetail | null | undefined>(initialDetail);
   const [avatarSize, setAvatarSize] = useState(190);
+  const [isHeroMobile, setIsHeroMobile] = useState(false);
+  const [isHeroTablet, setIsHeroTablet] = useState(false);
 
   useEffect(() => {
     function updateAvatarSize() {
       if (typeof window === "undefined") return;
-      setAvatarSize(window.innerWidth < 640 ? 96 : 190);
+      if (window.innerWidth <= 720) {
+        setAvatarSize(68);
+      } else if (window.innerWidth <= 1024) {
+        setAvatarSize(132);
+      } else {
+        setAvatarSize(190);
+      }
+      setIsHeroMobile(window.innerWidth <= 720);
+      setIsHeroTablet(window.innerWidth > 720 && window.innerWidth <= 1024);
     }
     updateAvatarSize();
     window.addEventListener("resize", updateAvatarSize);
@@ -125,6 +135,10 @@ export default function MemberDetailClient({
 
   const { member, awards, certificates, publications, name, subtitle } = content;
   const memberSlug = getMemberSlug(member);
+  const hasHeroActions =
+    (member.show_linkedin && member.linkedin) ||
+    (member.show_email && member.email) ||
+    (member.show_member_since && member.member_since);
   type CSSVars = React.CSSProperties & Record<`--${string}`, string>;
   const styleVars: CSSVars = {
     "--hero-bg": THEME.pageBg,
@@ -142,10 +156,14 @@ export default function MemberDetailClient({
     member.show_associated_institutes ? { label: "Associated Institutes", value: member.associated_institutes } : null,
   ].filter(Boolean) as Array<{ label: string; value: string }>;
 
+  const hasBioContent = Boolean(member.show_bionotes && (member.bionotes || "").trim());
+  const hasMainContent = hasBioContent || publications.length > 0;
+  const isProfileOnlyView = !hasMainContent && awards.length === 0 && certificates.length === 0;
+
   return (
     <div style={styleVars}>
       <div className="homeLight">
-        <section className="homeSection" style={{ paddingTop: 32 }}>
+        <div className="homeSection" style={{ paddingTop: 32 }}>
           <div className="homeContainer">
             <Link className="textLink" href="/community">Back to Community</Link>
 
@@ -171,24 +189,18 @@ export default function MemberDetailClient({
                 }}
               />
               <div className="memberHeroInner" style={{ position: "relative", padding: "28px 28px 40px" }}>
-                <div className="memberHeroGrid" style={{ display: "flex", gap: 24, alignItems: "center", flexWrap: "nowrap" }}>
-                  <div
-                    className="memberAvatarWrap"
-                    style={{
-                      display: "flex",
-                      alignItems: "stretch",
-                    }}
-                  >
-                    <Avatar src={member.image} alt={name} size={avatarSize} square borderless />
-                  </div>
-                  <div className="memberHeroText" style={{ minWidth: 240, display: "flex", flexDirection: "column" }}>
+                {isHeroMobile ? (
+                  <div className="memberHeroFlow" style={{ display: "flow-root" }}>
+                    <div className="memberHeroFlowAvatar">
+                      <Avatar src={member.image} alt={name} size={avatarSize} square borderless />
+                    </div>
                     <span
                       className="memberHeroType"
                       style={{
                         display: "block",
                         textTransform: "uppercase",
                         letterSpacing: "0.24em",
-                        fontSize: 12,
+                        fontSize: 10,
                         color: "rgba(255,255,255,0.8)",
                       }}
                     >
@@ -197,20 +209,31 @@ export default function MemberDetailClient({
                     <h1
                       className="memberHeroName"
                       style={{
-                        margin: "8px 0 6px",
-                        fontSize: "clamp(28px, 3.6vw, 44px)",
+                        margin: "3px 0 2px",
+                        fontSize: "clamp(13px, 4vw, 17px)",
+                        lineHeight: 1.02,
                         letterSpacing: "-0.02em",
+                        overflowWrap: "anywhere",
                       }}
                     >
                       {name}
                     </h1>
                     {subtitle ? (
-                      <p className="memberHeroSubtitle" style={{ margin: 0, color: "rgba(255,255,255,0.82)" }}>
+                      <p
+                        className="memberHeroSubtitle"
+                        style={{
+                          margin: "2px 0 0",
+                          fontSize: 10,
+                          lineHeight: 1.25,
+                          color: "rgba(255,255,255,0.82)",
+                          overflowWrap: "anywhere",
+                        }}
+                      >
                         {subtitle}
                       </p>
                     ) : null}
-                    {(member.show_linkedin && member.linkedin) || (member.show_email && member.email) || (member.show_member_since && member.member_since) ? (
-                      <div className="memberHeroActions" style={{ marginTop: 10, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                    {hasHeroActions ? (
+                      <div className="memberHeroActions" style={{ marginTop: 3, display: "inline-flex", gap: 6, alignItems: "center", flexWrap: "wrap", verticalAlign: "top" }}>
                         {member.show_email && member.email ? (
                           <a
                             href={`mailto:${member.email}`}
@@ -289,9 +312,151 @@ export default function MemberDetailClient({
                       </div>
                     ) : null}
                   </div>
-                </div>
+                ) : (
+                  <div className="memberHeroGrid" style={{ display: "flex", gap: 16, alignItems: isHeroTablet ? "flex-start" : "center" }}>
+                    <div
+                      className="memberAvatarWrap"
+                      style={{
+                        flex: "0 0 auto",
+                        display: "flex",
+                        alignItems: "stretch",
+                      }}
+                    >
+                      <Avatar src={member.image} alt={name} size={avatarSize} square borderless />
+                    </div>
+                    <div
+                      className="memberHeroText"
+                      style={{
+                        minWidth: 0,
+                        flex: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: isHeroTablet ? "flex-start" : "center",
+                        gap: 4,
+                      }}
+                    >
+                      <span
+                        className="memberHeroType"
+                        style={{
+                          display: "block",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.24em",
+                          fontSize: 10,
+                          color: "rgba(255,255,255,0.8)",
+                        }}
+                      >
+                        {member.type}
+                      </span>
+                      <h1
+                        className="memberHeroName"
+                        style={{
+                          margin: "8px 0 6px",
+                          fontSize: isHeroTablet ? "clamp(19px, 2.2vw, 26px)" : "clamp(24px, 2.8vw, 34px)",
+                          lineHeight: 1.15,
+                          letterSpacing: "-0.02em",
+                          overflowWrap: "anywhere",
+                        }}
+                      >
+                        {name}
+                      </h1>
+                      {subtitle ? (
+                        <p
+                          className="memberHeroSubtitle"
+                          style={{
+                            margin: "6px 0 0",
+                            fontSize: isHeroTablet ? 11.5 : 12.5,
+                            lineHeight: 1.45,
+                            color: "rgba(255,255,255,0.82)",
+                            overflowWrap: "anywhere",
+                          }}
+                        >
+                          {subtitle}
+                        </p>
+                      ) : null}
+                      {hasHeroActions ? (
+                        <div className="memberHeroActions" style={{ marginTop: isHeroTablet ? 8 : 10, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                        {member.show_email && member.email ? (
+                          <a
+                            href={`mailto:${member.email}`}
+                            aria-label="Email"
+                            title="Email"
+                            className="memberHeroIcon"
+                            style={{
+                              width: 36,
+                              height: 36,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              borderRadius: 10,
+                              border: "1px solid rgba(255,255,255,0.25)",
+                              background: "rgba(255,255,255,0.12)",
+                            }}
+                          >
+                            <svg
+                              viewBox="0 0 24 24"
+                              width="18"
+                              height="18"
+                              aria-hidden="true"
+                              focusable="false"
+                              style={{ display: "block", fill: "white" }}
+                            >
+                              <path d="M3 5h18c1.1 0 2 .9 2 2v10c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V7c0-1.1.9-2 2-2zm0 2v.01L12 12l9-4.99V7H3zm0 12h18V9.35l-9 5-9-5V19z" />
+                            </svg>
+                          </a>
+                        ) : null}
+                        {member.show_linkedin && member.linkedin ? (
+                          <a
+                            href={member.linkedin}
+                            target="_blank"
+                            rel="noreferrer"
+                            aria-label="LinkedIn profile"
+                            title="LinkedIn"
+                            className="memberHeroIcon"
+                            style={{
+                              width: 36,
+                              height: 36,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              borderRadius: 10,
+                              border: "1px solid rgba(255,255,255,0.25)",
+                              background: "rgba(255,255,255,0.12)",
+                            }}
+                          >
+                            <svg
+                              viewBox="0 0 24 24"
+                              width="18"
+                              height="18"
+                              aria-hidden="true"
+                              focusable="false"
+                              style={{ display: "block", fill: "white" }}
+                            >
+                              <path d="M20.45 20.45h-3.56v-5.58c0-1.33-.03-3.05-1.86-3.05-1.86 0-2.14 1.45-2.14 2.95v5.68H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.86 3.37-1.86 3.6 0 4.27 2.37 4.27 5.46v6.29zM5.34 7.43c-1.14 0-2.06-.93-2.06-2.06 0-1.14.92-2.06 2.06-2.06 1.14 0 2.06.92 2.06 2.06 0 1.13-.92 2.06-2.06 2.06zM7.12 20.45H3.56V9h3.56v11.45zM22.23 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.46C23.2 24 24 23.23 24 22.28V1.72C24 .77 23.2 0 22.23 0z" />
+                            </svg>
+                          </a>
+                        ) : null}
+                        {member.show_member_since && member.member_since ? (
+                          <span
+                            className="memberHeroBadge"
+                            style={{
+                              padding: "6px 12px",
+                              borderRadius: 999,
+                              background: "rgba(255,255,255,0.16)",
+                              border: "1px solid rgba(255,255,255,0.2)",
+                              fontSize: 12,
+                              color: "rgba(255,255,255,0.9)",
+                            }}
+                          >
+                            Member Since {member.member_since}
+                          </span>
+                        ) : null}
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
+              </div>
 
             <div
               className="memberLayout"
@@ -303,69 +468,76 @@ export default function MemberDetailClient({
                 alignItems: "flex-start",
               }}
             >
-              <div className="memberMain" style={{ display: "grid", gap: 24, flex: "1 1 560px", minWidth: 0 }}>
-                {member.show_bionotes ? (
-                  <section
-                    className="memberCard"
-                    style={{
-                      background: "#fcfcff",
-                      borderRadius: 18,
-                      padding: "18px",
-                      border: "1px solid rgba(11,18,32,0.1)",
-                    }}
-                  >
-                    <h2 style={{ marginBottom: 10 }}>About</h2>
-                    {member.bionotes ? (
+              {hasMainContent ? (
+                <div className="memberMain" style={{ display: "grid", gap: 24, flex: "1 1 560px", minWidth: 0 }}>
+                  {hasBioContent ? (
+                    <section
+                      className="memberCard"
+                      style={{
+                        background: "#fcfcff",
+                        borderRadius: 18,
+                        padding: "18px",
+                        border: "1px solid rgba(11,18,32,0.1)",
+                      }}
+                    >
+                      <h2 style={{ marginBottom: 10 }}>About</h2>
                       <p style={{ margin: 0, lineHeight: 1.7, whiteSpace: "pre-line", textAlign: "justify" }}>
                         {member.bionotes}
                       </p>
-                    ) : (
-                      <p className="lead">No bio available.</p>
-                    )}
-                  </section>
-                ) : null}
+                    </section>
+                  ) : null}
 
-                {publications.length ? (
-                  <section className="memberSection">
-                    <h2 style={{ marginBottom: 10 }}>Publications</h2>
-                    <div style={{ display: "grid", gap: 12 }}>
-                      {publications.map((pub) => (
-                        <Link
-                          key={pub.id}
-                          href={`/publications/${getPublicationSlug(pub)}?from=${memberSlug}`}
-                          style={{ textDecoration: "none", color: "inherit" }}
-                        >
-                          <article
-                            style={{
-                              padding: "14px 16px",
-                              border: "1px solid rgba(11,18,32,0.12)",
-                              borderRadius: 14,
-                              background: "white",
-                              display: "flex",
-                              justifyContent: "space-between",
-                              alignItems: "baseline",
-                              gap: 12,
-                            }}
+                  {publications.length ? (
+                    <section className="memberSection">
+                      <h2 style={{ marginBottom: 10 }}>Publications</h2>
+                      <div style={{ display: "grid", gap: 12 }}>
+                        {publications.map((pub) => (
+                          <Link
+                            key={pub.id}
+                            href={`/publications/${getPublicationSlug(pub)}?from=${memberSlug}`}
+                            style={{ textDecoration: "none", color: "inherit" }}
                           >
-                            <div>
-                              <h3 style={{ margin: 0, fontSize: 16 }}>{pub.title}</h3>
-                              {pub.publishing_date ? (
-                                <p style={{ margin: "6px 0 0", color: "rgba(11,18,32,0.6)" }}>
-                                  {pub.publishing_date}
-                                </p>
-                              ) : null}
-                            </div>
-                            <span style={{ color: "rgba(11,18,32,0.5)", fontSize: 14 }}>-&gt;</span>
-                          </article>
-                        </Link>
-                      ))}
-                    </div>
-                  </section>
-                ) : null}
+                            <article
+                              style={{
+                                padding: "14px 16px",
+                                border: "1px solid rgba(11,18,32,0.12)",
+                                borderRadius: 14,
+                                background: "white",
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "baseline",
+                                gap: 12,
+                              }}
+                            >
+                              <div>
+                                <h3 style={{ margin: 0, fontSize: 16 }}>{pub.title}</h3>
+                                {pub.publishing_date ? (
+                                  <p style={{ margin: "6px 0 0", color: "rgba(11,18,32,0.6)" }}>
+                                    {pub.publishing_date}
+                                  </p>
+                                ) : null}
+                              </div>
+                              <span style={{ color: "rgba(11,18,32,0.5)", fontSize: 14 }}>-&gt;</span>
+                            </article>
+                          </Link>
+                        ))}
+                      </div>
+                    </section>
+                  ) : null}
 
-              </div>
+                </div>
+              ) : null}
 
-              <aside className="memberAside" style={{ display: "grid", gap: 18, flex: "1 1 280px", minWidth: 0 }}>
+              <aside
+                className="memberAside"
+                style={{
+                  display: "grid",
+                  gap: 18,
+                  flex: isProfileOnlyView ? "1 1 100%" : "1 1 280px",
+                  maxWidth: isProfileOnlyView ? "100%" : undefined,
+                  minWidth: 0,
+                }}
+              >
                 <section
                   className="memberCard"
                   style={{
@@ -474,129 +646,9 @@ export default function MemberDetailClient({
               </aside>
             </div>
           </div>
-        </section>
+        </div>
       </div>
-      <style jsx>{`
-        .badgeList {
-          display: grid;
-          gap: 12px;
-        }
-        .badgeItem {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          padding: 6px 0;
-        }
-        .badgeIcon {
-          width: 56px;
-          height: 56px;
-          border-radius: 999px;
-          object-fit: cover;
-          border: 1px solid rgba(11,18,32,0.12);
-          background: #fff;
-          flex: 0 0 auto;
-        }
-        .badgeIconPlaceholder {
-          background: rgba(11,18,32,0.08);
-          border: 1px solid rgba(11,18,32,0.12);
-        }
-        .badgeText {
-          min-width: 0;
-        }
-        .badgeText h3,
-        .badgeText p {
-          overflow-wrap: anywhere;
-        }
-        @media (max-width: 720px) {
-          .memberHero {
-            border-radius: 18px;
-          }
-          .memberHeroInner {
-            padding: 20px 18px 26px;
-          }
-          .memberHeroGrid {
-            gap: 16px;
-            flex-wrap: wrap;
-            align-items: center;
-            flex-direction: column;
-          }
-          .memberHeroText {
-            min-width: 0;
-            width: 100%;
-            text-align: left;
-          }
-          .memberHeroName {
-            font-size: 20px;
-            line-height: 1.2;
-            overflow-wrap: anywhere;
-            word-break: break-word;
-            max-width: 100%;
-          }
-          .memberHeroType {
-            font-size: 10px;
-            letter-spacing: 0.22em;
-            max-width: 100%;
-          }
-          .memberHeroSubtitle {
-            font-size: 13px;
-            line-height: 1.4;
-            overflow-wrap: anywhere;
-            word-break: break-word;
-            max-width: 100%;
-          }
-          .memberHeroActions {
-            gap: 8px;
-            width: 100%;
-            flex-wrap: wrap;
-          }
-          .memberHeroIcon {
-            width: 30px !important;
-            height: 30px !important;
-            border-radius: 8px !important;
-          }
-          .memberHeroIcon svg {
-            width: 15px;
-            height: 15px;
-          }
-          .memberHeroBadge {
-            padding: 4px 10px !important;
-            font-size: 11px !important;
-            max-width: 100%;
-            overflow-wrap: anywhere;
-            word-break: break-word;
-            white-space: normal;
-          }
-          .memberLayout {
-            gap: 16px;
-            margin-top: 20px;
-          }
-          .memberMain {
-            gap: 16px;
-          }
-          .memberAside {
-            gap: 14px;
-          }
-          .memberCard {
-            padding: 12px !important;
-            border-radius: 14px !important;
-          }
-          .memberSection h2 {
-            font-size: 18px;
-          }
-          .memberSection p,
-          .memberCard p,
-          .memberCard span {
-            font-size: 13px;
-          }
-          .badgeItem {
-            gap: 12px;
-          }
-          .badgeIcon {
-            width: 48px;
-            height: 48px;
-          }
-        }
-      `}</style>
+      
     </div>
   );
 }

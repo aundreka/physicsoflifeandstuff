@@ -55,32 +55,49 @@ export default function CommunityPageClient({
       <CommunityHero title="Community" subtitle="Advisers, members, and alumni of the group." />
 
       <div className="homeLight">
-        <section id="advisers" className="homeSection" style={{ borderTop: "none" }}>
-          <div className="homeContainer">
-            <Breadcrumbs
-              items={[
-                { label: "Home", href: "/" },
-                { label: "Community" },
-              ]}
-            />
-            <SectionHeading title="Advisers" />
-            {admins.length ? <MemberGrid members={admins} /> : <p className="lead">No advisers listed yet.</p>}
-          </div>
-        </section>
+        {admins.length ? (
+          <section id="advisers" className="homeSection" style={{ borderTop: "none" }}>
+            <div className="homeContainer">
+              <Breadcrumbs
+                items={[
+                  { label: "Home", href: "/" },
+                  { label: "Community" },
+                ]}
+              />
+              <SectionHeading title="Advisers" />
+              <MemberGrid members={admins} showSearch={false} />
+            </div>
+          </section>
+        ) : (
+          <section className="homeSection" style={{ borderTop: "none" }}>
+            <div className="homeContainer">
+              <Breadcrumbs
+                items={[
+                  { label: "Home", href: "/" },
+                  { label: "Community" },
+                ]}
+              />
+            </div>
+          </section>
+        )}
 
-        <section id="members" className="homeSection">
-          <div className="homeContainer">
-            <SectionHeading title="Members" />
-            {members.length ? <MemberGrid members={members} /> : <p className="lead">No members listed yet.</p>}
-          </div>
-        </section>
+        {members.length ? (
+          <section id="members" className="homeSection">
+            <div className="homeContainer">
+              <SectionHeading title="Members" />
+              <MemberGrid members={members} showSearch />
+            </div>
+          </section>
+        ) : null}
 
-        <section id="alumni" className="homeSection">
-          <div className="homeContainer">
-            <SectionHeading title="Alumni" />
-            {alumni.length ? <MemberGrid members={alumni} /> : <p className="lead">No alumni listed yet.</p>}
-          </div>
-        </section>
+        {alumni.length ? (
+          <section id="alumni" className="homeSection">
+            <div className="homeContainer">
+              <SectionHeading title="Alumni" />
+              <MemberGrid members={alumni} showSearch={false} />
+            </div>
+          </section>
+        ) : null}
       </div>
     </div>
   );
