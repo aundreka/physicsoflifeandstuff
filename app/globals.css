@@ -2190,6 +2190,7 @@ a.contactValue:hover{ opacity:1; text-decoration:underline; }
   .pubDetailDate,
   .pubDetailMetaItem,
   .newsReadMore,
+  .memberHeroTitle,
   .articleUpdated{
     font-size:10px !important;
   }
@@ -2330,7 +2331,7 @@ a.contactValue:hover{ opacity:1; text-decoration:underline; }
     display:block;
     overflow:visible;
     margin:1px 0 0 !important;
-    font-size:10px !important;
+    font-size:13px !important;
     line-height:1.24 !important;
     overflow-wrap:anywhere;
   }

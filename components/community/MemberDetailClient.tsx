@@ -84,7 +84,7 @@ export default function MemberDetailClient({
 
   if (detail === undefined) {
     return (
-      <div className="homeLight" style={{ background: "#ffffff" }}>
+      <div className="homeLight" style={{ background: "#ffffff", minHeight: "100vh" }}>
         <section className="homeSection" style={{ paddingTop: 56 }}>
           <div className="homeContainer">
             <p className="lead">Loading...</p>
@@ -96,7 +96,7 @@ export default function MemberDetailClient({
 
   if (!id) {
     return (
-      <div className="homeLight">
+      <div className="homeLight" style={{ minHeight: "100vh" }}>
         <section className="homeSection" style={{ paddingTop: 56 }}>
           <div className="homeContainer">
             <p className="lead">Member not found.</p>
@@ -111,7 +111,7 @@ export default function MemberDetailClient({
 
   if (!content) {
     return (
-      <div className="homeLight">
+      <div className="homeLight" style={{ minHeight: "100vh" }}>
         <section className="homeSection" style={{ paddingTop: 56 }}>
           <div className="homeContainer">
             <p className="lead">Member not found.</p>
@@ -161,7 +161,7 @@ export default function MemberDetailClient({
 
   return (
     <div style={styleVars}>
-      <div className="homeLight">
+      <div className="homeLight" style={{ minHeight: "100vh" }}>
         <div className="homeSection" style={{ paddingTop: 32 }}>
           <div className="homeContainer">
             <Link className="textLink" href="/community">Back to Community</Link>
