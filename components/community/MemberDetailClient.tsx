@@ -518,7 +518,7 @@ export default function MemberDetailClient({
                                   </p>
                                 ) : null}
                               </div>
-                              <span style={{ color: "rgba(11,18,32,0.5)", fontSize: 14 }}>-&gt;</span>
+                              <span style={{ color: "rgba(11,18,32,0.5)", fontSize: 14, whiteSpace: "nowrap", flexShrink: 0 }}>-&gt;</span>
                             </article>
                           </Link>
                         ))}

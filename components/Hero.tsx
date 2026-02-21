@@ -492,7 +492,7 @@ ctx.shadowBlur = 16 * dpr;
         @media (max-width: 768px){
           .heroPanelWrap{
             top: auto;
-            bottom: 16%;
+            bottom: 20%;
             right: 50%;
             transform: translateX(50%);
             width: min(92vw, 520px);
