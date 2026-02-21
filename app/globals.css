@@ -2188,6 +2188,7 @@ a.contactValue:hover{ opacity:1; text-decoration:underline; }
   .textLink,
   .pubDetailDate,
   .pubDetailMetaItem,
+  .newsReadMore,
   .articleUpdated{
     font-size:10px !important;
   }
@@ -2311,7 +2312,7 @@ a.contactValue:hover{ opacity:1; text-decoration:underline; }
   }
   .memberHeroFlowAvatar{
     float:left;
-    margin:0 10px 0 0;
+    margin:0 10px 8px 0;
   }
   .memberHeroFlow .memberHeroType{
     display:block;
@@ -2322,7 +2323,7 @@ a.contactValue:hover{ opacity:1; text-decoration:underline; }
     display:block;
     margin:2px 0 1px !important;
     font-size:15px !important;
-    line-height:1.60 !important;
+    line-height:1.240 !important;
   }
   .memberHeroFlow .memberHeroSubtitle{
     display:block;
@@ -2334,7 +2335,7 @@ a.contactValue:hover{ opacity:1; text-decoration:underline; }
   }
   .memberHeroFlow .memberHeroActions{
     display:flex !important;
-    margin-top:8px !important;
+    margin-top:6px !important;
     gap:6px !important;
     overflow-wrap:anywhere;
   }
