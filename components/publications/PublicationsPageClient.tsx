@@ -58,7 +58,6 @@ export default function PublicationsPageClient({
                 { label: "Publications" },
               ]}
             />
-            <SectionHeading title="All Publications" subtitle="Lorem ipsum eme eme." />
             <PublicationFilters items={items} />
           </div>
         </section>

@@ -2,6 +2,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { getMemberSlug, type Member } from "@/lib/communityContent";
 import Avatar from "@/components/community/Avatar";
 import TypeBadge from "@/components/community/TypeBadge";
@@ -19,9 +20,19 @@ function truncateText(value: string, maxChars: number): string {
 }
 
 export default function MemberCard({ member }: { member: Member }) {
+  const [isSmallPhone, setIsSmallPhone] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 420px)");
+    const onChange = () => setIsSmallPhone(media.matches);
+    onChange();
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, []);
+
   const name = fullName(member) || "Unnamed";
-  const subtitle = truncateText(member.specialization || member.course || "", 90);
-  const institutes = truncateText(member.associated_institutes || "", 80);
+  const subtitle = truncateText(member.specialization || member.course || "", isSmallPhone ? 52 : 90);
+  const institutes = truncateText(member.associated_institutes || "", isSmallPhone ? 46 : 80);
 
   const slug = getMemberSlug(member);
 
@@ -36,7 +47,7 @@ export default function MemberCard({ member }: { member: Member }) {
           display: "grid",
           gap: 14,
           boxShadow: "0 14px 34px rgba(11,18,32,0.08)",
-          overflow: "hidden",
+          minHeight: 0,
         }}
       >
         <div style={{ display: "flex", gap: 16, alignItems: "center", minWidth: 0 }}>
@@ -48,7 +59,10 @@ export default function MemberCard({ member }: { member: Member }) {
                 margin: "8px 0 4px",
                 fontSize: 17,
                 letterSpacing: "-0.01em",
-                whiteSpace: "nowrap",
+                lineHeight: 1.3,
+                display: "-webkit-box",
+                WebkitLineClamp: isSmallPhone ? 2 : 1,
+                WebkitBoxOrient: "vertical",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
               }}
@@ -61,7 +75,10 @@ export default function MemberCard({ member }: { member: Member }) {
                   margin: 0,
                   fontSize: 13,
                   color: "rgba(11,18,32,0.6)",
-                  whiteSpace: "nowrap",
+                  lineHeight: 1.35,
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                 }}
@@ -75,7 +92,10 @@ export default function MemberCard({ member }: { member: Member }) {
                   marginTop: 6,
                   fontSize: 12.5,
                   color: "rgba(11,18,32,0.55)",
-                  whiteSpace: "nowrap",
+                  lineHeight: 1.35,
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                 }}
