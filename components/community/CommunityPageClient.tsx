@@ -54,7 +54,7 @@ export default function CommunityPageClient({
     <div style={styleVars}>
       <CommunityHero title="Community" subtitle="Advisers, members, and alumni of the group." />
 
-      <div className="homeLight">
+      <div className="homeLight communityPage">
         {admins.length ? (
           <section id="advisers" className="homeSection" style={{ borderTop: "none" }}>
             <div className="homeContainer">
@@ -99,6 +99,13 @@ export default function CommunityPageClient({
           </section>
         ) : null}
       </div>
+      <style jsx>{`
+        @media (max-width: 640px) {
+          .communityPage :global(.homeSection) {
+            padding: 34px 0;
+          }
+        }
+      `}</style>
     </div>
   );
 }

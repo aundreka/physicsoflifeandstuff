@@ -14,14 +14,6 @@ function fullName(title: string, first: string, last: string): string {
   return [title, first, last].filter(Boolean).join(" ").trim();
 }
 
-function truncateText(value: string, maxChars: number): string {
-  const text = (value || "").trim();
-  if (!text) return "";
-  if (text.length <= maxChars) return text;
-  const cut = Math.max(0, maxChars - 3);
-  return text.slice(0, cut).trimEnd() + "...";
-}
-
 export default function MemberDetailClient({
   initialDetail = undefined,
 }: {
@@ -39,7 +31,7 @@ export default function MemberDetailClient({
     function updateAvatarSize() {
       if (typeof window === "undefined") return;
       if (window.innerWidth <= 720) {
-        setAvatarSize(68);
+        setAvatarSize(79);
       } else if (window.innerWidth <= 1024) {
         setAvatarSize(132);
       } else {
@@ -77,12 +69,11 @@ export default function MemberDetailClient({
     if (!detail) return null;
     const { member, awards, certificates, publications } = detail;
     const name = fullName(member.title, member.first_name, member.last_name) || "Unnamed";
-    const subtitle = truncateText(
+    const subtitle = (
       (member.show_specialization ? member.specialization : "") ||
         (member.show_occupation ? member.occupation : "") ||
-        (member.show_course ? member.course : ""),
-      120
-    );
+        (member.show_course ? member.course : "")
+    ).trim();
     return { member, awards, certificates, publications, name, subtitle };
   }, [detail]);
 
@@ -139,6 +130,14 @@ export default function MemberDetailClient({
     (member.show_linkedin && member.linkedin) ||
     (member.show_email && member.email) ||
     (member.show_member_since && member.member_since);
+  const heroAvatarSize = useMemo(() => {
+    if (!isHeroMobile) return avatarSize;
+    let size = 70;
+    if (subtitle.length > 70) size += 4;
+    if (subtitle.length > 110) size += 6;
+    if (hasHeroActions) size += 2;
+    return Math.max(70, Math.min(86, size));
+  }, [avatarSize, hasHeroActions, isHeroMobile, subtitle.length]);
   type CSSVars = React.CSSProperties & Record<`--${string}`, string>;
   const styleVars: CSSVars = {
     "--hero-bg": THEME.pageBg,
@@ -192,7 +191,7 @@ export default function MemberDetailClient({
                 {isHeroMobile ? (
                   <div className="memberHeroFlow" style={{ display: "flow-root" }}>
                     <div className="memberHeroFlowAvatar">
-                      <Avatar src={member.image} alt={name} size={avatarSize} square borderless />
+                      <Avatar src={member.image} alt={name} size={heroAvatarSize} square borderless />
                     </div>
                     <span
                       className="memberHeroType"
@@ -233,7 +232,7 @@ export default function MemberDetailClient({
                       </p>
                     ) : null}
                     {hasHeroActions ? (
-                      <div className="memberHeroActions" style={{ marginTop: 3, display: "inline-flex", gap: 6, alignItems: "center", flexWrap: "wrap", verticalAlign: "top" }}>
+                      <div className="memberHeroActions" style={{ marginTop: 1, display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
                         {member.show_email && member.email ? (
                           <a
                             href={`mailto:${member.email}`}
@@ -495,9 +494,11 @@ export default function MemberDetailClient({
                           <Link
                             key={pub.id}
                             href={`/publications/${getPublicationSlug(pub)}?from=${memberSlug}`}
+                            className="memberDetailArticleLink"
                             style={{ textDecoration: "none", color: "inherit" }}
                           >
                             <article
+                              className="memberDetailArticle"
                               style={{
                                 padding: "14px 16px",
                                 border: "1px solid rgba(11,18,32,0.12)",
@@ -570,7 +571,7 @@ export default function MemberDetailClient({
                       {awards.map((award) => (
                         <article
                           key={award.id}
-                          className="badgeItem"
+                          className="badgeItem memberDetailArticle memberDetailArticle--row"
                         >
                           {award.image ? (
                             <img
@@ -610,7 +611,7 @@ export default function MemberDetailClient({
                       {certificates.map((cert) => (
                         <article
                           key={cert.id}
-                          className="badgeItem"
+                          className="badgeItem memberDetailArticle memberDetailArticle--row"
                         >
                           {cert.image ? (
                             <img

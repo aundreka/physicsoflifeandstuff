@@ -46,8 +46,13 @@ export default function MemberCard({ member }: { member: Member }) {
   const slug = getMemberSlug(member);
 
   return (
-    <Link href={`/community/${slug}`} style={{ textDecoration: "none", color: "inherit" }}>
+    <Link
+      href={`/community/${slug}`}
+      className="memberGridCardLink"
+      style={{ textDecoration: "none", color: "inherit" }}
+    >
       <article
+        className="memberGridCard"
         style={{
           border: "1px solid rgba(11,18,32,0.1)",
           borderRadius: isSmallPhone ? 12 : isMobile ? 14 : 20,

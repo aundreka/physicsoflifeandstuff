@@ -416,7 +416,7 @@ ctx.shadowBlur = 16 * dpr;
       <style>{`
         .heroPanelWrap{
           position:absolute;
-          top:50%;
+          top:45%;
           transform: translateY(-56%);
           right: clamp(80px, 3vw, 120px);
           z-index:5;
