@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+# Website Portfolio Project
 
-First, run the development server:
+## Overview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+This project is a fully custom-built website developed from scratch, focusing on performance, responsiveness, and modern web standards. It showcases both front-end design and practical optimization techniques aimed at delivering a smooth and efficient user experience.
+
+The project is structured to reflect real-world development practices, making it suitable for portfolio presentation and recruiter evaluation.
+
+---
+
+## Key Features
+
+### Performance Optimization
+
+* Optimized image delivery using modern formats (e.g., WebP)
+* Responsive images with `srcset` and `<picture>` elements
+* Lazy loading for non-critical assets
+* Priority loading for above-the-fold content
+
+### UI/UX Design
+
+* Clean and modern layout
+* Smooth transitions and hover interactions
+* Consistent design system across components
+* Accessibility-conscious styling (e.g., reduced motion support)
+
+### Responsive Design
+
+* Fully responsive across desktop, tablet, and mobile
+* Adaptive layouts and scalable assets
+* Mobile-first considerations
+
+### Custom Implementation
+
+* Built entirely from scratch (no templates)
+* Modular and reusable components
+* Organized file structure for scalability
+
+---
+
+## Tech Stack
+
+* **Frontend:** HTML, CSS, JavaScript
+* **Styling:** Custom CSS (no frameworks)
+* **Assets:** Optimized images (WebP, responsive variants)
+* **Deployment:** Web hosting / static hosting (e.g., GitHub Pages, InfinityFree, etc.)
+
+---
+
+## Project Structure
+
+```
+/assets
+  /css
+  /images
+  /scripts
+
+/includes
+  (reusable components/helpers)
+
+index.html
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Highlights for Recruiters
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+* Demonstrates strong understanding of **web performance optimization**
+* Shows ability to build **from scratch without relying on frameworks**
+* Emphasizes **clean code structure and maintainability**
+* Applies **real-world frontend best practices**
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## How to Run
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Clone the repository:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+   ```
+   git clone <your-repo-link>
+   ```
 
-## Deploy on Vercel
+2. Open `index.html` in your browser
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Future Improvements
+
+* Add backend integration (API or database)
+* Implement dynamic content loading
+* Enhance SEO optimization
+* Introduce analytics tracking
+
+---
+
+## Author
+
+**Aundreka Perez**
