@@ -3,8 +3,7 @@
 
 ## Overview
 
-This project is a fully custom-built website developed from scratch, focusing on performance, responsiveness, and modern web standards. It showcases both front-end design and practical optimization techniques aimed at delivering a smooth and efficient user experience.
-
+This website was developed for the Physics of Life and Stuff research group at the University of Santo Tomas. It serves as an online platform to present the group’s profile, research areas, projects, and related information in a clear and accessible format.
 The project is structured to reflect real-world development practices, making it suitable for portfolio presentation and recruiter evaluation.
 
 ---
